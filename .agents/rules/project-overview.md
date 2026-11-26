@@ -1,7 +1,7 @@
 # CommandVibe — Project Overview
 
 **Дата оновлення:** 2026-11-26
-**Версія документа:** 2.0 (P1 «фундамент»: сервер, вхід, групи, приєднання, realtime; застосунок Web + Android + iOS)
+**Версія документа:** 2.1 (P1 після рев'ю: атомарні спроби PIN і ротація refresh, `token_invalid`, перевірка id, особиста тема учасника, екран очікування)
 
 > **Статус:** хвиля 1, частина P1 реалізована (гілка `worktree-p1-foundation`), на прод не розгорнуто. Дизайн: `docs/specs/2026-11-19-photo-challenge-design.md` (розділ 2а має пріоритет). План: `docs/superpowers/plans/2026-11-26-wave1-roadmap.md`, `…-wave1-p1-foundation.md`.
 
@@ -30,7 +30,7 @@
   - `core/platform/` — абстракції з реалізаціями для вебу й застосунків: `SessionStore` (localStorage / secure storage), `InviteLinkSource` (`/join?t=` / App Links `/j/`), `PhotoSource` (image_picker без зменшення — EXIF зберігається), `OrganizerSignIn` (popup→redirect / signInWithProvider).
   - `core/api/` — `ApiClient` (токен, `x-realtime-session`, один спільний refresh на `401`).
   - `core/theme/` — «Скло»: `GlassTokens` (макети E/E2), `GlassPanel` з запасним варіантом без розмиття.
-  - `features/` — `welcome`, `organizer_auth`, `groups` (створення, поширення запрошення, головна групи з живим списком), `join` (приєднання, PIN, повернення).
+  - `features/` — `welcome`, `organizer_auth`, `groups` (створення, поширення запрошення, головна групи з живим списком), `join` (приєднання, очікування підтвердження, PIN, повернення; організатор, що відкрив своє посилання, не перезаписує сесію).
   - `l10n/` — UA (основна) і EN.
 - **`tool/`** — `deploy_api.sh` (ревізія `candidate`), `deploy_web_preview.sh`, `e2e_web.mjs` (сценарій у headless Chrome). Порядок деплою — `docs/deploy.md`.
 - **Спільні бібліотеки (змінювати звідси заборонено):** ks_core (клієнт; веб-прогалини — задача ks_core/2026-11-26-web-support), ks_server (сервер).
@@ -39,8 +39,13 @@
 
 - Клієнт працює лише з сервісом: REST + WebSocket. Firebase на клієнті — лише Auth (і App Check); Firestore/Storage — правила «заборонено все».
 - Сесії: токен доступу HS256 (15 хв, ключ `SESSION_SIGNING_KEY` із Secret Manager) + токен оновлення `<sessionId>.<секрет>` (у базі SHA-256, ротація при кожному оновленні; повтор старого → відкликання всієї сесії). Відкликання діє одразу (перевірка сесії на кожному запиті).
+- PIN: спроба резервується атомарно до перевірки argon2 (`reservePinAttempt`), тож паралельні запити не обходять блок 5 спроб / 15 хв.
+- Ротація refresh — атомарне «порівняти й замінити» (`rotateRefresh`); програш гонки = повторне використання → відкликання.
+- `401` від `AuthGuard` має `code: token_invalid`; клієнт оновлює сесію лише на нього, а перед оновленням перечитує сховище (токени могла вже оновити інша вкладка чи запит).
+- Клієнт: `ObservedSessionStore` — сигнал для go_router; втрата сесії одразу виводить із захищених сторінок.
+- Id групи й учасника в URL — лише `^[a-f0-9]{20}$` (`400 invalid_id`); id документа-індексу імені — SHA-256 від ключа імені.
 - Guard-и: `AuthGuard` → `AppCheckGuard` (режим `APP_CHECK_MODE`, за замовчуванням `monitor`).
-- Realtime: `verifyToken` = перевірка сесії; `group:<id>` — активні учасники й власник; `org:<id>` — лише власник. Вилучення учасника: статус `removed` → відкликання сесій → `disconnectUser` (закриття `4403`).
+- Realtime: `verifyToken` = перевірка сесії; `group:<id>` — активні учасники й власник; `org:<id>` — лише власник. Вилучення учасника: статус `removed` → відкликання сесій → `disconnectUser` (закриття `4403`). `member:<id>` — особиста тема учасника (навіть у статусі `pending`): `member.approved` після підтвердження.
 - Один екземпляр сервісу (`min/max-instances=1`), `--timeout=3600 --concurrency=1000`.
 - Вхід Google у вебі йде через домен сторінки (`authDomain` = домен Hosting): блокування сторонніх cookie ламало redirect (перевірка першого дня).
 - Фото зменшує сервер (дизайн 2а п. 13); клієнт надсилає оригінал (ліміт 15 МБ — P3).
@@ -68,7 +73,7 @@
 | POST | `/join/returning` | публічно | `{token, displayName, pin}` → сесія; `401 wrong_pin {attemptsLeft}`, `429 pin_locked {retryAfterSeconds}`, `401 no_such_login` |
 | GET | `/me` · PUT `/me/pin` | учасник | профіль · PIN рівно 4 цифри |
 | GET | `/j/:token` | публічно | HTML з OG-тегами → `/join?t=`; закрите → `410` |
-| WS | `/ws` | сесія | протокол ks_server v1; події `member.joined`, `member.removed`, `member.pending` (`org:`) |
+| WS | `/ws` | сесія | протокол ks_server v1; теми `group:`, `org:`, `member:`; події `member.joined`, `member.removed`, `member.pending` (`org:`), `member.approved` (`member:`) |
 | POST | `/test/seed-group` | лише `NODE_ENV=test` | тестова група |
 
 ## Моделі даних
@@ -78,5 +83,6 @@ Firestore (за репозиторіями): `organizers/{uid}` {email, displayN
 
 ## Історія версій
 
+- 2.1 (2026-11-26) — виправлення за фінальним рев'ю P1 (див. вище); App Links / Universal Links ще не підключено (потрібні SHA-256 ключа релізу й Apple Team ID).
 - 2.0 (2026-11-26) — P1: сервер (сесії, вхід організатора, групи, приєднання, PIN, realtime, App Check, сторінка запрошення), застосунок Web/Android/iOS (вхід, створення групи, приєднання, PIN, живий список), каталог 76 завдань, скрипти деплою.
 - 1.0 (2026-11-26) — перший огляд за дизайном; коду не було.
