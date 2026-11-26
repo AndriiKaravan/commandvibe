@@ -1,4 +1,4 @@
-import { Firestore, Timestamp } from 'firebase-admin/firestore';
+import { FieldValue, Firestore, Timestamp } from 'firebase-admin/firestore';
 import { Group, Member, MemberSecrets, Organizer, Session } from '../models';
 import {
   GroupRepository,
@@ -20,6 +20,17 @@ function fromStore<T>(data: Stored | undefined): T | undefined {
 
 function toStore(data: object): Stored {
   return convert(data, (value) => (value instanceof Date ? Timestamp.fromDate(value) : undefined)) as Stored;
+}
+
+/** Like [toStore], but a key patched with `undefined` deletes the stored field. */
+function toPatch(patch: object): Stored {
+  const stored = toStore(patch);
+  for (const [key, value] of Object.entries(patch)) {
+    if (value === undefined) {
+      stored[key] = FieldValue.delete();
+    }
+  }
+  return stored;
 }
 
 function convert(value: unknown, leaf: (value: unknown) => unknown): unknown {
@@ -67,7 +78,7 @@ class FirestoreSessions implements SessionRepository {
   }
 
   async update(id: string, patch: Partial<Omit<Session, 'id'>>): Promise<void> {
-    await this.db.doc(`sessions/${id}`).update(toStore(patch));
+    await this.db.doc(`sessions/${id}`).update(toPatch(patch));
   }
 
   async revokeAllFor(subjectId: string, at: Date): Promise<void> {
@@ -94,7 +105,7 @@ class FirestoreGroups implements GroupRepository {
   }
 
   async update(id: string, patch: Partial<Omit<Group, 'id'>>): Promise<void> {
-    await this.db.doc(`groups/${id}`).update(toStore(patch));
+    await this.db.doc(`groups/${id}`).update(toPatch(patch));
   }
 
   async findByInviteHash(hash: string): Promise<Group | undefined> {
@@ -159,7 +170,7 @@ class FirestoreMembers implements MemberRepository {
         tx.delete(this.nameRef(groupId, current.nameKey));
         tx.create(this.nameRef(groupId, patch.nameKey), { memberId: id });
       }
-      tx.update(this.memberRef(groupId, id), toStore(patch));
+      tx.update(this.memberRef(groupId, id), toPatch(patch));
     });
   }
 
@@ -169,7 +180,7 @@ class FirestoreMembers implements MemberRepository {
   }
 
   async updateSecrets(groupId: string, id: string, patch: Partial<MemberSecrets>): Promise<void> {
-    await this.secretsRef(groupId, id).set(toStore(patch), { merge: true });
+    await this.secretsRef(groupId, id).set(toPatch(patch), { merge: true });
   }
 }
 

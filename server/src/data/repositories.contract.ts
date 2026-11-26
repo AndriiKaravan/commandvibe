@@ -125,5 +125,17 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
       await repos.members.updateSecrets(group.id, member.id, { pinHash: 'x', pinFailures: 2 });
       expect(await repos.members.secrets(group.id, member.id)).toEqual({ pinHash: 'x', pinFailures: 2 });
     });
+
+    it('should clear a secret field patched with undefined', async () => {
+      const group = aGroup();
+      await repos.groups.create(group);
+      const member = await repos.members.createUnique(aMember(group.id, 'Olena'));
+      await repos.members.updateSecrets(group.id, member.id, { pinHash: 'x', pinFailures: 5, lockedUntil: new Date() });
+      await repos.members.updateSecrets(group.id, member.id, { pinHash: undefined, pinFailures: 0, lockedUntil: undefined });
+      const secrets = await repos.members.secrets(group.id, member.id);
+      expect(secrets.pinHash).toBeUndefined();
+      expect(secrets.lockedUntil).toBeUndefined();
+      expect(secrets.pinFailures).toBe(0);
+    });
   });
 }
