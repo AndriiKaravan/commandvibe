@@ -3,6 +3,8 @@
 export interface Organizer {
   uid: string;
   email: string;
+  /** Name from the sign-in provider; the default name when the organizer plays too. */
+  displayName?: string;
   createdAt: Date;
 }
 
