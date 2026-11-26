@@ -2,6 +2,12 @@
 # Runs every server gate; KS_SERVER_DIR and KS_CORE_DIR point at clean clones of the library tags.
 set -uo pipefail
 cd "$(dirname "$0")/.."
+# Local clone paths live in the git-ignored .env.ks (KS_SERVER_DIR=..., KS_CORE_DIR=...).
+if [ -f .env.ks ]; then
+  set -a
+  . ./.env.ks
+  set +a
+fi
 log=${CHECK_LOG:-/tmp/commandvibe-server-check.log}
 : > "$log"
 status=0
