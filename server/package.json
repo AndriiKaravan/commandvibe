@@ -1,0 +1,60 @@
+{
+  "name": "commandvibe-api",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/main.js",
+    "lint": "eslint \"{src,test}/**/*.ts\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "jest",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "sync:realtime": "node ${KS_SERVER_DIR:?set KS_SERVER_DIR to a clean clone of a ks_server tag}/scripts/sync.mjs realtime src/shared/realtime",
+    "sync:realtime:check": "node ${KS_SERVER_DIR:?set KS_SERVER_DIR to a clean clone of a ks_server tag}/scripts/sync.mjs realtime src/shared/realtime --check",
+    "sync:app-check": "node ${KS_CORE_DIR:?set KS_CORE_DIR to a clean clone of a ks_core tag}/server/app_check/sync/sync-app-check.mjs src/shared/app_check",
+    "sync:app-check:check": "node ${KS_CORE_DIR:?set KS_CORE_DIR to a clean clone of a ks_core tag}/server/app_check/sync/sync-app-check.mjs src/shared/app_check --check",
+    "start:test": "STORAGE=memory NODE_ENV=test ALLOWED_ORIGINS=http://localhost:8080 node dist/main.js"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "testEnvironment": "node"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.2.12",
+    "@nestjs/core": "^11.2.12",
+    "@nestjs/platform-express": "^11.2.12",
+    "@nestjs/platform-ws": "^11.2.12",
+    "@nestjs/websockets": "^11.2.12",
+    "argon2": "^0.45.2",
+    "firebase-admin": "^13.10.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "ws": "^8.23.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@nestjs/testing": "^11.2.12",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.19.4",
+    "@types/supertest": "^7.2.1",
+    "@types/ws": "^8.18.2",
+    "eslint": "^9.39.5",
+    "jest": "^30.5.2",
+    "supertest": "^7.3.2",
+    "ts-jest": "^29.4.15",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.74.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "rootDir": "src", "types": ["node"] },
+  "include": ["src"],
+  "exclude": [
+    "src/**/*.spec.ts",
+    "src/**/*.contract.ts",
+    "src/shared/realtime/hub-test-kit.ts",
+    "src/shared/realtime/testing.ts",
+    "src/testing/**",
+    "test",
+    "dist"
+  ]
+}
