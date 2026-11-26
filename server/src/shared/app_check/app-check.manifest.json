@@ -1,0 +1,17 @@
+{
+  "source": "ks_core/server/app_check",
+  "ksCoreVersion": "0.6.2",
+  "sourceHash": "e6a571d4cddbd6a67ac8757f5923ba4d5ee87af8c3b95503ee75538318a85982",
+  "files": {
+    "app-check.constants.ts": "246c55d6f8feac18f81fb2546dd5f25e7d57b8edc78897e88bf9859b35a158d4",
+    "app-check.guard.spec.ts": "f6ce8eab2e1b5629b76c2f6403834bc4aba50985930f5aecef52f242c4032688",
+    "app-check.guard.ts": "9ec1aed73b0654807b7d03552151734ab9233b51dadc02ce2c7e0978052bf6f4",
+    "app-check.mode.spec.ts": "4f84d90ee015c303a5f635cec9c42f7c7629057a297e3b534e8f81f1825993b0",
+    "app-check.mode.ts": "b8f555879657a1d708d8babcac3de0ca7097300eac39edef7daf93198dc9c70c",
+    "app-check.module.ts": "75fbabc316060816524691971b70900fa31a1cc32a1f0d28b874c9b15a7c8d66",
+    "app-check.verifier.ts": "f447885a430ff552930605b38e2c4320ccea24ae4fa0c953385b9edcb0366ac9",
+    "index.ts": "40a815b47ee5f2c3c755f2572cc607929c190e99f7ad19aac0d287a3b7843146",
+    "app-check.drift.spec.ts": "104a9bcecfb7f3809da294994c485e1aed081f4b269e9e1f11285adc50af63e2"
+  },
+  "syncedAt": "2026-11-26T17:28:25.767Z"
+}

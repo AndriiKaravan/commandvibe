@@ -1,0 +1,9 @@
+rules_version = '2';
+// Photos are served only through short signed URLs issued by the server (design 7).
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
