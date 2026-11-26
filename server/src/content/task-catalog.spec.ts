@@ -7,6 +7,21 @@ import {
   isOfferedInMonth,
   places,
 } from './task-catalog';
+import { readFileSync } from 'node:fs';
+import { catalogDocPath, renderCatalog } from './render-catalog';
+
+const v1Ids = [
+  'desk-view', 'mug-story', 'lunch-plate', 'team-hands', 'green-colleague', 'sticky-note-art', 'commute', 'meeting-doodle',
+  'team-shadows', 'snack-stash', 'museum-piece', 'tidy-desk', 'coffee-art', 'window-weather', 'study-spot', 'best-notes',
+  'campus-corner', 'book-tower', 'study-fuel', 'pen-army', 'now-playing', 'jump-shot', 'reflection', 'then-and-now',
+  'human-letter', 'color-hunt', 'tiny-world', 'sky-today', 'house-boss', 'breakfast-together', 'drawing-together',
+  'blanket-fort', 'shadow-puppets', 'build-of-the-day', 'little-chefs', 'big-and-small-hands', 'favourite-toy', 'game-night',
+  'funny-socks', 'family-recipe', 'snow-close-up', 'snowman', 'ornament-story', 'holiday-lights', 'cozy-corner', 'warm-drink',
+  'frosty-window', 'gift-wrap', 'new-year-wish', 'tangerine-art', 'winter-trail', 'holiday-sweater', 'holiday-cookies',
+  'countdown', 'winter-treat', 'slow-breakfast', 'new-place', 'weekend-hobby', 'bookshelf', 'first-view', 'rest-spot',
+  'oldest-tree', 'street-art', 'bird-spotting', 'puddle-world', 'interesting-door', 'step-goal', 'faces-in-things', 'rainbow',
+  'food-face', 'forced-perspective', 'one-colour-look', 'black-and-white', 'living-emoji', 'find-me', 'word-of-the-day',
+];
 
 const texts = (task: TaskCatalogEntry) => [task.title.uk, task.title.en, task.description.uk, task.description.en];
 const tagged = (category: string) => catalog.filter((task) => (task.categories as string[]).includes(category));
@@ -24,9 +39,13 @@ describe('task catalog', () => {
   });
 
   it('should keep every task from v1', () => {
-    for (const id of ['desk-view', 'snowman', 'word-of-the-day', 'little-chefs', 'new-place']) {
-      expect(catalog.map((task) => task.id)).toContain(id);
-    }
+    expect(v1Ids).toHaveLength(76);
+    const ids = new Set(catalog.map((task) => task.id));
+    expect(v1Ids.filter((id) => !ids.has(id))).toEqual([]);
+  });
+
+  it('should keep the owner review table in sync with the data', () => {
+    expect(readFileSync(catalogDocPath, 'utf8')).toBe(renderCatalog());
   });
 
   it('should have unique ids in kebab case', () => {
@@ -79,13 +98,29 @@ describe('task catalog', () => {
     expect(isOfferedInMonth(catalog.find((task) => task.id === 'desk-view')!, 12)).toBe(true);
   });
 
-  it('should keep kids tasks safe: for families, no hard outdoor tasks, no child left alone', () => {
+  it('should keep kids tasks safe: for families, never hard, no child left alone', () => {
     const kids = tagged('kids');
     expect(kids.filter((task) => !task.audiences.includes('family')).map((task) => task.id)).toEqual([]);
-    expect(kids.filter((task) => task.difficulty === 'hard' && task.place === 'outside').map((task) => task.id)).toEqual([]);
+    expect(kids.filter((task) => task.difficulty === 'hard').map((task) => task.id)).toEqual([]);
     expect(
-      matching(kids, [/дитин\S* сам/i, /без дорослих/i, /\balone\b/i, /on (his|her|their) own/i, /by (him|her|them)sel(f|ves)/i]),
+      matching(kids, [
+        /дитин\S* сам/i, /діти самі/i, /малюк\S* сам/i, /без дорослих/i,
+        /\balone\b/i, /on (his|her|their|its) own/i, /by (him|her|them)sel(f|ves)/i, /unsupervised/i,
+      ]),
     ).toEqual([]);
+  });
+
+  it('should keep kids tasks away from open water and roads', () => {
+    expect(
+      matching(tagged('kids'), [/калюж/i, /puddle/i, /річк/i, /river/i, /озер/i, /\blakes?\b/i, /\bpond\b/i, /дорог/i, /\broads?\b/i, /трас/i]),
+    ).toEqual([]);
+  });
+
+  it('should offer adult-and-child tasks to families only', () => {
+    const adultAndChild = matching(catalog, [/дорослий і дитина/i, /дорослого й дитини/i, /an adult and a child/i, /adult.s and a child.s/i]);
+    expect(adultAndChild.length).toBeGreaterThan(0);
+    const offenders = catalog.filter((task) => adultAndChild.includes(task.id) && task.audiences.join() !== 'family');
+    expect(offenders.map((task) => task.id)).toEqual([]);
   });
 
   it('should keep family tasks kid-safe: no outside-only hard tasks', () => {
@@ -95,7 +130,11 @@ describe('task catalog', () => {
 
   it('should not make buying something a condition of a cheap task', () => {
     expect(
-      matching(tagged('cheap'), [/купи/i, /купу/i, /купл/i, /придба/i, /замов/i, /\bbuy/i, /\bbought\b/i, /purchase/i, /\bgo shopping\b/i]),
+      // Cyrillic letters are not word characters for \b, hence the explicit word edges.
+      matching(tagged('cheap'), [
+        /(^|[^а-яіїєґ])(купи|купіть|купити|купуй|купуйте|купляй)([^а-яіїєґ]|$)/i, /придба/i, /замовте|замов(и|ити)([^а-яіїєґ]|$)/i,
+        /\bbuy/i, /\bbought\b/i, /purchase/i, /\bgo shopping\b/i, /\border (a|some|one)\b/i,
+      ]),
     ).toEqual([]);
   });
 
