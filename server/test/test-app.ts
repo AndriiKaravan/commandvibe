@@ -1,6 +1,7 @@
 import { INestApplication, UnauthorizedException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
+import { APP_CHECK_MODE, AppCheckMode } from '../src/shared/app_check';
 import { FirebaseService, VerifiedFirebaseUser } from '../src/firebase/firebase.service';
 import { configureApp } from '../src/main';
 
@@ -18,10 +19,14 @@ export class FakeFirebase implements Pick<FirebaseService, 'verifyIdToken'> {
 }
 
 /** Boots the real application module on a random port for e2e tests. */
-export async function createTestApp(options: { firebase?: FakeFirebase } = {}): Promise<INestApplication> {
+export async function createTestApp(
+  options: { firebase?: FakeFirebase; appCheckMode?: AppCheckMode } = {},
+): Promise<INestApplication> {
   const moduleRef = await Test.createTestingModule({ imports: [AppModule.forRoot({ storage: 'memory' })] })
     .overrideProvider(FirebaseService)
     .useValue(options.firebase ?? new FakeFirebase())
+    .overrideProvider(APP_CHECK_MODE)
+    .useValue(options.appCheckMode ?? 'off')
     .compile();
   const app = moduleRef.createNestApplication();
   configureApp(app);

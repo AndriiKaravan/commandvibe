@@ -2,13 +2,7 @@ import 'reflect-metadata';
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-
-export function allowedOrigins(): string[] {
-  return (process.env.ALLOWED_ORIGINS ?? '')
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
-}
+import { allowedOrigins } from './common/origins';
 
 export function configureApp(app: INestApplication): void {
   app.enableCors({
