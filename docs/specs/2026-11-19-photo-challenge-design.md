@@ -89,7 +89,7 @@ Telegram ⇄ сервіс (webhook бота; Mini App — хвиля 2)
 ```
 
 ### 5.1 Застосунок і сервіс
-- **Окремий Firebase-проєкт**, регіон ЄС (Firestore і Storage — `europe-west`; Cloud Run — `europe-central2`, як duval_backend).
+- **Окремий Firebase-проєкт** `commandvibe-ks`, регіон ЄС: Firestore, Storage і Cloud Run — `europe-central2` (Варшава; рішення 26.11).
 - **Клієнт:** Flutter Web, PWA, Firebase Hosting. go_router, ChangeNotifier/MVVM (глобальні правила власника). Звертається лише до сервісу: REST для дій і читання, WebSocket для живих оновлень. Дані — через шар репозиторіїв.
 - **Сервіс:** Node.js + TypeScript на NestJS, як medvibe_backend і duval_backend. Уся ігрова логіка, усі перевірки доступу, видача фото. Секрети — лише Secret Manager. Деплой: ревізія `candidate` без трафіку → перевірки → трафік.
 - **База за інтерфейсом:** сервіс працює з даними через репозиторії (`GroupRepository`, `SubmissionRepository`…), не напряму з Firestore SDK. Переїзд на PostgreSQL = нова реалізація репозиторіїв + перенесення даних; API для клієнта не змінюється.
