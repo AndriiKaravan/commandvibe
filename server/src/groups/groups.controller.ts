@@ -1,3 +1,4 @@
+import { IdPipe } from '../common/id.pipe';
 import { Body, Controller, ForbiddenException, Get, HttpCode, Param, Post } from '@nestjs/common';
 import { CurrentAuth } from '../auth/current-subject.decorator';
 import { VerifiedAccess } from '../auth/session.service';
@@ -31,19 +32,19 @@ export class GroupsController {
   }
 
   @Get(':id')
-  async get(@CurrentAuth() auth: VerifiedAccess, @Param('id') id: string): Promise<GroupView> {
+  async get(@CurrentAuth() auth: VerifiedAccess, @Param('id', IdPipe) id: string): Promise<GroupView> {
     return groupView(await this.groups.getFor(auth.subject, id));
   }
 
   @Post(':id/invite/rotate')
-  async rotate(@CurrentAuth() auth: VerifiedAccess, @Param('id') id: string): Promise<{ inviteUrl: string }> {
+  async rotate(@CurrentAuth() auth: VerifiedAccess, @Param('id', IdPipe) id: string): Promise<{ inviteUrl: string }> {
     const { inviteUrl } = await this.groups.rotateInvite(organizerUid(auth), id);
     return { inviteUrl };
   }
 
   @Post(':id/invite/close')
   @HttpCode(204)
-  async close(@CurrentAuth() auth: VerifiedAccess, @Param('id') id: string): Promise<void> {
+  async close(@CurrentAuth() auth: VerifiedAccess, @Param('id', IdPipe) id: string): Promise<void> {
     await this.groups.closeInvite(organizerUid(auth), id);
   }
 }

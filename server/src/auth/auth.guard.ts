@@ -27,10 +27,15 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const header = request.headers.authorization;
     const value = Array.isArray(header) ? header[0] : header;
+    // `token_invalid` tells clients to refresh; other 401s (a wrong PIN) must not trigger that.
     if (!value?.startsWith('Bearer ')) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException({ code: 'token_invalid' });
     }
-    request.auth = await this.sessions.verifyAccess(value.slice('Bearer '.length));
+    try {
+      request.auth = await this.sessions.verifyAccess(value.slice('Bearer '.length));
+    } catch {
+      throw new UnauthorizedException({ code: 'token_invalid' });
+    }
     return true;
   }
 }

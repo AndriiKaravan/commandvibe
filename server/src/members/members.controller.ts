@@ -1,3 +1,4 @@
+import { IdPipe } from '../common/id.pipe';
 import { Body, Controller, ForbiddenException, Get, HttpCode, Param, Patch, Post, Put } from '@nestjs/common';
 import { CurrentAuth } from '../auth/current-subject.decorator';
 import { VerifiedAccess } from '../auth/session.service';
@@ -39,7 +40,7 @@ export class MembersController {
 
   /** Owner sees pending members too; active members see active ones. */
   @Get('groups/:id/members')
-  async list(@CurrentAuth() auth: VerifiedAccess, @Param('id') groupId: string): Promise<MemberView[]> {
+  async list(@CurrentAuth() auth: VerifiedAccess, @Param('id', IdPipe) groupId: string): Promise<MemberView[]> {
     const group = await this.groups.getFor(auth.subject, groupId);
     const isOwner = auth.subject.kind === 'organizer' && auth.subject.id === group.ownerUid;
     const all = await this.members.list(groupId);
@@ -48,19 +49,19 @@ export class MembersController {
 
   @Post('groups/:id/members/:memberId/approve')
   @HttpCode(204)
-  approve(@CurrentAuth() auth: VerifiedAccess, @Param('id') id: string, @Param('memberId') memberId: string) {
+  approve(@CurrentAuth() auth: VerifiedAccess, @Param('id', IdPipe) id: string, @Param('memberId', IdPipe) memberId: string) {
     return this.members.approve(organizerUid(auth), id, memberId);
   }
 
   @Post('groups/:id/members/:memberId/remove')
   @HttpCode(204)
-  remove(@CurrentAuth() auth: VerifiedAccess, @Param('id') id: string, @Param('memberId') memberId: string) {
+  remove(@CurrentAuth() auth: VerifiedAccess, @Param('id', IdPipe) id: string, @Param('memberId', IdPipe) memberId: string) {
     return this.members.remove(organizerUid(auth), id, memberId);
   }
 
   @Post('groups/:id/members/:memberId/reset-pin')
   @HttpCode(204)
-  resetPin(@CurrentAuth() auth: VerifiedAccess, @Param('id') id: string, @Param('memberId') memberId: string) {
+  resetPin(@CurrentAuth() auth: VerifiedAccess, @Param('id', IdPipe) id: string, @Param('memberId', IdPipe) memberId: string) {
     return this.members.resetPin(organizerUid(auth), id, memberId);
   }
 
@@ -68,8 +69,8 @@ export class MembersController {
   @HttpCode(204)
   rename(
     @CurrentAuth() auth: VerifiedAccess,
-    @Param('id') id: string,
-    @Param('memberId') memberId: string,
+    @Param('id', IdPipe) id: string,
+    @Param('memberId', IdPipe) memberId: string,
     @Body() body: { displayName?: string },
   ) {
     return this.members.rename(organizerUid(auth), id, memberId, body?.displayName ?? '');

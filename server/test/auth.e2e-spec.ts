@@ -19,7 +19,17 @@ describe('AuthController', () => {
   const http = () => request(app.getHttpServer());
 
   it('should refuse a protected route without a token', async () => {
-    expect((await http().get('/auth/me')).status).toBe(401);
+    const response = await http().get('/auth/me');
+    expect(response.status).toBe(401);
+    expect(response.body.code).toBe('token_invalid');
+  });
+
+  it('should mark a revoked token as token_invalid so clients know to refresh', async () => {
+    const tokens = await sessions.issue({ kind: 'member', id: 'm9', groupId: 'g1' }, 'e2e');
+    const { sessionId } = await sessions.verifyAccess(tokens.accessToken);
+    await sessions.revoke(sessionId);
+    const response = await http().get('/auth/me').set('authorization', `Bearer ${tokens.accessToken}`);
+    expect(response.body.code).toBe('token_invalid');
   });
 
   it('should return the subject for a valid access token', async () => {

@@ -17,6 +17,11 @@ export interface SessionRepository {
   create(session: Session): Promise<void>;
   get(id: string): Promise<Session | undefined>;
   update(id: string, patch: Partial<Omit<Session, 'id'>>): Promise<void>;
+  /**
+   * Replaces the refresh hash only if it still equals [expectedHash]; false when the
+   * session is gone, revoked or the hash already moved on (a reuse or a lost race).
+   */
+  rotateRefresh(id: string, expectedHash: string, nextHash: string): Promise<boolean>;
   /** Revokes every open session of the subject (organizer uid or member id). */
   revokeAllFor(subjectId: string, at: Date): Promise<void>;
 }
@@ -29,7 +34,18 @@ export interface GroupRepository {
   findByInviteHash(hash: string): Promise<Group | undefined>;
 }
 
+/** Result of reserving one PIN attempt before the (slow) hash check. */
+export type PinAttempt =
+  | { kind: 'attempt'; attempt: number; pinHash: string | undefined }
+  | { kind: 'locked'; lockedUntil: Date };
+
 export interface MemberRepository {
+  /**
+   * Atomically counts one PIN attempt: refuses while locked, starts a fresh
+   * series after an expired lock, and sets the lock on attempt [max].
+   * Parallel callers therefore get at most [max] attempts.
+   */
+  reservePinAttempt(groupId: string, id: string, now: Date, max: number, lockMs: number): Promise<PinAttempt>;
   /** Creates the member atomically with its name reservation. */
   createUnique(member: Member): Promise<Member>;
   get(groupId: string, id: string): Promise<Member | undefined>;

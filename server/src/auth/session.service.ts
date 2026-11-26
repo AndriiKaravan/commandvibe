@@ -71,7 +71,11 @@ export class SessionService {
       throw new UnauthorizedException();
     }
     const next = newToken(32);
-    await this.sessions.update(id, { refreshTokenHash: hashToken(next) });
+    if (!(await this.sessions.rotateRefresh(id, session.refreshTokenHash, hashToken(next)))) {
+      // Another refresh with the same token won the race: treat as reuse.
+      await this.sessions.update(id, { revokedAt: this.now() });
+      throw new UnauthorizedException();
+    }
     return this.tokens(id, session.subject, next);
   }
 

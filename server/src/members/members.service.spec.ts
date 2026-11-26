@@ -149,6 +149,15 @@ describe('MembersService', () => {
       expect((await statusOf(service.returning(token, 'Olena', '1234', 'x'))).status).toBe(200);
     });
 
+    it('should not let parallel wrong PINs get past the lock', async () => {
+      const { token } = await memberWithPin();
+      const answers = await Promise.all(
+        Array.from({ length: 40 }, (_, i) => statusOf(service.returning(token, 'Olena', String(1000 + i), 'x'))),
+      );
+      expect(answers.filter((a) => a.status === 401)).toHaveLength(4);
+      expect(answers.filter((a) => a.status === 429)).toHaveLength(36);
+    });
+
     it('should not reset the failure counter on a new request', async () => {
       const { token, member } = await memberWithPin();
       await statusOf(service.returning(token, 'Olena', '0000', 'x'));

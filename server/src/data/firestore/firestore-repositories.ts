@@ -1,10 +1,13 @@
+import { createHash } from 'node:crypto';
 import { FieldValue, Firestore, Timestamp } from 'firebase-admin/firestore';
 import { Group, Member, MemberSecrets, Organizer, Session } from '../models';
+import { nextPinAttempt } from '../pin-attempts';
 import {
   GroupRepository,
   MemberRepository,
   NameTakenError,
   OrganizerRepository,
+  PinAttempt,
   SessionRepository,
 } from '../repositories';
 
@@ -51,8 +54,8 @@ function convert(value: unknown, leaf: (value: unknown) => unknown): unknown {
   return value;
 }
 
-// Document ids cannot contain '/', and name keys are free text.
-const nameDocId = (nameKey: string): string => encodeURIComponent(nameKey);
+// Name keys are free text ('.', '..', '__x__' are invalid document ids); a hash never is.
+const nameDocId = (nameKey: string): string => createHash('sha256').update(nameKey).digest('hex');
 
 class FirestoreOrganizers implements OrganizerRepository {
   constructor(private readonly db: Firestore) {}
@@ -79,6 +82,18 @@ class FirestoreSessions implements SessionRepository {
 
   async update(id: string, patch: Partial<Omit<Session, 'id'>>): Promise<void> {
     await this.db.doc(`sessions/${id}`).update(toPatch(patch));
+  }
+
+  async rotateRefresh(id: string, expectedHash: string, nextHash: string): Promise<boolean> {
+    return this.db.runTransaction(async (tx) => {
+      const ref = this.db.doc(`sessions/${id}`);
+      const current = (await tx.get(ref)).data();
+      if (!current || current.revokedAt || current.refreshTokenHash !== expectedHash) {
+        return false;
+      }
+      tx.update(ref, { refreshTokenHash: nextHash });
+      return true;
+    });
   }
 
   async revokeAllFor(subjectId: string, at: Date): Promise<void> {
@@ -171,6 +186,19 @@ class FirestoreMembers implements MemberRepository {
         tx.create(this.nameRef(groupId, patch.nameKey), { memberId: id });
       }
       tx.update(this.memberRef(groupId, id), toPatch(patch));
+    });
+  }
+
+  async reservePinAttempt(groupId: string, id: string, now: Date, max: number, lockMs: number): Promise<PinAttempt> {
+    return this.db.runTransaction(async (tx) => {
+      const ref = this.secretsRef(groupId, id);
+      const secrets: MemberSecrets = { pinFailures: 0, ...fromStore<MemberSecrets>((await tx.get(ref)).data()) };
+      const next = nextPinAttempt(secrets, now, max, lockMs);
+      if (next.kind === 'locked') {
+        return next;
+      }
+      tx.set(ref, toPatch(next.patch), { merge: true });
+      return { kind: 'attempt', attempt: next.attempt, pinHash: secrets.pinHash };
     });
   }
 

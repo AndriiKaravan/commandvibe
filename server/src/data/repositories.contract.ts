@@ -72,6 +72,15 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
       expect(await repos.members.list(group.id)).toHaveLength(1);
     });
 
+    it('should accept names that are awkward as storage keys', async () => {
+      const group = aGroup();
+      await repos.groups.create(group);
+      for (const name of ['.', '..', '__init__', 'a/b', 'Олена']) {
+        await expect(repos.members.createUnique(aMember(group.id, name))).resolves.toBeDefined();
+      }
+      expect((await repos.members.findByName(group.id, '..'))?.displayName).toBe('..');
+    });
+
     it('should allow the same name in another group', async () => {
       const first = aGroup();
       const second = aGroup();
@@ -124,6 +133,33 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
       expect(await repos.members.secrets(group.id, member.id)).toEqual({ pinFailures: 0 });
       await repos.members.updateSecrets(group.id, member.id, { pinHash: 'x', pinFailures: 2 });
       expect(await repos.members.secrets(group.id, member.id)).toEqual({ pinHash: 'x', pinFailures: 2 });
+    });
+
+    it('should hand out at most 5 PIN attempts to parallel callers, then lock', async () => {
+      const group = aGroup();
+      await repos.groups.create(group);
+      const member = await repos.members.createUnique(aMember(group.id, 'Olena'));
+      await repos.members.updateSecrets(group.id, member.id, { pinHash: 'h' });
+      const now = new Date(Date.UTC(2026, 11, 1));
+      const results = await Promise.all(
+        Array.from({ length: 12 }, () => repos.members.reservePinAttempt(group.id, member.id, now, 5, 900_000)),
+      );
+      expect(results.filter((r) => r.kind === 'attempt')).toHaveLength(5);
+      expect(results.filter((r) => r.kind === 'locked')).toHaveLength(7);
+      const secrets = await repos.members.secrets(group.id, member.id);
+      expect(secrets.pinFailures).toBe(5);
+      expect(secrets.lockedUntil?.getTime()).toBe(now.getTime() + 900_000);
+    });
+
+    it('should start a fresh series after the lock expires', async () => {
+      const group = aGroup();
+      await repos.groups.create(group);
+      const member = await repos.members.createUnique(aMember(group.id, 'Olena'));
+      const lockedAt = new Date(Date.UTC(2026, 11, 1));
+      await repos.members.updateSecrets(group.id, member.id, { pinHash: 'h', pinFailures: 5, lockedUntil: lockedAt });
+      const later = new Date(lockedAt.getTime() + 1);
+      const result = await repos.members.reservePinAttempt(group.id, member.id, later, 5, 900_000);
+      expect(result).toEqual({ kind: 'attempt', attempt: 1, pinHash: 'h' });
     });
 
     it('should clear a secret field patched with undefined', async () => {

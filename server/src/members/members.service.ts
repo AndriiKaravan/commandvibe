@@ -114,27 +114,21 @@ export class MembersService {
   ): Promise<IssuedTokens & { member: MemberView }> {
     const group = await this.openGroup(token);
     const member = await this.members.findByName(group.id, nameKeyOf(String(rawName ?? '')));
-    const secrets = member && member.status !== 'removed' ? await this.members.secrets(group.id, member.id) : undefined;
-    if (!member || !secrets?.pinHash) {
+    const known = member && member.status !== 'removed' ? (await this.members.secrets(group.id, member.id)).pinHash : undefined;
+    if (!member || !known) {
       throw new UnauthorizedException({ code: 'no_such_login' });
     }
-    const nowMs = this.now().getTime();
-    if (secrets.lockedUntil && secrets.lockedUntil.getTime() > nowMs) {
-      throw this.locked(secrets.lockedUntil.getTime() - nowMs);
+    const now = this.now();
+    // The attempt is counted before the slow hash check, so parallel guesses cannot share one counter value.
+    const reserved = await this.members.reservePinAttempt(group.id, member.id, now, maxPinFailures, pinLockSeconds * 1000);
+    if (reserved.kind === 'locked') {
+      throw this.locked(reserved.lockedUntil.getTime() - now.getTime());
     }
-    // An expired lock starts a fresh series of attempts.
-    const failures = secrets.lockedUntil ? 0 : secrets.pinFailures;
-    if (!(await this.pins.verify(secrets.pinHash, String(pin ?? '')))) {
-      const next = failures + 1;
-      if (next >= maxPinFailures) {
-        await this.members.updateSecrets(group.id, member.id, {
-          pinFailures: next,
-          lockedUntil: new Date(nowMs + pinLockSeconds * 1000),
-        });
+    if (!reserved.pinHash || !(await this.pins.verify(reserved.pinHash, String(pin ?? '')))) {
+      if (reserved.attempt >= maxPinFailures) {
         throw this.locked(pinLockSeconds * 1000);
       }
-      await this.members.updateSecrets(group.id, member.id, { pinFailures: next, lockedUntil: undefined });
-      throw new UnauthorizedException({ code: 'wrong_pin', attemptsLeft: maxPinFailures - next });
+      throw new UnauthorizedException({ code: 'wrong_pin', attemptsLeft: maxPinFailures - reserved.attempt });
     }
     await this.members.updateSecrets(group.id, member.id, { pinFailures: 0, lockedUntil: undefined });
     return { ...(await this.issue(member, deviceInfo)), member: memberView(member) };

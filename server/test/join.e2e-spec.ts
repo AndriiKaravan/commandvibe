@@ -63,6 +63,12 @@ describe('Join by group link', () => {
     expect((await http().get(`/groups/${groupId}`).set('authorization', memberAuth)).status).toBe(401);
   });
 
+  it('should refuse ids that are not ours before they reach a database path', async () => {
+    const { auth, groupId } = await organizerWithGroup();
+    expect((await http().get('/groups/..%2Fsessions').set('authorization', auth)).status).toBe(400);
+    expect((await http().post(`/groups/${groupId}/members/m%2Fprivate%2Fsecrets/remove`).set('authorization', auth)).status).toBe(400);
+  });
+
   it('should list members to the owner with pending ones', async () => {
     const { auth, groupId, token } = await organizerWithGroup();
     await http().post('/join').send({ token, displayName: 'Olena' });

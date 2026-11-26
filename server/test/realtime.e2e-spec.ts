@@ -91,6 +91,29 @@ describe('Group realtime', () => {
     expect((await socket.next((f) => f.t === 'ack' && f.id === orgId)).denied).toBeDefined();
   });
 
+  it('should tell a pending member about the approval on their own topic', async () => {
+    const { ownerToken, groupId, token } = await groupWith(true);
+    const olena = await join(token, 'Olena');
+    const socket = await socketFor(olena.accessToken);
+    const subId = socket.subscribe(`member:${olena.memberId}`);
+    await socket.next((f) => f.t === 'ack' && f.id === subId && Array.isArray(f.ok));
+    await http()
+      .post(`/groups/${groupId}/members/${olena.memberId}/approve`)
+      .set('authorization', `Bearer ${ownerToken}`)
+      .expect(204);
+    const event = await socket.next((f) => f.t === 'event' && f.type === 'member.approved');
+    expect(event.topic).toBe(`member:${olena.memberId}`);
+  });
+
+  it("should deny someone else's personal topic", async () => {
+    const { token } = await groupWith();
+    const olena = await join(token, 'Olena');
+    const taras = await join(token, 'Taras');
+    const socket = await socketFor(olena.accessToken);
+    const subId = socket.subscribe(`member:${taras.memberId}`);
+    expect((await socket.next((f) => f.t === 'ack' && f.id === subId)).denied).toBeDefined();
+  });
+
   it("should close the removed member's socket with 4403", async () => {
     const { ownerToken, groupId, token } = await groupWith();
     const olena = await join(token, 'Olena');

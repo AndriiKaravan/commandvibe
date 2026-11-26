@@ -1,9 +1,11 @@
 import { Group, Member, MemberSecrets, Organizer, Session } from '../models';
+import { nextPinAttempt } from '../pin-attempts';
 import {
   GroupRepository,
   MemberRepository,
   NameTakenError,
   OrganizerRepository,
+  PinAttempt,
   SessionRepository,
 } from '../repositories';
 
@@ -40,6 +42,15 @@ class MemorySessions implements SessionRepository {
     if (item) {
       this.items.set(id, { ...item, ...copy(patch) });
     }
+  }
+
+  async rotateRefresh(id: string, expectedHash: string, nextHash: string): Promise<boolean> {
+    const item = this.items.get(id);
+    if (!item || item.revokedAt || item.refreshTokenHash !== expectedHash) {
+      return false;
+    }
+    this.items.set(id, { ...item, refreshTokenHash: nextHash });
+    return true;
   }
 
   async revokeAllFor(subjectId: string, at: Date): Promise<void> {
@@ -111,6 +122,18 @@ class MemoryMembers implements MemberRepository {
       throw new NameTakenError();
     }
     this.items.set(id, { ...item, ...copy(patch) });
+  }
+
+  // No await between read and write, so this is atomic on the event loop.
+  async reservePinAttempt(groupId: string, id: string, now: Date, max: number, lockMs: number): Promise<PinAttempt> {
+    const key = `${groupId}/${id}`;
+    const secrets = this.secretsById.get(key) ?? { pinFailures: 0 };
+    const next = nextPinAttempt(secrets, now, max, lockMs);
+    if (next.kind === 'attempt') {
+      this.secretsById.set(key, { ...secrets, ...next.patch });
+      return { kind: 'attempt', attempt: next.attempt, pinHash: secrets.pinHash };
+    }
+    return next;
   }
 
   async secrets(groupId: string, id: string): Promise<MemberSecrets> {

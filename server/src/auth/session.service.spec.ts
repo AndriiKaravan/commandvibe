@@ -54,6 +54,12 @@ describe('SessionService', () => {
     await expect(service.verifyAccess(second.accessToken)).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
+  it('should let only one of two simultaneous refreshes win', async () => {
+    const tokens = await service.issue(member, 'test');
+    const results = await Promise.allSettled([service.refresh(tokens.refreshToken), service.refresh(tokens.refreshToken)]);
+    expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
+  });
+
   it('should reject an expired access token', async () => {
     const tokens = await service.issue(member, 'test');
     now += (15 * 60 + 1) * 1000;

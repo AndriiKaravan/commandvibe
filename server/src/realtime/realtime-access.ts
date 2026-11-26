@@ -8,6 +8,10 @@ import { RealtimeOptions, RealtimeService, SessionInfo, VerifiedToken } from '..
 export const groupTopic = (groupId: string): string => `group:${groupId}`;
 /** Owner topic: what only the organizer sees (pending members, complaints). */
 export const ownerTopic = (groupId: string): string => `org:${groupId}`;
+/** Personal topic: approval and other news for one member, readable even while pending. */
+export const memberTopic = (memberId: string): string => `member:${memberId}`;
+
+const topicPattern = /^(group|org|member):([a-f0-9]{20})$/;
 
 @Injectable()
 export class RealtimeAccess {
@@ -27,10 +31,15 @@ export class RealtimeAccess {
   }
 
   async authorizeSubscribe(session: SessionInfo, topic: string): Promise<boolean> {
-    const [kind, groupId] = topic.split(':');
-    if (!groupId || (kind !== 'group' && kind !== 'org')) {
+    const match = topicPattern.exec(topic);
+    if (!match) {
       return false;
     }
+    const [, kind, id] = match;
+    if (kind === 'member') {
+      return session.claims.kind === 'member' && session.userId === id;
+    }
+    const groupId = id;
     const group = await this.groups.get(groupId);
     if (!group) {
       return false;
@@ -70,6 +79,7 @@ export class RealtimeMemberEvents implements MemberEvents {
   }
 
   approved(groupId: string, memberId: string): void {
+    this.realtime.publish(memberTopic(memberId), 'member.approved', { groupId });
     this.realtime.publish(groupTopic(groupId), 'member.joined', { memberId });
     this.realtime.refreshTopics(memberId);
   }
