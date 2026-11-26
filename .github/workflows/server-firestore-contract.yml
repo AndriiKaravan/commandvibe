@@ -1,0 +1,44 @@
+# Runs the repository contract suite against the Firestore emulator (needs Java, which the dev Mac lacks).
+# Manual only: run it from the Actions tab before sending traffic to a new server revision.
+name: server-firestore-contract
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - run: npm ci
+
+      # A demo-* project id keeps the emulator fully offline: no real project, no credentials.
+      - name: Contract tests on the Firestore emulator
+        run: >
+          npx --yes firebase-tools@14 emulators:exec
+          --only firestore
+          --project demo-commandvibe
+          --config ../firebase.json
+          "npx jest src/data"
+
+      - name: Unit and e2e tests (memory storage)
+        run: npx jest && npx jest --config ./test/jest-e2e.json

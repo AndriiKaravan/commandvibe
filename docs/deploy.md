@@ -14,6 +14,12 @@
    і доступ сервісному акаунту Cloud Run: `roles/secretmanager.secretAccessor`.
 3. **Перший деплой сервісу**: `FIRST_DEPLOY=1 tool/deploy_api.sh` — створює `commandvibe-api` (europe-central2, `min/max-instances=1`, `--timeout=3600 --concurrency=1000`, App Check `monitor`).
 
+## Контрактні тести Firestore (до першого трафіку)
+
+Репозиторії Firestore перевіряє той самий контрактний набір, що й пам'ять (`server/src/data/repositories.contract.ts`), але лише на емуляторі, якому потрібна Java.
+- **Без локальної Java:** GitHub → Actions → `server-firestore-contract` → Run workflow (лише ручний запуск; емулятор з проєктом `demo-commandvibe`, без доступу до справжнього Firebase).
+- **Локально з Java 11+:** `tool/firestore_contract.sh`.
+
 ## Звичайний цикл
 
 1. `tool/deploy_api.sh` → ревізія `candidate` без трафіку; друкує її URL.
