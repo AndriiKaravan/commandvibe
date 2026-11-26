@@ -148,7 +148,7 @@
 ### Task 8: Екрани входу — організатор, учасник, PIN
 
 **Files:**
-- Create: `app/lib/features/organizer_auth/{data/organizer_auth_repository.dart, ui/organizer_login_view.dart, ui/organizer_login_view_model.dart}`, `app/lib/core/platform/organizer_sign_in.dart` (+ `_web.dart`: popup, при `auth/popup-blocked` і `auth/operation-not-supported-in-this-environment` → redirect; `_io.dart`: `signInWithProvider`)
+- Create: `app/lib/features/organizer_auth/{data/organizer_auth_repository.dart, ui/organizer_login_view.dart, ui/organizer_login_view_model.dart}`, `app/lib/core/platform/organizer_sign_in.dart` (+ `_web.dart`: popup, при `auth/popup-blocked` і `auth/operation-not-supported-in-this-environment` → redirect; `FirebaseOptions.authDomain` = домен сторінки (`Uri.base.host`; Hosting віддає `/__/auth/handler` на кожному своєму домені), бо браузери з блоком сторонніх cookie ламають redirect, коли authDomain ≠ домен застосунку (спайк: redirect з `firebaseapp.com` → `redirect result: none`); в OAuth-клієнті — redirect URI `https://<домен>/__/auth/handler` для кожного домену (налаштовує власник); `_io.dart`: `signInWithProvider`)
 - Create: `app/lib/features/groups/{data/groups_repository.dart, ui/create_group_view.dart, ui/create_group_view_model.dart, ui/share_invite_view.dart}`
 - Create: `app/lib/features/join/{data/join_repository.dart, ui/join_view.dart, ui/join_view_model.dart, ui/pin_setup_view.dart, ui/returning_view.dart}`
 - Create: `app/lib/l10n/app_uk.arb`, `app/lib/l10n/app_en.arb`
