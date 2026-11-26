@@ -20,9 +20,9 @@ export class FakeFirebase implements Pick<FirebaseService, 'verifyIdToken'> {
 
 /** Boots the real application module on a random port for e2e tests. */
 export async function createTestApp(
-  options: { firebase?: FakeFirebase; appCheckMode?: AppCheckMode } = {},
+  options: { firebase?: FakeFirebase; appCheckMode?: AppCheckMode; testSeed?: boolean } = {},
 ): Promise<INestApplication> {
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule.forRoot({ storage: 'memory' })] })
+  const moduleRef = await Test.createTestingModule({ imports: [AppModule.forRoot({ storage: 'memory', testSeed: options.testSeed })] })
     .overrideProvider(FirebaseService)
     .useValue(options.firebase ?? new FakeFirebase())
     .overrideProvider(APP_CHECK_MODE)

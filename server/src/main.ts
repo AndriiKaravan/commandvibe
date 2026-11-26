@@ -21,7 +21,9 @@ export function configureApp(app: INestApplication): void {
 
 async function bootstrap(): Promise<void> {
   const storage = process.env.STORAGE === 'memory' ? 'memory' : 'firestore';
-  const app = await NestFactory.create(AppModule.forRoot({ storage }));
+  // The seed route never exists outside NODE_ENV=test with memory storage.
+  const testSeed = process.env.NODE_ENV === 'test' && storage === 'memory';
+  const app = await NestFactory.create(AppModule.forRoot({ storage, testSeed }));
   configureApp(app);
   await app.listen(Number(process.env.PORT ?? 3000), '0.0.0.0');
 }
