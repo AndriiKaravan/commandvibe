@@ -46,3 +46,6 @@ ui-debug.log
 
 # Local Claude settings
 .claude/settings.local.json
+
+# Agent worktrees
+.claude/worktrees/
