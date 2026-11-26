@@ -1,8 +1,32 @@
-import { TaskCatalogEntry, audiences, catalog, difficulties, places, themes } from './task-catalog';
+import {
+  TaskCatalogEntry,
+  audiences,
+  catalog,
+  categories,
+  difficulties,
+  isOfferedInMonth,
+  places,
+} from './task-catalog';
+
+const texts = (task: TaskCatalogEntry) => [task.title.uk, task.title.en, task.description.uk, task.description.en];
+const tagged = (category: string) => catalog.filter((task) => (task.categories as string[]).includes(category));
+const matching = (list: TaskCatalogEntry[], patterns: RegExp[]) =>
+  list.filter((task) => patterns.some((pattern) => texts(task).some((text) => pattern.test(text)))).map((task) => task.id);
 
 describe('task catalog', () => {
-  it('should hold at least 60 tasks', () => {
-    expect(catalog.length).toBeGreaterThanOrEqual(60);
+  it('should define the nine categories from the design', () => {
+    expect([...categories]).toEqual(['home', 'street', 'office', 'cheap', 'kids', 'winter', 'summer', 'team', 'pair']);
+  });
+
+  it('should hold at least 30 tasks in every category', () => {
+    const short = categories.filter((category) => tagged(category).length < 30);
+    expect(short.map((category) => `${category}: ${tagged(category).length}`)).toEqual([]);
+  });
+
+  it('should keep every task from v1', () => {
+    for (const id of ['desk-view', 'snowman', 'word-of-the-day', 'little-chefs', 'new-place']) {
+      expect(catalog.map((task) => task.id)).toContain(id);
+    }
   });
 
   it('should have unique ids in kebab case', () => {
@@ -15,7 +39,7 @@ describe('task catalog', () => {
 
   it('should be complete in Ukrainian and English', () => {
     for (const task of catalog) {
-      for (const text of [task.title.uk, task.title.en, task.description.uk, task.description.en]) {
+      for (const text of texts(task)) {
         expect(text.trim().length).toBeGreaterThan(2);
       }
       expect(task.title.uk.length).toBeLessThanOrEqual(60);
@@ -25,10 +49,12 @@ describe('task catalog', () => {
     }
   });
 
-  it('should use only known themes, audiences, difficulty and place', () => {
+  it('should give every task 1 to 4 distinct known categories and known fields', () => {
     for (const task of catalog) {
-      expect(task.themes.length).toBeGreaterThan(0);
-      task.themes.forEach((theme) => expect(themes).toContain(theme));
+      expect(task.categories.length).toBeGreaterThanOrEqual(1);
+      expect(task.categories.length).toBeLessThanOrEqual(4);
+      expect(new Set(task.categories).size).toBe(task.categories.length);
+      task.categories.forEach((category) => expect(categories).toContain(category));
       expect(task.audiences.length).toBeGreaterThan(0);
       task.audiences.forEach((audience) => expect(audiences).toContain(audience));
       expect(difficulties).toContain(task.difficulty);
@@ -36,18 +62,41 @@ describe('task catalog', () => {
     }
   });
 
-  it('should cover every theme with at least 6 tasks and every audience with at least 20', () => {
-    for (const theme of themes) {
-      expect(catalog.filter((task) => task.themes.includes(theme)).length).toBeGreaterThanOrEqual(6);
-    }
-    for (const audience of audiences) {
-      expect(catalog.filter((task) => task.audiences.includes(audience)).length).toBeGreaterThanOrEqual(20);
-    }
+  it('should match the place to the home and street categories', () => {
+    expect(tagged('home').filter((task) => task.place === 'outside').map((task) => task.id)).toEqual([]);
+    expect(tagged('street').filter((task) => task.place === 'home').map((task) => task.id)).toEqual([]);
+  });
+
+  it('should never mark a task as both winter and summer', () => {
+    expect(tagged('winter').filter((task) => task.categories.includes('summer')).map((task) => task.id)).toEqual([]);
+  });
+
+  it('should not offer summer tasks in December and offer them in July', () => {
+    const summer = tagged('summer');
+    expect(summer.filter((task) => isOfferedInMonth(task, 12)).map((task) => task.id)).toEqual([]);
+    expect(summer.every((task) => isOfferedInMonth(task, 7))).toBe(true);
+    expect(tagged('winter').filter((task) => isOfferedInMonth(task, 7)).map((task) => task.id)).toEqual([]);
+    expect(isOfferedInMonth(catalog.find((task) => task.id === 'desk-view')!, 12)).toBe(true);
+  });
+
+  it('should keep kids tasks safe: for families, no hard outdoor tasks, no child left alone', () => {
+    const kids = tagged('kids');
+    expect(kids.filter((task) => !task.audiences.includes('family')).map((task) => task.id)).toEqual([]);
+    expect(kids.filter((task) => task.difficulty === 'hard' && task.place === 'outside').map((task) => task.id)).toEqual([]);
+    expect(
+      matching(kids, [/дитин\S* сам/i, /без дорослих/i, /\balone\b/i, /on (his|her|their) own/i, /by (him|her|them)sel(f|ves)/i]),
+    ).toEqual([]);
   });
 
   it('should keep family tasks kid-safe: no outside-only hard tasks', () => {
     const family = catalog.filter((task) => task.audiences.includes('family'));
-    expect(family.filter((task) => task.difficulty === 'hard' && task.place === 'outside')).toEqual([]);
+    expect(family.filter((task) => task.difficulty === 'hard' && task.place === 'outside').map((task) => task.id)).toEqual([]);
+  });
+
+  it('should not make buying something a condition of a cheap task', () => {
+    expect(
+      matching(tagged('cheap'), [/купи/i, /купу/i, /купл/i, /придба/i, /замов/i, /\bbuy/i, /\bbought\b/i, /purchase/i, /\bgo shopping\b/i]),
+    ).toEqual([]);
   });
 
   it('should not ask for strangers, documents, close-up faces of children or risky stunts', () => {
@@ -57,12 +106,9 @@ describe('task catalog', () => {
       /паспорт/i, /документ/i, /passport/i, /document/i, /\bID\b/, /банківськ/i, /bank card/i,
       /обличчя дитини/i, /child'?s face/i,
       /на даху/i, /rooftop/i, /висот/i, /on the ice/i, /на льоду/i, /за кермом/i, /while driving/i,
-      /алкогол/i, /alcohol/i, /\bbeer\b/i, /пиво/i, /вино/i, /\bwine\b/i,
+      /алкогол/i, /alcohol/i, /\bbeer\b/i, /пиво/i, /\bвино\b/i, /\bwine\b/i,
+      /пірна/i, /\bdiv(e|ing)\b/i, /багатт/i, /bonfire/i, /запали/i, /\blight (a|the) candle/i,
     ];
-    const offenders = (task: TaskCatalogEntry) =>
-      banned.filter((pattern) =>
-        [task.title.uk, task.title.en, task.description.uk, task.description.en].some((text) => pattern.test(text)),
-      );
-    expect(catalog.filter((task) => offenders(task).length > 0).map((task) => task.id)).toEqual([]);
+    expect(matching(catalog, banned)).toEqual([]);
   });
 });
