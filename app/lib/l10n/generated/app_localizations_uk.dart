@@ -164,4 +164,8 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get signOut => 'Вийти';
+
+  @override
+  String get organizerOwnLink =>
+      'Ти вже увійшов на цьому пристрої як організатор. Щоб грати як учасник, відкрий посилання на іншому пристрої або в іншому браузері.';
 }

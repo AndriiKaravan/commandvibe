@@ -8,6 +8,7 @@ enum JoinStatus {
   submitting,
   joined,
   pending,
+  organizerSignedIn,
   nameTaken,
   invalidName,
   closed,
@@ -18,10 +19,17 @@ enum JoinStatus {
 
 /// The invite screen: group preview, then the name.
 class JoinViewModel extends ChangeNotifier {
-  JoinViewModel(this._repository, {required this.token});
+  JoinViewModel(
+    this._repository, {
+    required this.token,
+    Future<bool> Function()? isOrganizerSignedIn,
+  }) : _isOrganizerSignedIn = isOrganizerSignedIn ?? (() async => false);
 
   final JoinRepository _repository;
   final String token;
+
+  // Joining would overwrite the organizer's session on this device.
+  final Future<bool> Function() _isOrganizerSignedIn;
 
   JoinStatus _status = JoinStatus.loading;
   InvitePreview? _preview;
@@ -36,13 +44,20 @@ class JoinViewModel extends ChangeNotifier {
     _set(JoinStatus.loading);
     try {
       _preview = await _repository.preview(token);
-      _set(JoinStatus.ready);
+      _set(
+        await _isOrganizerSignedIn()
+            ? JoinStatus.organizerSignedIn
+            : JoinStatus.ready,
+      );
     } on Exception catch (error) {
       _set(_statusFor(error));
     }
   }
 
   Future<void> submit(String rawName) async {
+    if (_status == JoinStatus.organizerSignedIn) {
+      return;
+    }
     final name = rawName.trim();
     if (name.isEmpty || name.length > 40) {
       _set(JoinStatus.invalidName);

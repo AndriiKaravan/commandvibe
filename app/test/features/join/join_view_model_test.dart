@@ -50,6 +50,9 @@ class FakeJoinRepository implements JoinRepository {
 
   @override
   Future<void> setPin(String pin) async {}
+
+  @override
+  Future<String> myStatus() async => memberStatus;
 }
 
 void main() {
@@ -110,6 +113,21 @@ void main() {
       expect(viewModel.status, JoinStatus.invalidName);
       expect(repository.joinedNames, isEmpty);
     });
+
+    test(
+      'should not let an organizer replace their session by joining their own link',
+      () async {
+        final organizerView = JoinViewModel(
+          repository,
+          token: 'token-1234567890abcd',
+          isOrganizerSignedIn: () async => true,
+        );
+        await organizerView.load();
+        expect(organizerView.status, JoinStatus.organizerSignedIn);
+        await organizerView.submit('Olena');
+        expect(repository.joinedNames, isEmpty);
+      },
+    );
 
     test('should report a network failure', () async {
       repository.previewError = NetworkException('offline');

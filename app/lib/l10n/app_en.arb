@@ -47,5 +47,6 @@
   "approve": "Approve",
   "remove": "Remove",
   "you": "you",
-  "signOut": "Sign out"
+  "signOut": "Sign out",
+  "organizerOwnLink": "You are signed in as the organizer on this device. To play as a member, open the link on another device or browser."
 }

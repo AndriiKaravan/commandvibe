@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:commandvibe/core/api/api_exception.dart';
 import 'package:commandvibe/features/groups/data/groups_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:ks_core/ks_core.dart';
@@ -23,6 +24,7 @@ class GroupHomeViewModel extends ChangeNotifier {
   List<GroupMember> _members = const [];
   String _groupName = '';
   bool _revoked = false;
+  bool _loadFailed = false;
   bool _disposed = false;
 
   List<GroupMember> get members => _members;
@@ -33,6 +35,9 @@ class GroupHomeViewModel extends ChangeNotifier {
   /// True when the server took this member's access away; the view signs out.
   bool get revoked => _revoked;
 
+  /// True when the last load failed for a reason other than lost access (e.g. offline).
+  bool get loadFailed => _loadFailed;
+
   void start() {
     _follow('group:$groupId');
     if (isOwner) {
@@ -40,15 +45,15 @@ class GroupHomeViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> approve(String memberId) async {
+  Future<void> approve(String memberId) => _guard(() async {
     await _repository.approve(groupId, memberId);
-    await _reload();
-  }
+    await _load();
+  });
 
-  Future<void> remove(String memberId) async {
+  Future<void> remove(String memberId) => _guard(() async {
     await _repository.remove(groupId, memberId);
-    await _reload();
-  }
+    await _load();
+  });
 
   void _follow(String topic) {
     final subscription = _realtime.subscribe(topic);
@@ -68,7 +73,30 @@ class GroupHomeViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> _reload() async {
+  Future<void> _reload() => _guard(_load);
+
+  /// Runs [action]; a refused session or group becomes [revoked], other failures [loadFailed].
+  Future<void> _guard(Future<void> Function() action) async {
+    try {
+      await action();
+      _loadFailed = false;
+    } on ApiException catch (error) {
+      if (error.statusCode == 401 ||
+          error.statusCode == 403 ||
+          error.statusCode == 404) {
+        _revoked = true;
+      } else {
+        _loadFailed = true;
+      }
+    } on NetworkException {
+      _loadFailed = true;
+    }
+    if (!_disposed) {
+      notifyListeners();
+    }
+  }
+
+  Future<void> _load() async {
     final results = await Future.wait([
       _repository.group(groupId),
       _repository.members(groupId),
@@ -78,7 +106,6 @@ class GroupHomeViewModel extends ChangeNotifier {
     }
     _groupName = (results[0] as GroupSummary).name;
     _members = results[1] as List<GroupMember>;
-    notifyListeners();
   }
 
   @override

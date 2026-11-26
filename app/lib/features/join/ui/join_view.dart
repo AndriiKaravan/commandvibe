@@ -23,9 +23,12 @@ class _JoinViewState extends State<JoinView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_viewModel == null) {
+      final services = ServicesScope.of(context);
       _viewModel = JoinViewModel(
-        ServicesScope.of(context).join,
+        services.join,
         token: widget.token,
+        isOrganizerSignedIn: () async =>
+            (await services.sessions.read())?.isOrganizer ?? false,
       )..addListener(_onChange);
       _viewModel!.load();
     }
@@ -41,7 +44,7 @@ class _JoinViewState extends State<JoinView> {
       context.go(
         status == JoinStatus.joined
             ? '/pin?g=${member.groupId}'
-            : '/g/${member.groupId}',
+            : '/waiting?m=${member.id}&g=${member.groupId}',
       );
     }
   }
@@ -81,6 +84,32 @@ class _JoinViewState extends State<JoinView> {
         final message = _message(l10n, status);
         if (status == JoinStatus.closed) {
           return GlassPage(children: [FormMessage(message!)]);
+        }
+        if (status == JoinStatus.organizerSignedIn) {
+          return GlassPage(
+            children: [
+              Text(
+                l10n.joinTitle(viewModel.groupName),
+                style: text.headlineSmall,
+              ),
+              FormMessage(l10n.organizerOwnLink, isError: false),
+              FilledButton(
+                onPressed: () async {
+                  final session = await ServicesScope.of(
+                    context,
+                  ).sessions.read();
+                  if (context.mounted) {
+                    context.go(
+                      session?.groupId == null
+                          ? '/org/new'
+                          : '/g/${session!.groupId}',
+                    );
+                  }
+                },
+                child: Text(l10n.toGroup),
+              ),
+            ],
+          );
         }
         return GlassPage(
           children: [

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:commandvibe/core/api/api_client.dart';
 import 'package:commandvibe/core/app_config.dart';
 import 'package:commandvibe/core/platform/invite_link_source.dart';
+import 'package:commandvibe/core/platform/observed_session_store.dart';
 import 'package:commandvibe/core/platform/organizer_sign_in.dart';
 import 'package:commandvibe/core/platform/photo_source.dart';
 import 'package:commandvibe/core/platform/session_store.dart';
@@ -17,7 +18,7 @@ import 'package:go_router/go_router.dart';
 import 'package:ks_core/ks_core.dart';
 
 AppServices createPlatformServices() {
-  final sessions = SessionStore.platform();
+  final sessions = ObservedSessionStore(SessionStore.platform());
   late final RealtimeClient realtime;
   final api = ApiClient(
     baseUri: AppConfig.apiUri,

@@ -1,7 +1,9 @@
+import 'package:commandvibe/core/platform/observed_session_store.dart';
 import 'package:commandvibe/core/platform/session_store.dart';
 import 'package:commandvibe/features/groups/ui/create_group_view.dart';
 import 'package:commandvibe/features/groups/ui/group_home_view.dart';
 import 'package:commandvibe/features/join/ui/join_view.dart';
+import 'package:commandvibe/features/join/ui/pending_view.dart';
 import 'package:commandvibe/features/join/ui/pin_setup_view.dart';
 import 'package:commandvibe/features/join/ui/returning_view.dart';
 import 'package:commandvibe/features/organizer_auth/ui/organizer_login_view.dart';
@@ -27,8 +29,9 @@ Future<String> initialLocation(
   return session.isOrganizer ? '/org/new' : '/';
 }
 
+/// [sessions] doubles as the router's refresh signal: a lost session leaves protected pages at once.
 GoRouter createRouter({
-  required SessionStore sessions,
+  required ObservedSessionStore sessions,
   required String initial,
 }) {
   Future<String?> requireSession(GoRouterState state) async =>
@@ -36,6 +39,7 @@ GoRouter createRouter({
 
   return GoRouter(
     initialLocation: initial,
+    refreshListenable: sessions,
     routes: [
       GoRoute(path: '/', builder: (context, state) => const WelcomeView()),
       GoRoute(
@@ -49,6 +53,14 @@ GoRouter createRouter({
                 ReturningView(token: state.uri.queryParameters['t'] ?? ''),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/waiting',
+        redirect: (context, state) => requireSession(state),
+        builder: (context, state) => PendingView(
+          memberId: state.uri.queryParameters['m'] ?? '',
+          groupId: state.uri.queryParameters['g'] ?? '',
+        ),
       ),
       GoRoute(
         path: '/pin',

@@ -85,7 +85,7 @@ void main() {
         if (request.headers['authorization'] == 'Bearer new-access') {
           return _json({'ok': true});
         }
-        return http.Response('', 401);
+        return _json({'code': 'token_invalid'}, 401);
       });
       expect(await client.get('/me'), {'ok': true});
       expect(refreshCalls, 1);
@@ -103,7 +103,7 @@ void main() {
         if (request.headers['authorization'] == 'Bearer new-access') {
           return _json({'path': request.url.path});
         }
-        return http.Response('', 401);
+        return _json({'code': 'token_invalid'}, 401);
       });
       final first = client.get('/a');
       final second = client.get('/b');
@@ -117,7 +117,9 @@ void main() {
     });
 
     test('should clear the session when refresh fails', () async {
-      final client = clientWith((request) async => http.Response('', 401));
+      final client = clientWith(
+        (request) async => _json({'code': 'token_invalid'}, 401),
+      );
       await expectLater(
         client.get('/me'),
         throwsA(
@@ -125,6 +127,41 @@ void main() {
         ),
       );
       expect(store.session, isNull);
+    });
+
+    test('should not refresh on a 401 that is not about the token', () async {
+      final client = clientWith((request) async {
+        if (request.url.path == '/auth/refresh') {
+          return refreshOk(request);
+        }
+        return _json({'code': 'wrong_pin', 'attemptsLeft': 3}, 401);
+      });
+      await expectLater(
+        client.post('/join/returning', body: {'pin': '0000'}),
+        throwsA(isA<ApiException>().having((e) => e.code, 'code', 'wrong_pin')),
+      );
+      expect(refreshCalls, 0);
+      expect(store.session, isNotNull);
+    });
+
+    test('should retry with tokens another refresh already stored', () async {
+      final client = clientWith((request) async {
+        if (request.url.path == '/auth/refresh') {
+          return refreshOk(request);
+        }
+        if (request.headers['authorization'] == 'Bearer newer-access') {
+          return _json({'ok': true});
+        }
+        // Another tab rotated the tokens while this request was in flight.
+        store.session = _old.withTokens(
+          accessToken: 'newer-access',
+          refreshToken: 'newer-refresh',
+          expiresAt: 300,
+        );
+        return _json({'code': 'token_invalid'}, 401);
+      });
+      expect(await client.get('/me'), {'ok': true});
+      expect(refreshCalls, 0);
     });
 
     test('should surface the error code from the body', () async {

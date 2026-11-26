@@ -110,6 +110,16 @@ class _GroupHomeViewState extends State<GroupHomeView> {
                         ),
                       const SizedBox(height: 16),
                     ],
+                    if (viewModel.loadFailed)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          l10n.networkError,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
                     Text(l10n.membersTitle, style: text.titleMedium),
                     for (final member in viewModel.active)
                       _MemberTile(

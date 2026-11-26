@@ -50,6 +50,9 @@ abstract interface class JoinRepository {
   Future<JoinedMember> returning(String token, String displayName, String pin);
 
   Future<void> setPin(String pin);
+
+  /// `pending`, `active` or `removed` for the signed-in member.
+  Future<String> myStatus();
 }
 
 class ApiJoinRepository implements JoinRepository {
@@ -87,6 +90,10 @@ class ApiJoinRepository implements JoinRepository {
 
   @override
   Future<void> setPin(String pin) => _api.put('/me/pin', body: {'pin': pin});
+
+  @override
+  Future<String> myStatus() async =>
+      ((await _api.get('/me')) as Map<String, dynamic>)['status'] as String;
 
   Future<JoinedMember> _signIn(String path, Map<String, String> body) async {
     final json = await _api.post(path, body: body) as Map<String, dynamic>;

@@ -165,4 +165,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signOut => 'Sign out';
+
+  @override
+  String get organizerOwnLink =>
+      'You are signed in as the organizer on this device. To play as a member, open the link on another device or browser.';
 }

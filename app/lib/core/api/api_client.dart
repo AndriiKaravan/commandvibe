@@ -33,7 +33,7 @@ class ApiClient {
     if (session == null || !forceRefresh) {
       return session?.accessToken;
     }
-    return (await _refreshShared(session))?.accessToken;
+    return (await _renewAfter(session))?.accessToken;
   }
 
   Future<Object?> get(String path) => _send('GET', path);
@@ -52,14 +52,36 @@ class ApiClient {
   Future<Object?> _send(String method, String path, {Object? body}) async {
     final session = await _sessions.read();
     var response = await _request(method, path, body, session);
-    if (response.statusCode == 401 && session != null) {
-      final renewed = await _refreshShared(session);
+    if (session != null && _isTokenFailure(response)) {
+      final renewed = await _renewAfter(session);
       if (renewed == null) {
         throw ApiException(401, code: 'session_expired');
       }
       response = await _request(method, path, body, renewed);
     }
     return _decode(response);
+  }
+
+  // Only the server's `token_invalid` means "refresh"; other 401s (a wrong PIN) are answers.
+  static bool _isTokenFailure(http.Response response) {
+    if (response.statusCode != 401) {
+      return false;
+    }
+    final body = _tryJson(response.body);
+    return body is Map && body['code'] == 'token_invalid';
+  }
+
+  /// Fresh tokens after [used] was refused: someone else (another request or tab) may have
+  /// rotated them already, and refreshing the old token again would count as reuse.
+  Future<StoredSession?> _renewAfter(StoredSession used) async {
+    final stored = await _sessions.read();
+    if (stored == null) {
+      return null;
+    }
+    if (stored.refreshToken != used.refreshToken) {
+      return stored;
+    }
+    return _refreshShared(stored);
   }
 
   Future<http.Response> _request(

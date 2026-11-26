@@ -385,6 +385,12 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Вийти'**
   String get signOut;
+
+  /// No description provided for @organizerOwnLink.
+  ///
+  /// In uk, this message translates to:
+  /// **'Ти вже увійшов на цьому пристрої як організатор. Щоб грати як учасник, відкрий посилання на іншому пристрої або в іншому браузері.'**
+  String get organizerOwnLink;
 }
 
 class _AppLocalizationsDelegate

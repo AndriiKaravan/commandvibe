@@ -2,7 +2,7 @@ import 'package:commandvibe/core/api/api_client.dart';
 import 'package:commandvibe/core/platform/invite_link_source.dart';
 import 'package:commandvibe/core/platform/organizer_sign_in.dart';
 import 'package:commandvibe/core/platform/photo_source.dart';
-import 'package:commandvibe/core/platform/session_store.dart';
+import 'package:commandvibe/core/platform/observed_session_store.dart';
 import 'package:commandvibe/features/groups/data/groups_repository.dart';
 import 'package:commandvibe/features/join/data/join_repository.dart';
 import 'package:commandvibe/features/organizer_auth/data/organizer_auth_repository.dart';
@@ -20,7 +20,7 @@ class AppServices {
     required this.organizerSignIn,
   });
 
-  final SessionStore sessions;
+  final ObservedSessionStore sessions;
   final ApiClient api;
   final RealtimeClient realtime;
   final InviteLinkSource inviteLinks;

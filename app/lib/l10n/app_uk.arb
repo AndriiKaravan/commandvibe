@@ -20,9 +20,21 @@
   "copied": "Скопійовано",
   "toGroup": "До групи",
   "joinTitle": "Вас запросили в «{groupName}»",
-  "@joinTitle": { "placeholders": { "groupName": { "type": "String" } } },
+  "@joinTitle": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
   "joinMembers": "Уже в грі: {count}",
-  "@joinMembers": { "placeholders": { "count": { "type": "int" } } },
+  "@joinMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "yourNameLabel": "Твоє ім'я або нікнейм",
   "joinAction": "Увійти в гру",
   "alreadyPlaying": "Я вже в грі",
@@ -40,9 +52,21 @@
   "returningTitle": "Повернення в гру",
   "returningAction": "Увійти",
   "wrongPin": "Невірний PIN. Лишилось спроб: {attemptsLeft}",
-  "@wrongPin": { "placeholders": { "attemptsLeft": { "type": "int" } } },
+  "@wrongPin": {
+    "placeholders": {
+      "attemptsLeft": {
+        "type": "int"
+      }
+    }
+  },
   "pinLocked": "Забагато спроб. Спробуй через {minutes} хв або попроси організатора скинути PIN.",
-  "@pinLocked": { "placeholders": { "minutes": { "type": "int" } } },
+  "@pinLocked": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "noSuchLogin": "Не знайшли такого гравця з PIN. Перевір ім'я.",
   "networkError": "Немає зв'язку з сервером. Перевір інтернет.",
   "genericError": "Щось пішло не так. Спробуй ще раз.",
@@ -51,5 +75,6 @@
   "approve": "Підтвердити",
   "remove": "Вилучити",
   "you": "ти",
-  "signOut": "Вийти"
+  "signOut": "Вийти",
+  "organizerOwnLink": "Ти вже увійшов на цьому пристрої як організатор. Щоб грати як учасник, відкрий посилання на іншому пристрої або в іншому браузері."
 }

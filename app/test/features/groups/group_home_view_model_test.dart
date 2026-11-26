@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:commandvibe/core/api/api_exception.dart';
 import 'package:commandvibe/features/groups/data/groups_repository.dart';
 import 'package:commandvibe/features/groups/ui/group_home_view_model.dart';
 import 'package:flutter/foundation.dart';
@@ -37,6 +38,18 @@ class CountingGroupsRepository implements GroupsRepository {
   @override
   Future<CreatedGroup> create(CreateGroupRequest request) =>
       throw UnimplementedError();
+}
+
+class RefusingGroupsRepository extends CountingGroupsRepository {
+  RefusingGroupsRepository(this.error);
+
+  final Exception error;
+
+  @override
+  Future<GroupSummary> group(String groupId) async => throw error;
+
+  @override
+  Future<List<GroupMember>> members(String groupId) async => throw error;
 }
 
 /// A subscription the test can deny, which ks_core's fake does not expose.
@@ -150,6 +163,39 @@ void main() {
       expect(realtime.subscribedTopics, containsAll(['group:g1', 'org:g1']));
       owner.dispose();
     });
+
+    test(
+      'should report lost access instead of an empty page when the server refuses',
+      () async {
+        final refusing = RefusingGroupsRepository(ApiException(403));
+        final member = GroupHomeViewModel(
+          refusing,
+          realtime,
+          groupId: 'g1',
+          isOwner: false,
+        )..start();
+        await pumpEventQueue();
+        expect(member.revoked, isTrue);
+        member.dispose();
+      },
+    );
+
+    test(
+      'should show an error, not crash, when loading fails otherwise',
+      () async {
+        final failing = RefusingGroupsRepository(NetworkException('offline'));
+        final member = GroupHomeViewModel(
+          failing,
+          realtime,
+          groupId: 'g1',
+          isOwner: false,
+        )..start();
+        await pumpEventQueue();
+        expect(member.revoked, isFalse);
+        expect(member.loadFailed, isTrue);
+        member.dispose();
+      },
+    );
 
     test('should leave the group screen when access is revoked', () async {
       final deniable = DeniableRealtime();

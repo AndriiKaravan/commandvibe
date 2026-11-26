@@ -14,6 +14,9 @@ class RecordingJoinRepository implements JoinRepository {
   }
 
   @override
+  Future<String> myStatus() async => 'active';
+
+  @override
   Future<InvitePreview> preview(String token) => throw UnimplementedError();
 
   @override
