@@ -12,14 +12,14 @@ FirebaseOptions firebaseOptionsFor(Uri page) {
   return switch (defaultTargetPlatform) {
     TargetPlatform.android => const FirebaseOptions(
       apiKey: 'AIzaSyCqzMDl2qig7LqF7uqyRP4t3c9QyuXyOtk',
-      appId: '1:889388170734:android:51dd309a185b0425cce2ff',
+      appId: '1:889388170734:android:0936be4b6e199318cce2ff',
       messagingSenderId: '889388170734',
       projectId: 'commandvibe-ks',
       storageBucket: 'commandvibe-ks.firebasestorage.app',
     ),
     TargetPlatform.iOS => const FirebaseOptions(
       apiKey: 'AIzaSyBp9d7jgHVFaYshvb_QCG4bz60aAej54ZE',
-      appId: '1:889388170734:ios:ac3e3fb442c20969cce2ff',
+      appId: '1:889388170734:ios:283b6e4f51ee9eb2cce2ff',
       messagingSenderId: '889388170734',
       projectId: 'commandvibe-ks',
       storageBucket: 'commandvibe-ks.firebasestorage.app',

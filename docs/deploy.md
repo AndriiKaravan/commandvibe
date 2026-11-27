@@ -3,7 +3,7 @@
 ## Що вже є
 
 - Firebase-проєкт `commandvibe-ks` (Blaze); Hosting-сайт `commandvibe-ks` → `commandvibe.karavanstudio.dev`.
-- Firebase-застосунки: Web, Android `dev.karavanstudio.commandvibe`, iOS `dev.karavanstudio.commandvibe`; клієнтські опції — у `app/lib/core/firebase_options.dart` (не секрет).
+- Firebase-застосунки: Web, Android `com.karavanstudio.commandvibe` (SHA-256 ключа підпису Google Play), iOS `com.karavanstudio.commandvibe` (Team ID `8RTTR2Y32B`); App Links і Universal Links — `app/web/.well-known`; клієнтські опції — у `app/lib/core/firebase_options.dart` (не секрет).
 - Увімкнені API: Cloud Run, Cloud Build, Artifact Registry.
 
 ## Перед першим запуском — рішення власника
