@@ -168,4 +168,164 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get organizerOwnLink =>
       'Ти вже увійшов на цьому пристрої як організатор. Щоб грати як учасник, відкрий посилання на іншому пристрої або в іншому браузері.';
+
+  @override
+  String get groupCalendarButton => 'Календар гри';
+
+  @override
+  String get calendarTitle => 'Календар гри';
+
+  @override
+  String get gameSetupTitle => 'Налаштування гри';
+
+  @override
+  String startDateLabel(String date) {
+    return 'Перший день: $date';
+  }
+
+  @override
+  String daysLabel(int count) {
+    return 'Тривалість: $count дн.';
+  }
+
+  @override
+  String openTimeLabel(String time) {
+    return 'Час відкриття дня: $time';
+  }
+
+  @override
+  String get modeLabel => 'Як обираємо завдання';
+
+  @override
+  String get modeAuto => 'Авто щодня';
+
+  @override
+  String get modeRoulette => 'Рулетка';
+
+  @override
+  String get categoriesLabel => 'Теми завдань';
+
+  @override
+  String get categoryHome => 'Вдома';
+
+  @override
+  String get categoryStreet => 'Вулиця';
+
+  @override
+  String get categoryOffice => 'Офіс';
+
+  @override
+  String get categoryCheap => 'Дешево';
+
+  @override
+  String get categoryKids => 'З дітьми';
+
+  @override
+  String get categoryWinter => 'Зима';
+
+  @override
+  String get categorySummer => 'Літо';
+
+  @override
+  String get categoryTeam => 'Командне';
+
+  @override
+  String get categoryPair => 'Парне';
+
+  @override
+  String get saveGame => 'Скласти календар';
+
+  @override
+  String get setupStartInPast => 'Перший день не може бути в минулому.';
+
+  @override
+  String get setupInvalidDays => 'Тривалість — від 7 до 31 дня.';
+
+  @override
+  String get setupNoCategories => 'Обери хоча б одну тему.';
+
+  @override
+  String get setupGameStarted =>
+      'Гра вже почалась — налаштування змінити не можна.';
+
+  @override
+  String dayNumber(int number) {
+    return 'День $number';
+  }
+
+  @override
+  String get dayOpenState => 'відкрито';
+
+  @override
+  String get dayPickingState => 'обирає рулетка';
+
+  @override
+  String get otherTask => 'Інше';
+
+  @override
+  String get pickTask => 'З каталогу';
+
+  @override
+  String get ownTask => 'Своє';
+
+  @override
+  String get moveDayUp => 'Вище';
+
+  @override
+  String get moveDayDown => 'Нижче';
+
+  @override
+  String get editDayOpened => 'Цей день уже відкрився — змінити його не можна.';
+
+  @override
+  String get editNoMoreTasks => 'Більше немає нових завдань для цих тем.';
+
+  @override
+  String get editTaskInGame => 'Це завдання вже є в календарі.';
+
+  @override
+  String get calendarNotSetUp => 'Календар ще не складено.';
+
+  @override
+  String get setUpGame => 'Налаштувати гру';
+
+  @override
+  String get changeSettings => 'Змінити налаштування';
+
+  @override
+  String get catalogSearchHint => 'Пошук завдання';
+
+  @override
+  String get catalogAllCategories => 'Усі теми';
+
+  @override
+  String get catalogNothingFound => 'Нічого не знайдено.';
+
+  @override
+  String get ownTaskTitle => 'Своє завдання';
+
+  @override
+  String get ownTaskNameLabel => 'Назва';
+
+  @override
+  String get ownTaskDescriptionLabel => 'Опис';
+
+  @override
+  String get ownTaskNameEnLabel => 'Title (англійською, за бажанням)';
+
+  @override
+  String get ownTaskDescriptionEnLabel =>
+      'Description (англійською, за бажанням)';
+
+  @override
+  String get ownTaskNameInvalid => 'Введи назву до 60 символів.';
+
+  @override
+  String get ownTaskDescriptionInvalid => 'Введи опис до 220 символів.';
+
+  @override
+  String get saveTask => 'Зберегти';
+
+  @override
+  String get retry => 'Повторити';
 }

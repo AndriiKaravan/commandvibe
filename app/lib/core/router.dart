@@ -1,5 +1,7 @@
 import 'package:commandvibe/core/platform/observed_session_store.dart';
 import 'package:commandvibe/core/platform/session_store.dart';
+import 'package:commandvibe/features/calendar/ui/calendar_editor_view.dart';
+import 'package:commandvibe/features/calendar/ui/game_setup_view.dart';
 import 'package:commandvibe/features/groups/ui/create_group_view.dart';
 import 'package:commandvibe/features/groups/ui/group_home_view.dart';
 import 'package:commandvibe/features/join/ui/join_view.dart';
@@ -36,6 +38,15 @@ GoRouter createRouter({
 }) {
   Future<String?> requireSession(GoRouterState state) async =>
       await sessions.read() == null ? '/' : null;
+
+  // The calendar tools belong to the organizer; a member who opens the URL lands on the group.
+  Future<String?> requireOrganizer(GoRouterState state) async {
+    final session = await sessions.read();
+    if (session == null) {
+      return '/';
+    }
+    return session.isOrganizer ? null : '/g/${state.pathParameters['groupId']}';
+  }
 
   return GoRouter(
     initialLocation: initial,
@@ -87,6 +98,20 @@ GoRouter createRouter({
           groupId: state.pathParameters['groupId']!,
           sessions: sessions,
         ),
+        routes: [
+          GoRoute(
+            path: 'calendar',
+            redirect: (context, state) => requireOrganizer(state),
+            builder: (context, state) =>
+                CalendarEditorView(groupId: state.pathParameters['groupId']!),
+          ),
+          GoRoute(
+            path: 'setup',
+            redirect: (context, state) => requireOrganizer(state),
+            builder: (context, state) =>
+                GameSetupView(groupId: state.pathParameters['groupId']!),
+          ),
+        ],
       ),
     ],
   );

@@ -48,5 +48,83 @@
   "remove": "Remove",
   "you": "you",
   "signOut": "Sign out",
-  "organizerOwnLink": "You are signed in as the organizer on this device. To play as a member, open the link on another device or browser."
+  "organizerOwnLink": "You are signed in as the organizer on this device. To play as a member, open the link on another device or browser.",
+  "groupCalendarButton": "Game calendar",
+  "calendarTitle": "Game calendar",
+  "gameSetupTitle": "Game setup",
+  "startDateLabel": "First day: {date}",
+  "@startDateLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "daysLabel": "Length: {count} days",
+  "@daysLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "openTimeLabel": "Day opens at: {time}",
+  "@openTimeLabel": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "modeLabel": "How tasks are chosen",
+  "modeAuto": "Automatic daily",
+  "modeRoulette": "Roulette",
+  "categoriesLabel": "Task topics",
+  "categoryHome": "At home",
+  "categoryStreet": "Outdoors",
+  "categoryOffice": "Office",
+  "categoryCheap": "Cheap",
+  "categoryKids": "With kids",
+  "categoryWinter": "Winter",
+  "categorySummer": "Summer",
+  "categoryTeam": "Team",
+  "categoryPair": "Pairs",
+  "saveGame": "Build the calendar",
+  "setupStartInPast": "The first day cannot be in the past.",
+  "setupInvalidDays": "The game lasts from 7 to 31 days.",
+  "setupNoCategories": "Pick at least one topic.",
+  "setupGameStarted": "The game has started, so the setup can no longer change.",
+  "dayNumber": "Day {number}",
+  "@dayNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "dayOpenState": "open",
+  "dayPickingState": "roulette is choosing",
+  "otherTask": "Another",
+  "pickTask": "From catalog",
+  "ownTask": "Own task",
+  "moveDayUp": "Earlier",
+  "moveDayDown": "Later",
+  "editDayOpened": "This day has already opened and cannot be changed.",
+  "editNoMoreTasks": "There are no new tasks left for these topics.",
+  "editTaskInGame": "This task is already in the calendar.",
+  "calendarNotSetUp": "The calendar is not set up yet.",
+  "setUpGame": "Set up the game",
+  "changeSettings": "Change settings",
+  "catalogSearchHint": "Search tasks",
+  "catalogAllCategories": "All topics",
+  "catalogNothingFound": "Nothing found.",
+  "ownTaskTitle": "Your own task",
+  "ownTaskNameLabel": "Title",
+  "ownTaskDescriptionLabel": "Description",
+  "ownTaskNameEnLabel": "Title (English, optional)",
+  "ownTaskDescriptionEnLabel": "Description (English, optional)",
+  "ownTaskNameInvalid": "Enter a title up to 60 characters.",
+  "ownTaskDescriptionInvalid": "Enter a description up to 220 characters.",
+  "saveTask": "Save",
+  "retry": "Retry"
 }

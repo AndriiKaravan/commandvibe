@@ -169,4 +169,165 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get organizerOwnLink =>
       'You are signed in as the organizer on this device. To play as a member, open the link on another device or browser.';
+
+  @override
+  String get groupCalendarButton => 'Game calendar';
+
+  @override
+  String get calendarTitle => 'Game calendar';
+
+  @override
+  String get gameSetupTitle => 'Game setup';
+
+  @override
+  String startDateLabel(String date) {
+    return 'First day: $date';
+  }
+
+  @override
+  String daysLabel(int count) {
+    return 'Length: $count days';
+  }
+
+  @override
+  String openTimeLabel(String time) {
+    return 'Day opens at: $time';
+  }
+
+  @override
+  String get modeLabel => 'How tasks are chosen';
+
+  @override
+  String get modeAuto => 'Automatic daily';
+
+  @override
+  String get modeRoulette => 'Roulette';
+
+  @override
+  String get categoriesLabel => 'Task topics';
+
+  @override
+  String get categoryHome => 'At home';
+
+  @override
+  String get categoryStreet => 'Outdoors';
+
+  @override
+  String get categoryOffice => 'Office';
+
+  @override
+  String get categoryCheap => 'Cheap';
+
+  @override
+  String get categoryKids => 'With kids';
+
+  @override
+  String get categoryWinter => 'Winter';
+
+  @override
+  String get categorySummer => 'Summer';
+
+  @override
+  String get categoryTeam => 'Team';
+
+  @override
+  String get categoryPair => 'Pairs';
+
+  @override
+  String get saveGame => 'Build the calendar';
+
+  @override
+  String get setupStartInPast => 'The first day cannot be in the past.';
+
+  @override
+  String get setupInvalidDays => 'The game lasts from 7 to 31 days.';
+
+  @override
+  String get setupNoCategories => 'Pick at least one topic.';
+
+  @override
+  String get setupGameStarted =>
+      'The game has started, so the setup can no longer change.';
+
+  @override
+  String dayNumber(int number) {
+    return 'Day $number';
+  }
+
+  @override
+  String get dayOpenState => 'open';
+
+  @override
+  String get dayPickingState => 'roulette is choosing';
+
+  @override
+  String get otherTask => 'Another';
+
+  @override
+  String get pickTask => 'From catalog';
+
+  @override
+  String get ownTask => 'Own task';
+
+  @override
+  String get moveDayUp => 'Earlier';
+
+  @override
+  String get moveDayDown => 'Later';
+
+  @override
+  String get editDayOpened =>
+      'This day has already opened and cannot be changed.';
+
+  @override
+  String get editNoMoreTasks => 'There are no new tasks left for these topics.';
+
+  @override
+  String get editTaskInGame => 'This task is already in the calendar.';
+
+  @override
+  String get calendarNotSetUp => 'The calendar is not set up yet.';
+
+  @override
+  String get setUpGame => 'Set up the game';
+
+  @override
+  String get changeSettings => 'Change settings';
+
+  @override
+  String get catalogSearchHint => 'Search tasks';
+
+  @override
+  String get catalogAllCategories => 'All topics';
+
+  @override
+  String get catalogNothingFound => 'Nothing found.';
+
+  @override
+  String get ownTaskTitle => 'Your own task';
+
+  @override
+  String get ownTaskNameLabel => 'Title';
+
+  @override
+  String get ownTaskDescriptionLabel => 'Description';
+
+  @override
+  String get ownTaskNameEnLabel => 'Title (English, optional)';
+
+  @override
+  String get ownTaskDescriptionEnLabel => 'Description (English, optional)';
+
+  @override
+  String get ownTaskNameInvalid => 'Enter a title up to 60 characters.';
+
+  @override
+  String get ownTaskDescriptionInvalid =>
+      'Enter a description up to 220 characters.';
+
+  @override
+  String get saveTask => 'Save';
+
+  @override
+  String get retry => 'Retry';
 }

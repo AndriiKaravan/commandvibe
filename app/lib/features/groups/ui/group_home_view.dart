@@ -92,6 +92,17 @@ class _GroupHomeViewState extends State<GroupHomeView> {
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
+                    if (widget.isOwner)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: FilledButton.icon(
+                          key: const Key('open-calendar'),
+                          onPressed: () =>
+                              context.go('/g/${widget.groupId}/calendar'),
+                          icon: const Icon(Icons.calendar_month),
+                          label: Text(l10n.groupCalendarButton),
+                        ),
+                      ),
                     if (widget.isOwner && viewModel.pending.isNotEmpty) ...[
                       Text(l10n.pendingMembers, style: text.titleMedium),
                       for (final member in viewModel.pending)

@@ -391,6 +391,306 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Ти вже увійшов на цьому пристрої як організатор. Щоб грати як учасник, відкрий посилання на іншому пристрої або в іншому браузері.'**
   String get organizerOwnLink;
+
+  /// No description provided for @groupCalendarButton.
+  ///
+  /// In uk, this message translates to:
+  /// **'Календар гри'**
+  String get groupCalendarButton;
+
+  /// No description provided for @calendarTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Календар гри'**
+  String get calendarTitle;
+
+  /// No description provided for @gameSetupTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Налаштування гри'**
+  String get gameSetupTitle;
+
+  /// No description provided for @startDateLabel.
+  ///
+  /// In uk, this message translates to:
+  /// **'Перший день: {date}'**
+  String startDateLabel(String date);
+
+  /// No description provided for @daysLabel.
+  ///
+  /// In uk, this message translates to:
+  /// **'Тривалість: {count} дн.'**
+  String daysLabel(int count);
+
+  /// No description provided for @openTimeLabel.
+  ///
+  /// In uk, this message translates to:
+  /// **'Час відкриття дня: {time}'**
+  String openTimeLabel(String time);
+
+  /// No description provided for @modeLabel.
+  ///
+  /// In uk, this message translates to:
+  /// **'Як обираємо завдання'**
+  String get modeLabel;
+
+  /// No description provided for @modeAuto.
+  ///
+  /// In uk, this message translates to:
+  /// **'Авто щодня'**
+  String get modeAuto;
+
+  /// No description provided for @modeRoulette.
+  ///
+  /// In uk, this message translates to:
+  /// **'Рулетка'**
+  String get modeRoulette;
+
+  /// No description provided for @categoriesLabel.
+  ///
+  /// In uk, this message translates to:
+  /// **'Теми завдань'**
+  String get categoriesLabel;
+
+  /// No description provided for @categoryHome.
+  ///
+  /// In uk, this message translates to:
+  /// **'Вдома'**
+  String get categoryHome;
+
+  /// No description provided for @categoryStreet.
+  ///
+  /// In uk, this message translates to:
+  /// **'Вулиця'**
+  String get categoryStreet;
+
+  /// No description provided for @categoryOffice.
+  ///
+  /// In uk, this message translates to:
+  /// **'Офіс'**
+  String get categoryOffice;
+
+  /// No description provided for @categoryCheap.
+  ///
+  /// In uk, this message translates to:
+  /// **'Дешево'**
+  String get categoryCheap;
+
+  /// No description provided for @categoryKids.
+  ///
+  /// In uk, this message translates to:
+  /// **'З дітьми'**
+  String get categoryKids;
+
+  /// No description provided for @categoryWinter.
+  ///
+  /// In uk, this message translates to:
+  /// **'Зима'**
+  String get categoryWinter;
+
+  /// No description provided for @categorySummer.
+  ///
+  /// In uk, this message translates to:
+  /// **'Літо'**
+  String get categorySummer;
+
+  /// No description provided for @categoryTeam.
+  ///
+  /// In uk, this message translates to:
+  /// **'Командне'**
+  String get categoryTeam;
+
+  /// No description provided for @categoryPair.
+  ///
+  /// In uk, this message translates to:
+  /// **'Парне'**
+  String get categoryPair;
+
+  /// No description provided for @saveGame.
+  ///
+  /// In uk, this message translates to:
+  /// **'Скласти календар'**
+  String get saveGame;
+
+  /// No description provided for @setupStartInPast.
+  ///
+  /// In uk, this message translates to:
+  /// **'Перший день не може бути в минулому.'**
+  String get setupStartInPast;
+
+  /// No description provided for @setupInvalidDays.
+  ///
+  /// In uk, this message translates to:
+  /// **'Тривалість — від 7 до 31 дня.'**
+  String get setupInvalidDays;
+
+  /// No description provided for @setupNoCategories.
+  ///
+  /// In uk, this message translates to:
+  /// **'Обери хоча б одну тему.'**
+  String get setupNoCategories;
+
+  /// No description provided for @setupGameStarted.
+  ///
+  /// In uk, this message translates to:
+  /// **'Гра вже почалась — налаштування змінити не можна.'**
+  String get setupGameStarted;
+
+  /// No description provided for @dayNumber.
+  ///
+  /// In uk, this message translates to:
+  /// **'День {number}'**
+  String dayNumber(int number);
+
+  /// No description provided for @dayOpenState.
+  ///
+  /// In uk, this message translates to:
+  /// **'відкрито'**
+  String get dayOpenState;
+
+  /// No description provided for @dayPickingState.
+  ///
+  /// In uk, this message translates to:
+  /// **'обирає рулетка'**
+  String get dayPickingState;
+
+  /// No description provided for @otherTask.
+  ///
+  /// In uk, this message translates to:
+  /// **'Інше'**
+  String get otherTask;
+
+  /// No description provided for @pickTask.
+  ///
+  /// In uk, this message translates to:
+  /// **'З каталогу'**
+  String get pickTask;
+
+  /// No description provided for @ownTask.
+  ///
+  /// In uk, this message translates to:
+  /// **'Своє'**
+  String get ownTask;
+
+  /// No description provided for @moveDayUp.
+  ///
+  /// In uk, this message translates to:
+  /// **'Вище'**
+  String get moveDayUp;
+
+  /// No description provided for @moveDayDown.
+  ///
+  /// In uk, this message translates to:
+  /// **'Нижче'**
+  String get moveDayDown;
+
+  /// No description provided for @editDayOpened.
+  ///
+  /// In uk, this message translates to:
+  /// **'Цей день уже відкрився — змінити його не можна.'**
+  String get editDayOpened;
+
+  /// No description provided for @editNoMoreTasks.
+  ///
+  /// In uk, this message translates to:
+  /// **'Більше немає нових завдань для цих тем.'**
+  String get editNoMoreTasks;
+
+  /// No description provided for @editTaskInGame.
+  ///
+  /// In uk, this message translates to:
+  /// **'Це завдання вже є в календарі.'**
+  String get editTaskInGame;
+
+  /// No description provided for @calendarNotSetUp.
+  ///
+  /// In uk, this message translates to:
+  /// **'Календар ще не складено.'**
+  String get calendarNotSetUp;
+
+  /// No description provided for @setUpGame.
+  ///
+  /// In uk, this message translates to:
+  /// **'Налаштувати гру'**
+  String get setUpGame;
+
+  /// No description provided for @changeSettings.
+  ///
+  /// In uk, this message translates to:
+  /// **'Змінити налаштування'**
+  String get changeSettings;
+
+  /// No description provided for @catalogSearchHint.
+  ///
+  /// In uk, this message translates to:
+  /// **'Пошук завдання'**
+  String get catalogSearchHint;
+
+  /// No description provided for @catalogAllCategories.
+  ///
+  /// In uk, this message translates to:
+  /// **'Усі теми'**
+  String get catalogAllCategories;
+
+  /// No description provided for @catalogNothingFound.
+  ///
+  /// In uk, this message translates to:
+  /// **'Нічого не знайдено.'**
+  String get catalogNothingFound;
+
+  /// No description provided for @ownTaskTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Своє завдання'**
+  String get ownTaskTitle;
+
+  /// No description provided for @ownTaskNameLabel.
+  ///
+  /// In uk, this message translates to:
+  /// **'Назва'**
+  String get ownTaskNameLabel;
+
+  /// No description provided for @ownTaskDescriptionLabel.
+  ///
+  /// In uk, this message translates to:
+  /// **'Опис'**
+  String get ownTaskDescriptionLabel;
+
+  /// No description provided for @ownTaskNameEnLabel.
+  ///
+  /// In uk, this message translates to:
+  /// **'Title (англійською, за бажанням)'**
+  String get ownTaskNameEnLabel;
+
+  /// No description provided for @ownTaskDescriptionEnLabel.
+  ///
+  /// In uk, this message translates to:
+  /// **'Description (англійською, за бажанням)'**
+  String get ownTaskDescriptionEnLabel;
+
+  /// No description provided for @ownTaskNameInvalid.
+  ///
+  /// In uk, this message translates to:
+  /// **'Введи назву до 60 символів.'**
+  String get ownTaskNameInvalid;
+
+  /// No description provided for @ownTaskDescriptionInvalid.
+  ///
+  /// In uk, this message translates to:
+  /// **'Введи опис до 220 символів.'**
+  String get ownTaskDescriptionInvalid;
+
+  /// No description provided for @saveTask.
+  ///
+  /// In uk, this message translates to:
+  /// **'Зберегти'**
+  String get saveTask;
+
+  /// No description provided for @retry.
+  ///
+  /// In uk, this message translates to:
+  /// **'Повторити'**
+  String get retry;
 }
 
 class _AppLocalizationsDelegate

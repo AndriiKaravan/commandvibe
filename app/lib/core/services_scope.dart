@@ -3,6 +3,7 @@ import 'package:commandvibe/core/platform/invite_link_source.dart';
 import 'package:commandvibe/core/platform/organizer_sign_in.dart';
 import 'package:commandvibe/core/platform/photo_source.dart';
 import 'package:commandvibe/core/platform/observed_session_store.dart';
+import 'package:commandvibe/features/calendar/data/calendar_repository.dart';
 import 'package:commandvibe/features/groups/data/groups_repository.dart';
 import 'package:commandvibe/features/join/data/join_repository.dart';
 import 'package:commandvibe/features/organizer_auth/data/organizer_auth_repository.dart';
@@ -29,6 +30,7 @@ class AppServices {
 
   late final JoinRepository join = ApiJoinRepository(api, sessions);
   late final GroupsRepository groups = ApiGroupsRepository(api);
+  late final CalendarRepository calendar = ApiCalendarRepository(api);
   late final OrganizerAuthRepository organizerAuth = ApiOrganizerAuthRepository(
     api,
     sessions,

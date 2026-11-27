@@ -76,5 +76,83 @@
   "remove": "Вилучити",
   "you": "ти",
   "signOut": "Вийти",
-  "organizerOwnLink": "Ти вже увійшов на цьому пристрої як організатор. Щоб грати як учасник, відкрий посилання на іншому пристрої або в іншому браузері."
+  "organizerOwnLink": "Ти вже увійшов на цьому пристрої як організатор. Щоб грати як учасник, відкрий посилання на іншому пристрої або в іншому браузері.",
+  "groupCalendarButton": "Календар гри",
+  "calendarTitle": "Календар гри",
+  "gameSetupTitle": "Налаштування гри",
+  "startDateLabel": "Перший день: {date}",
+  "@startDateLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "daysLabel": "Тривалість: {count} дн.",
+  "@daysLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "openTimeLabel": "Час відкриття дня: {time}",
+  "@openTimeLabel": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "modeLabel": "Як обираємо завдання",
+  "modeAuto": "Авто щодня",
+  "modeRoulette": "Рулетка",
+  "categoriesLabel": "Теми завдань",
+  "categoryHome": "Вдома",
+  "categoryStreet": "Вулиця",
+  "categoryOffice": "Офіс",
+  "categoryCheap": "Дешево",
+  "categoryKids": "З дітьми",
+  "categoryWinter": "Зима",
+  "categorySummer": "Літо",
+  "categoryTeam": "Командне",
+  "categoryPair": "Парне",
+  "saveGame": "Скласти календар",
+  "setupStartInPast": "Перший день не може бути в минулому.",
+  "setupInvalidDays": "Тривалість — від 7 до 31 дня.",
+  "setupNoCategories": "Обери хоча б одну тему.",
+  "setupGameStarted": "Гра вже почалась — налаштування змінити не можна.",
+  "dayNumber": "День {number}",
+  "@dayNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "dayOpenState": "відкрито",
+  "dayPickingState": "обирає рулетка",
+  "otherTask": "Інше",
+  "pickTask": "З каталогу",
+  "ownTask": "Своє",
+  "moveDayUp": "Вище",
+  "moveDayDown": "Нижче",
+  "editDayOpened": "Цей день уже відкрився — змінити його не можна.",
+  "editNoMoreTasks": "Більше немає нових завдань для цих тем.",
+  "editTaskInGame": "Це завдання вже є в календарі.",
+  "calendarNotSetUp": "Календар ще не складено.",
+  "setUpGame": "Налаштувати гру",
+  "changeSettings": "Змінити налаштування",
+  "catalogSearchHint": "Пошук завдання",
+  "catalogAllCategories": "Усі теми",
+  "catalogNothingFound": "Нічого не знайдено.",
+  "ownTaskTitle": "Своє завдання",
+  "ownTaskNameLabel": "Назва",
+  "ownTaskDescriptionLabel": "Опис",
+  "ownTaskNameEnLabel": "Title (англійською, за бажанням)",
+  "ownTaskDescriptionEnLabel": "Description (англійською, за бажанням)",
+  "ownTaskNameInvalid": "Введи назву до 60 символів.",
+  "ownTaskDescriptionInvalid": "Введи опис до 220 символів.",
+  "saveTask": "Зберегти",
+  "retry": "Повторити"
 }
