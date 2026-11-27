@@ -180,14 +180,22 @@ class FirestoreMembers implements MemberRepository {
   }
 
   async createUnique(member: Member): Promise<Member> {
-    await this.db.runTransaction(async (tx) => {
-      const name = await tx.get(this.nameRef(member.groupId, member.nameKey));
-      if (name.exists) {
+    try {
+      await this.db.runTransaction(async (tx) => {
+        const name = await tx.get(this.nameRef(member.groupId, member.nameKey));
+        if (name.exists) {
+          throw new NameTakenError();
+        }
+        tx.create(this.nameRef(member.groupId, member.nameKey), { memberId: member.id });
+        tx.create(this.memberRef(member.groupId, member.id), toStore(member));
+      });
+    } catch (error) {
+      // Under contention the loser can reach the commit before it sees the winner's name: gRPC ALREADY_EXISTS (6).
+      if ((error as { code?: number }).code === 6) {
         throw new NameTakenError();
       }
-      tx.create(this.nameRef(member.groupId, member.nameKey), { memberId: member.id });
-      tx.create(this.memberRef(member.groupId, member.id), toStore(member));
-    });
+      throw error;
+    }
     return member;
   }
 
