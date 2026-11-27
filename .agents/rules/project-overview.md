@@ -1,9 +1,9 @@
 # CommandVibe — Project Overview
 
 **Дата оновлення:** 2026-11-27
-**Версія документа:** 2.3 (сервіс розгорнуто на Cloud Run; база Firestore з назвою `commandvibe` через `FIRESTORE_DATABASE`)
+**Версія документа:** 2.4 (веб на живому сайті; пакет `com.karavanstudio.commandvibe`; App Links і Universal Links для `/j/`)
 
-> **Статус:** хвиля 1, частина P1 реалізована (у `main`). API розгорнуто 27.11: Cloud Run `commandvibe-api` (ревізія `00002`, `https://commandvibe-api-889388170734.europe-central2.run.app`); веб на живому сайті — ще ні. Дизайн: `docs/specs/2026-11-19-photo-challenge-design.md` (розділ 2а має пріоритет). План: `docs/superpowers/plans/2026-11-26-wave1-roadmap.md`, `…-wave1-p1-foundation.md`.
+> **Статус:** хвиля 1, частина P1 реалізована (у `main`). API розгорнуто 27.11: Cloud Run `commandvibe-api` (ревізія `00002`, `https://commandvibe-api-889388170734.europe-central2.run.app`); веб — на живому сайті `commandvibe.karavanstudio.dev` (27.11). Дизайн: `docs/specs/2026-11-19-photo-challenge-design.md` (розділ 2а має пріоритет). План: `docs/superpowers/plans/2026-11-26-wave1-roadmap.md`, `…-wave1-p1-foundation.md`.
 
 ## Загальна інформація
 
@@ -27,7 +27,7 @@
   - `shared/realtime`, `shared/app_check` — копії бібліотек (sync із чистих клонів тегів ks_server v0.3.0, ks_core v0.6.2), не редагуються.
   - `testing/` — `/test/seed-group`, лише з `NODE_ENV=test` і пам'яттю.
 - **`app/`** — Flutter (Web/Android/iOS), feature-first, MVVM на ChangeNotifier, go_router:
-  - `core/platform/` — абстракції з реалізаціями для вебу й застосунків: `SessionStore` (localStorage / secure storage), `InviteLinkSource` (`/join?t=` / App Links `/j/`), `PhotoSource` (image_picker без зменшення — EXIF зберігається), `OrganizerSignIn` (popup→redirect / signInWithProvider).
+  - `core/platform/` — абстракції з реалізаціями для вебу й застосунків: `SessionStore` (localStorage / secure storage), `InviteLinkSource` (`/join?t=` / App Links і Universal Links `/j/`: пакет і bundle ID `com.karavanstudio.commandvibe`, `app/web/.well-known/assetlinks.json` і `apple-app-site-association` з Team ID `8RTTR2Y32B`; тест `app_links_config_test.dart` звіряє їх із нативними проєктами), `PhotoSource` (image_picker без зменшення — EXIF зберігається), `OrganizerSignIn` (popup→redirect / signInWithProvider).
   - `core/api/` — `ApiClient` (токен, `x-realtime-session`, один спільний refresh на `401`).
   - `core/theme/` — «Скло»: `GlassTokens` (макети E/E2), `GlassPanel` з запасним варіантом без розмиття.
   - `features/` — `welcome`, `organizer_auth`, `groups` (створення, поширення запрошення, головна групи з живим списком), `join` (приєднання, очікування підтвердження, PIN, повернення; організатор, що відкрив своє посилання, не перезаписує сесію).
@@ -84,8 +84,9 @@ Firestore (за репозиторіями): `organizers/{uid}` {email, displayN
 
 ## Історія версій
 
+- 2.4 (2026-11-27) — веб на живому сайті; пакет `com.*`; App Links і Universal Links.
 - 2.3 (2026-11-27) — перший деплой API; `FIRESTORE_DATABASE`.
 - 2.2 (2026-11-26) — каталог завдань v2 (див. `content/`).
-- 2.1 (2026-11-26) — виправлення за фінальним рев'ю P1 (див. вище); App Links / Universal Links ще не підключено (потрібні SHA-256 ключа релізу й Apple Team ID).
+- 2.1 (2026-11-26) — виправлення за фінальним рев'ю P1 (див. вище); App Links / Universal Links підключено у 2.4.
 - 2.0 (2026-11-26) — P1: сервер (сесії, вхід організатора, групи, приєднання, PIN, realtime, App Check, сторінка запрошення), застосунок Web/Android/iOS (вхід, створення групи, приєднання, PIN, живий список), каталог 76 завдань, скрипти деплою.
 - 1.0 (2026-11-26) — перший огляд за дизайном; коду не було.
