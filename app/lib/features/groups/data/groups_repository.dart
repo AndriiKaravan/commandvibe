@@ -64,6 +64,29 @@ class GroupSummary {
   final String ownerUid;
 }
 
+/// One row of the organizer's group list.
+@immutable
+class OwnedGroup {
+  const OwnedGroup({
+    required this.id,
+    required this.name,
+    required this.status,
+    required this.activeMembers,
+  });
+
+  factory OwnedGroup.fromJson(Map<String, dynamic> json) => OwnedGroup(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    status: json['status'] as String,
+    activeMembers: json['activeMembers'] as int,
+  );
+
+  final String id;
+  final String name;
+  final String status;
+  final int activeMembers;
+}
+
 @immutable
 class GroupMember {
   const GroupMember({
@@ -91,6 +114,12 @@ class GroupMember {
 abstract interface class GroupsRepository {
   Future<CreatedGroup> create(CreateGroupRequest request);
 
+  /// The groups the signed-in organizer owns, newest first.
+  Future<List<OwnedGroup>> owned();
+
+  /// Replaces the invite link; the old one stops working. Returns the new URL.
+  Future<String> rotateInvite(String groupId);
+
   Future<GroupSummary> group(String groupId);
 
   Future<List<GroupMember>> members(String groupId);
@@ -116,6 +145,23 @@ class ApiGroupsRepository implements GroupsRepository {
       name: group['name'] as String,
       inviteUrl: json['inviteUrl'] as String,
     );
+  }
+
+  @override
+  Future<List<OwnedGroup>> owned() async {
+    final json = await _api.get('/groups') as Map<String, dynamic>;
+    return (json['items'] as List<dynamic>)
+        .cast<Map<String, dynamic>>()
+        .map(OwnedGroup.fromJson)
+        .toList();
+  }
+
+  @override
+  Future<String> rotateInvite(String groupId) async {
+    final json =
+        await _api.post('/groups/$groupId/invite/rotate')
+            as Map<String, dynamic>;
+    return json['inviteUrl'] as String;
   }
 
   @override

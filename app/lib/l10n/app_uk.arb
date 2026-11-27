@@ -260,5 +260,23 @@
       }
     }
   },
-  "photoOpen": "Відкрити фото"
+  "photoOpen": "Відкрити фото",
+  "myGroupsTitle": "Мої групи",
+  "myGroupsFailed": "Не вдалося завантажити групи",
+  "myGroupsRetry": "Спробувати ще раз",
+  "myGroupsMembers": "Учасників: {count}",
+  "@myGroupsMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupStatusDraft": "Налаштування",
+  "groupStatusActive": "Гра триває",
+  "groupStatusFinished": "Завершено",
+  "groupInviteButton": "Запросити учасників",
+  "inviteRotateWarning": "Створимо нове посилання, а старе перестане діяти. Учасники, які вже в групі, зможуть увійти знову лише за новим посиланням.",
+  "inviteRotateButton": "Створити нове посилання",
+  "inviteFailed": "Не вдалося створити посилання — спробуй ще раз"
 }

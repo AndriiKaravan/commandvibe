@@ -18,7 +18,12 @@ describe('GroupsService', () => {
     const { group } = await service.create('org-1', { name: 'Office', timezone: 'Europe/Kyiv' });
     const members = await repos.members.list(group.id);
     expect(members).toHaveLength(1);
-    expect(members[0]).toMatchObject({ isOrganizer: true, organizerUid: 'org-1', status: 'active', displayName: 'Olena' });
+    expect(members[0]).toMatchObject({
+      isOrganizer: true,
+      organizerUid: 'org-1',
+      status: 'active',
+      displayName: 'Olena',
+    });
     expect(group.settings).toMatchObject({ approveNew: false });
   });
 
@@ -52,6 +57,19 @@ describe('GroupsService', () => {
     expect((await repos.groups.get(group.id))?.inviteClosed).toBe(false);
   });
 
+  it('should list only the groups of the organizer, newest first, with active member counts', async () => {
+    const first = await service.create('org-1', { name: 'First', timezone: 'Europe/Kyiv' });
+    await service.create('org-2', { name: 'Foreign', timezone: 'Europe/Kyiv', playsToo: false });
+    const clock = new Date(Date.now() + 1000);
+    const later = new GroupsService(repos.groups, repos.members, repos.organizers, () => clock, 'https://app.test');
+    const second = await later.create('org-1', { name: 'Second', timezone: 'Europe/Kyiv', playsToo: false });
+    const list = await service.listOwned('org-1');
+    expect(list.map((item) => item.id)).toEqual([second.group.id, first.group.id]);
+    expect(list.map((item) => item.activeMembers)).toEqual([0, 1]);
+    expect(list[0]).toMatchObject({ name: 'Second', status: 'draft' });
+    expect(JSON.stringify(list)).not.toContain('inviteTokenHash');
+  });
+
   it('should forbid group settings to a non-owner', async () => {
     const { group } = await service.create('org-1', { name: 'Office', timezone: 'Europe/Kyiv' });
     await expect(service.rotateInvite('org-2', group.id)).rejects.toBeInstanceOf(ForbiddenException);
@@ -59,7 +77,9 @@ describe('GroupsService', () => {
   });
 
   it('should reject an unknown time zone and an empty name', async () => {
-    await expect(service.create('org-1', { name: 'Office', timezone: 'Mars/Base' })).rejects.toThrow('invalid_timezone');
+    await expect(service.create('org-1', { name: 'Office', timezone: 'Mars/Base' })).rejects.toThrow(
+      'invalid_timezone',
+    );
     await expect(service.create('org-1', { name: '   ', timezone: 'Europe/Kyiv' })).rejects.toThrow('invalid_name');
   });
 
@@ -68,7 +88,9 @@ describe('GroupsService', () => {
     const [member] = await repos.members.list(group.id);
     await expect(service.getFor({ kind: 'organizer', id: 'org-1' }, group.id)).resolves.toMatchObject({ id: group.id });
     await expect(service.getFor({ kind: 'member', id: member.id, groupId: group.id }, group.id)).resolves.toBeDefined();
-    await expect(service.getFor({ kind: 'organizer', id: 'org-2' }, group.id)).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.getFor({ kind: 'organizer', id: 'org-2' }, group.id)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
     await expect(service.getFor({ kind: 'member', id: 'x', groupId: group.id }, group.id)).rejects.toBeInstanceOf(
       ForbiddenException,
     );

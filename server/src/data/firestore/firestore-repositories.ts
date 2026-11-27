@@ -142,6 +142,11 @@ class FirestoreGroups implements GroupRepository {
     return found.docs.map((doc) => fromStore<Group>(doc.data()) as Group).filter((group) => group.game);
   }
 
+  async listByOwner(ownerUid: string): Promise<Group[]> {
+    const found = await this.db.collection('groups').where('ownerUid', '==', ownerUid).get();
+    return found.docs.map((doc) => fromStore<Group>(doc.data()) as Group);
+  }
+
   async setStatus(id: string, expected: GroupStatus, next: GroupStatus): Promise<boolean> {
     return this.db.runTransaction(async (tx) => {
       const ref = this.db.doc(`groups/${id}`);

@@ -4,6 +4,8 @@ import 'package:commandvibe/features/calendar/ui/calendar_editor_view.dart';
 import 'package:commandvibe/features/calendar/ui/game_setup_view.dart';
 import 'package:commandvibe/features/groups/ui/create_group_view.dart';
 import 'package:commandvibe/features/groups/ui/group_home_view.dart';
+import 'package:commandvibe/features/groups/ui/invite_view.dart';
+import 'package:commandvibe/features/groups/ui/my_groups_view.dart';
 import 'package:commandvibe/features/join/ui/join_view.dart';
 import 'package:commandvibe/features/join/ui/pending_view.dart';
 import 'package:commandvibe/features/join/ui/pin_setup_view.dart';
@@ -30,7 +32,7 @@ Future<String> initialLocation(
   if (session.groupId != null) {
     return '/g/${session.groupId}';
   }
-  return session.isOrganizer ? '/org/new' : '/';
+  return session.isOrganizer ? '/org/groups' : '/';
 }
 
 /// [sessions] doubles as the router's refresh signal: a lost session leaves protected pages at once.
@@ -86,6 +88,15 @@ GoRouter createRouter({
         builder: (context, state) => const OrganizerLoginView(),
       ),
       GoRoute(
+        path: '/org/groups',
+        redirect: (context, state) async {
+          final session = await sessions.read();
+          return session?.isOrganizer == true ? null : '/org/login';
+        },
+        builder: (context, state) =>
+            MyGroupsView(showAll: state.uri.queryParameters['all'] == '1'),
+      ),
+      GoRoute(
         path: '/org/new',
         redirect: (context, state) async {
           final session = await sessions.read();
@@ -120,6 +131,12 @@ GoRouter createRouter({
             redirect: (context, state) => requireOrganizer(state),
             builder: (context, state) =>
                 ComplaintsView(groupId: state.pathParameters['groupId']!),
+          ),
+          GoRoute(
+            path: 'invite',
+            redirect: (context, state) => requireOrganizer(state),
+            builder: (context, state) =>
+                InviteView(groupId: state.pathParameters['groupId']!),
           ),
           GoRoute(
             path: 'setup',

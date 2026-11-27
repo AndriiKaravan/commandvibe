@@ -29,7 +29,7 @@ class _OrganizerLoginViewState extends State<OrganizerLoginView> {
   void _onChange() {
     if (_viewModel!.status == OrganizerLoginStatus.signedIn && mounted) {
       ServicesScope.of(context).realtime.authChanged();
-      context.go('/org/new');
+      context.go('/org/groups');
     }
   }
 

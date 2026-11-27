@@ -80,6 +80,13 @@ class _GroupHomeViewState extends State<GroupHomeView> {
             title: Text(viewModel.groupName),
             backgroundColor: Colors.transparent,
             actions: [
+              if (widget.isOwner)
+                IconButton(
+                  key: const Key('open-my-groups'),
+                  tooltip: l10n.myGroupsTitle,
+                  onPressed: () => context.go('/org/groups?all=1'),
+                  icon: const Icon(Icons.groups),
+                ),
               IconButton(
                 tooltip: l10n.signOut,
                 onPressed: _signOut,
@@ -107,6 +114,17 @@ class _GroupHomeViewState extends State<GroupHomeView> {
                               context.go('/g/${widget.groupId}/calendar'),
                           icon: const Icon(Icons.calendar_month),
                           label: Text(l10n.groupCalendarButton),
+                        ),
+                      ),
+                    if (widget.isOwner)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: OutlinedButton.icon(
+                          key: const Key('open-invite'),
+                          onPressed: () =>
+                              context.go('/g/${widget.groupId}/invite'),
+                          icon: const Icon(Icons.person_add),
+                          label: Text(l10n.groupInviteButton),
                         ),
                       ),
                     if (widget.isOwner)

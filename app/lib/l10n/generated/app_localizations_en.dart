@@ -513,4 +513,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get photoOpen => 'Open photo';
+
+  @override
+  String get myGroupsTitle => 'My groups';
+
+  @override
+  String get myGroupsFailed => 'Couldn\'t load your groups';
+
+  @override
+  String get myGroupsRetry => 'Try again';
+
+  @override
+  String myGroupsMembers(int count) {
+    return 'Members: $count';
+  }
+
+  @override
+  String get groupStatusDraft => 'Setting up';
+
+  @override
+  String get groupStatusActive => 'In play';
+
+  @override
+  String get groupStatusFinished => 'Finished';
+
+  @override
+  String get groupInviteButton => 'Invite members';
+
+  @override
+  String get inviteRotateWarning =>
+      'We\'ll create a new link and the old one will stop working. Members already in the group will need the new link to sign in again.';
+
+  @override
+  String get inviteRotateButton => 'Create a new link';
+
+  @override
+  String get inviteFailed => 'Couldn\'t create the link — try again';
 }

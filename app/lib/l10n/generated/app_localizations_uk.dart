@@ -509,4 +509,40 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get photoOpen => 'Відкрити фото';
+
+  @override
+  String get myGroupsTitle => 'Мої групи';
+
+  @override
+  String get myGroupsFailed => 'Не вдалося завантажити групи';
+
+  @override
+  String get myGroupsRetry => 'Спробувати ще раз';
+
+  @override
+  String myGroupsMembers(int count) {
+    return 'Учасників: $count';
+  }
+
+  @override
+  String get groupStatusDraft => 'Налаштування';
+
+  @override
+  String get groupStatusActive => 'Гра триває';
+
+  @override
+  String get groupStatusFinished => 'Завершено';
+
+  @override
+  String get groupInviteButton => 'Запросити учасників';
+
+  @override
+  String get inviteRotateWarning =>
+      'Створимо нове посилання, а старе перестане діяти. Учасники, які вже в групі, зможуть увійти знову лише за новим посиланням.';
+
+  @override
+  String get inviteRotateButton => 'Створити нове посилання';
+
+  @override
+  String get inviteFailed => 'Не вдалося створити посилання — спробуй ще раз';
 }

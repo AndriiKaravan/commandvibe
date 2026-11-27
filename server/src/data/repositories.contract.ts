@@ -548,6 +548,18 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
         expect(ids).not.toContain(noGame.id);
       });
 
+      it('should list only the groups of the asked owner', async () => {
+        const mine = aGroup({ ownerUid: 'owner-list-1' });
+        const alsoMine = aGroup({ ownerUid: 'owner-list-1' });
+        const other = aGroup({ ownerUid: 'owner-list-2' });
+        for (const group of [mine, alsoMine, other]) {
+          await repos.groups.create(group);
+        }
+        const ids = (await repos.groups.listByOwner('owner-list-1')).map((group) => group.id);
+        expect(ids.sort()).toEqual([mine.id, alsoMine.id].sort());
+        expect(await repos.groups.listByOwner('owner-nobody')).toEqual([]);
+      });
+
       it('should store and read the game settings of a group', async () => {
         const group = aGroup();
         await repos.groups.create(group);

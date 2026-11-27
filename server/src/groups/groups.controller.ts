@@ -3,7 +3,7 @@ import { Body, Controller, ForbiddenException, Get, HttpCode, Param, Post } from
 import { CurrentAuth } from '../auth/current-subject.decorator';
 import { VerifiedAccess } from '../auth/session.service';
 import { Group } from '../data/models';
-import { CreateGroupInput, GroupsService } from './groups.service';
+import { CreateGroupInput, GroupSummary, GroupsService } from './groups.service';
 
 /** What clients see of a group: never the invite hash. */
 export type GroupView = Omit<Group, 'inviteTokenHash'>;
@@ -32,6 +32,11 @@ export class GroupsController {
   ): Promise<{ group: GroupView; inviteUrl: string }> {
     const { group, inviteUrl } = await this.groups.create(organizerUid(auth), body ?? ({} as CreateGroupInput));
     return { group: groupView(group), inviteUrl };
+  }
+
+  @Get()
+  async list(@CurrentAuth() auth: VerifiedAccess): Promise<{ items: GroupSummary[] }> {
+    return { items: await this.groups.listOwned(organizerUid(auth)) };
   }
 
   @Get(':id')

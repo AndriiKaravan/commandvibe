@@ -45,6 +45,8 @@ export interface GroupRepository {
   setStatus(id: string, expected: GroupStatus, next: GroupStatus): Promise<boolean>;
   /** Groups that have a game and whose status is one of [statuses]; the Scheduler tick walks these. */
   listWithGame(statuses: GroupStatus[]): Promise<Group[]>;
+  /** Groups owned by [ownerUid], in no particular order. */
+  listByOwner(ownerUid: string): Promise<Group[]>;
   /** Group whose current invite has this hash, closed or not. */
   findByInviteHash(hash: string): Promise<Group | undefined>;
 }

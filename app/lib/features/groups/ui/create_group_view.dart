@@ -68,7 +68,7 @@ class _CreateGroupViewState extends State<CreateGroupView> {
       builder: (context, _) {
         final created = _viewModel!.created;
         if (created != null) {
-          return _ShareInvite(
+          return ShareInvite(
             inviteUrl: created.inviteUrl,
             groupId: created.groupId,
           );
@@ -108,8 +108,13 @@ class _CreateGroupViewState extends State<CreateGroupView> {
   }
 }
 
-class _ShareInvite extends StatelessWidget {
-  const _ShareInvite({required this.inviteUrl, required this.groupId});
+/// The link of a group with share and copy actions.
+class ShareInvite extends StatelessWidget {
+  const ShareInvite({
+    super.key,
+    required this.inviteUrl,
+    required this.groupId,
+  });
 
   final String inviteUrl;
   final String groupId;

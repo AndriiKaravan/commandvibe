@@ -232,5 +232,23 @@
       }
     }
   },
-  "photoOpen": "Open photo"
+  "photoOpen": "Open photo",
+  "myGroupsTitle": "My groups",
+  "myGroupsFailed": "Couldn't load your groups",
+  "myGroupsRetry": "Try again",
+  "myGroupsMembers": "Members: {count}",
+  "@myGroupsMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupStatusDraft": "Setting up",
+  "groupStatusActive": "In play",
+  "groupStatusFinished": "Finished",
+  "groupInviteButton": "Invite members",
+  "inviteRotateWarning": "We'll create a new link and the old one will stop working. Members already in the group will need the new link to sign in again.",
+  "inviteRotateButton": "Create a new link",
+  "inviteFailed": "Couldn't create the link — try again"
 }

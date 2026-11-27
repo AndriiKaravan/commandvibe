@@ -1015,6 +1015,72 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Відкрити фото'**
   String get photoOpen;
+
+  /// No description provided for @myGroupsTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Мої групи'**
+  String get myGroupsTitle;
+
+  /// No description provided for @myGroupsFailed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Не вдалося завантажити групи'**
+  String get myGroupsFailed;
+
+  /// No description provided for @myGroupsRetry.
+  ///
+  /// In uk, this message translates to:
+  /// **'Спробувати ще раз'**
+  String get myGroupsRetry;
+
+  /// No description provided for @myGroupsMembers.
+  ///
+  /// In uk, this message translates to:
+  /// **'Учасників: {count}'**
+  String myGroupsMembers(int count);
+
+  /// No description provided for @groupStatusDraft.
+  ///
+  /// In uk, this message translates to:
+  /// **'Налаштування'**
+  String get groupStatusDraft;
+
+  /// No description provided for @groupStatusActive.
+  ///
+  /// In uk, this message translates to:
+  /// **'Гра триває'**
+  String get groupStatusActive;
+
+  /// No description provided for @groupStatusFinished.
+  ///
+  /// In uk, this message translates to:
+  /// **'Завершено'**
+  String get groupStatusFinished;
+
+  /// No description provided for @groupInviteButton.
+  ///
+  /// In uk, this message translates to:
+  /// **'Запросити учасників'**
+  String get groupInviteButton;
+
+  /// No description provided for @inviteRotateWarning.
+  ///
+  /// In uk, this message translates to:
+  /// **'Створимо нове посилання, а старе перестане діяти. Учасники, які вже в групі, зможуть увійти знову лише за новим посиланням.'**
+  String get inviteRotateWarning;
+
+  /// No description provided for @inviteRotateButton.
+  ///
+  /// In uk, this message translates to:
+  /// **'Створити нове посилання'**
+  String get inviteRotateButton;
+
+  /// No description provided for @inviteFailed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Не вдалося створити посилання — спробуй ще раз'**
+  String get inviteFailed;
 }
 
 class _AppLocalizationsDelegate

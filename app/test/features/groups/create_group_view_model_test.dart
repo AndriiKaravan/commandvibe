@@ -19,6 +19,12 @@ class FakeGroupsRepository implements GroupsRepository {
   }
 
   @override
+  Future<String> rotateInvite(String groupId) => throw UnimplementedError();
+
+  @override
+  Future<List<OwnedGroup>> owned() => throw UnimplementedError();
+
+  @override
   Future<GroupSummary> group(String groupId) => throw UnimplementedError();
 
   @override

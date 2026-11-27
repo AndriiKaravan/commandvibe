@@ -21,6 +21,14 @@ export interface CreateGroupInput {
   approveNew?: boolean;
 }
 
+export interface GroupSummary {
+  id: string;
+  name: string;
+  status: Group['status'];
+  activeMembers: number;
+  createdAt: Date;
+}
+
 export interface GroupWithInvite {
   group: Group;
   inviteUrl: string;
@@ -78,12 +86,30 @@ export class GroupsService {
     const group = await this.owned(ownerUid, groupId);
     const token = newToken();
     await this.groups.update(groupId, { inviteTokenHash: hashToken(token), inviteClosed: false });
-    return { group: { ...group, inviteTokenHash: hashToken(token), inviteClosed: false }, inviteUrl: this.inviteUrl(token) };
+    return {
+      group: { ...group, inviteTokenHash: hashToken(token), inviteClosed: false },
+      inviteUrl: this.inviteUrl(token),
+    };
   }
 
   async closeInvite(ownerUid: string, groupId: string): Promise<void> {
     await this.owned(ownerUid, groupId);
     await this.groups.update(groupId, { inviteClosed: true });
+  }
+
+  /** The organizer's own groups, newest first; only what a list screen needs. */
+  async listOwned(ownerUid: string): Promise<GroupSummary[]> {
+    const groups = await this.groups.listByOwner(ownerUid);
+    groups.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return Promise.all(
+      groups.map(async (group) => ({
+        id: group.id,
+        name: group.name,
+        status: group.status,
+        activeMembers: (await this.members.list(group.id)).filter((member) => member.status === 'active').length,
+        createdAt: group.createdAt,
+      })),
+    );
   }
 
   /** The group for its owner or one of its active members. */

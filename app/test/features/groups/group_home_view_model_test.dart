@@ -20,6 +20,12 @@ class CountingGroupsRepository implements GroupsRepository {
   ];
 
   @override
+  Future<String> rotateInvite(String groupId) => throw UnimplementedError();
+
+  @override
+  Future<List<OwnedGroup>> owned() => throw UnimplementedError();
+
+  @override
   Future<GroupSummary> group(String groupId) async =>
       const GroupSummary(id: 'g1', name: 'Office', ownerUid: 'org');
 
