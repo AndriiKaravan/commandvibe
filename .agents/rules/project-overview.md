@@ -1,9 +1,9 @@
 # CommandVibe — Project Overview
 
 **Дата оновлення:** 2026-11-27
-**Версія документа:** 2.4 (веб на живому сайті; пакет `com.karavanstudio.commandvibe`; App Links і Universal Links для `/j/`)
+**Версія документа:** 2.5 (P1 перевірено власником на проді)
 
-> **Статус:** хвиля 1, частина P1 реалізована (у `main`). API розгорнуто 27.11: Cloud Run `commandvibe-api` (ревізія `00002`, `https://commandvibe-api-889388170734.europe-central2.run.app`); веб — на живому сайті `commandvibe.karavanstudio.dev` (27.11). Дизайн: `docs/specs/2026-11-19-photo-challenge-design.md` (розділ 2а має пріоритет). План: `docs/superpowers/plans/2026-11-26-wave1-roadmap.md`, `…-wave1-p1-foundation.md`.
+> **Статус:** хвиля 1, частина P1 реалізована (у `main`) і **перевірена власником на проді 27.11** (вхід Google, створення групи, приєднання з іменем і PIN, живий список). Далі — P2. API розгорнуто 27.11: Cloud Run `commandvibe-api` (ревізія `00002`, `https://commandvibe-api-889388170734.europe-central2.run.app`); веб — на живому сайті `commandvibe.karavanstudio.dev` (27.11). Дизайн: `docs/specs/2026-11-19-photo-challenge-design.md` (розділ 2а має пріоритет). План: `docs/superpowers/plans/2026-11-26-wave1-roadmap.md`, `…-wave1-p1-foundation.md`.
 
 ## Загальна інформація
 
@@ -84,6 +84,7 @@ Firestore (за репозиторіями): `organizers/{uid}` {email, displayN
 
 ## Історія версій
 
+- 2.5 (2026-11-27) — P1 перевірено власником на проді.
 - 2.4 (2026-11-27) — веб на живому сайті; пакет `com.*`; App Links і Universal Links.
 - 2.3 (2026-11-27) — перший деплой API; `FIRESTORE_DATABASE`.
 - 2.2 (2026-11-26) — каталог завдань v2 (див. `content/`).
