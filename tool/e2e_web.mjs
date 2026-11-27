@@ -55,7 +55,8 @@ const server = createServer((req, res) => {
   createReadStream(file).pipe(res);
 }).listen(8080);
 
-const { token } = await post('/test/seed-group', { name: 'Web group' });
+// A game that started today, so the home screen has a task of the day to show.
+const { token } = await post('/test/seed-group', { name: 'Web group', game: { mode: 'auto' } });
 const browser = await puppeteer.launch({ executablePath: chrome, headless: true });
 try {
   const page = await browser.newPage();
@@ -75,6 +76,8 @@ try {
   await page.keyboard.press('Enter');
   await waitText(page, 'Webby');
   console.log('joined and set a PIN');
+  await waitText(page, 'Завдання дня');
+  console.log('today card shows the task of the day');
 
   await post('/join', { token, displayName: 'Other' });
   await waitText(page, 'Other');

@@ -154,5 +154,30 @@
   "ownTaskNameInvalid": "Введи назву до 60 символів.",
   "ownTaskDescriptionInvalid": "Введи опис до 220 символів.",
   "saveTask": "Зберегти",
-  "retry": "Повторити"
+  "retry": "Повторити",
+  "todayTitle": "Завдання дня",
+  "todayNotConfigured": "Гру ще не налаштовано.",
+  "todayBeforeStart": "Гра починається {when}",
+  "@todayBeforeStart": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "todayWaitingMine": "Твоя черга крутити рулетку!",
+  "todayWaitingOther": "Рулетку крутить інший гравець. Якщо не встигне, крутне гра.",
+  "todaySpinUntil": "Крутити до {time}",
+  "@todaySpinUntil": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "todaySpin": "Крутити",
+  "todaySpinning": "Рулетка крутиться…",
+  "todayLoadingTask": "Завантажуємо завдання…",
+  "todayFinished": "Гру завершено. Дякуємо за гру!",
+  "todayTurnOver": "Рулетку вже крутнули."
 }

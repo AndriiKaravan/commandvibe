@@ -126,5 +126,30 @@
   "ownTaskNameInvalid": "Enter a title up to 60 characters.",
   "ownTaskDescriptionInvalid": "Enter a description up to 220 characters.",
   "saveTask": "Save",
-  "retry": "Retry"
+  "retry": "Retry",
+  "todayTitle": "Task of the day",
+  "todayNotConfigured": "The game is not set up yet.",
+  "todayBeforeStart": "The game starts {when}",
+  "@todayBeforeStart": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "todayWaitingMine": "Your turn to spin the roulette!",
+  "todayWaitingOther": "Another player spins the roulette. If they run out of time, the game spins it.",
+  "todaySpinUntil": "Spin before {time}",
+  "@todaySpinUntil": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "todaySpin": "Spin",
+  "todaySpinning": "The roulette is spinning…",
+  "todayLoadingTask": "Loading the task…",
+  "todayFinished": "The game is over. Thanks for playing!",
+  "todayTurnOver": "The roulette has already been spun."
 }

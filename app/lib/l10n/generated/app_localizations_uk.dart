@@ -328,4 +328,42 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get retry => 'Повторити';
+
+  @override
+  String get todayTitle => 'Завдання дня';
+
+  @override
+  String get todayNotConfigured => 'Гру ще не налаштовано.';
+
+  @override
+  String todayBeforeStart(String when) {
+    return 'Гра починається $when';
+  }
+
+  @override
+  String get todayWaitingMine => 'Твоя черга крутити рулетку!';
+
+  @override
+  String get todayWaitingOther =>
+      'Рулетку крутить інший гравець. Якщо не встигне, крутне гра.';
+
+  @override
+  String todaySpinUntil(String time) {
+    return 'Крутити до $time';
+  }
+
+  @override
+  String get todaySpin => 'Крутити';
+
+  @override
+  String get todaySpinning => 'Рулетка крутиться…';
+
+  @override
+  String get todayLoadingTask => 'Завантажуємо завдання…';
+
+  @override
+  String get todayFinished => 'Гру завершено. Дякуємо за гру!';
+
+  @override
+  String get todayTurnOver => 'Рулетку вже крутнули.';
 }

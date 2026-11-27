@@ -691,6 +691,72 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Повторити'**
   String get retry;
+
+  /// No description provided for @todayTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Завдання дня'**
+  String get todayTitle;
+
+  /// No description provided for @todayNotConfigured.
+  ///
+  /// In uk, this message translates to:
+  /// **'Гру ще не налаштовано.'**
+  String get todayNotConfigured;
+
+  /// No description provided for @todayBeforeStart.
+  ///
+  /// In uk, this message translates to:
+  /// **'Гра починається {when}'**
+  String todayBeforeStart(String when);
+
+  /// No description provided for @todayWaitingMine.
+  ///
+  /// In uk, this message translates to:
+  /// **'Твоя черга крутити рулетку!'**
+  String get todayWaitingMine;
+
+  /// No description provided for @todayWaitingOther.
+  ///
+  /// In uk, this message translates to:
+  /// **'Рулетку крутить інший гравець. Якщо не встигне, крутне гра.'**
+  String get todayWaitingOther;
+
+  /// No description provided for @todaySpinUntil.
+  ///
+  /// In uk, this message translates to:
+  /// **'Крутити до {time}'**
+  String todaySpinUntil(String time);
+
+  /// No description provided for @todaySpin.
+  ///
+  /// In uk, this message translates to:
+  /// **'Крутити'**
+  String get todaySpin;
+
+  /// No description provided for @todaySpinning.
+  ///
+  /// In uk, this message translates to:
+  /// **'Рулетка крутиться…'**
+  String get todaySpinning;
+
+  /// No description provided for @todayLoadingTask.
+  ///
+  /// In uk, this message translates to:
+  /// **'Завантажуємо завдання…'**
+  String get todayLoadingTask;
+
+  /// No description provided for @todayFinished.
+  ///
+  /// In uk, this message translates to:
+  /// **'Гру завершено. Дякуємо за гру!'**
+  String get todayFinished;
+
+  /// No description provided for @todayTurnOver.
+  ///
+  /// In uk, this message translates to:
+  /// **'Рулетку вже крутнули.'**
+  String get todayTurnOver;
 }
 
 class _AppLocalizationsDelegate

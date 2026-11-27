@@ -330,4 +330,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get todayTitle => 'Task of the day';
+
+  @override
+  String get todayNotConfigured => 'The game is not set up yet.';
+
+  @override
+  String todayBeforeStart(String when) {
+    return 'The game starts $when';
+  }
+
+  @override
+  String get todayWaitingMine => 'Your turn to spin the roulette!';
+
+  @override
+  String get todayWaitingOther =>
+      'Another player spins the roulette. If they run out of time, the game spins it.';
+
+  @override
+  String todaySpinUntil(String time) {
+    return 'Spin before $time';
+  }
+
+  @override
+  String get todaySpin => 'Spin';
+
+  @override
+  String get todaySpinning => 'The roulette is spinning…';
+
+  @override
+  String get todayLoadingTask => 'Loading the task…';
+
+  @override
+  String get todayFinished => 'The game is over. Thanks for playing!';
+
+  @override
+  String get todayTurnOver => 'The roulette has already been spun.';
 }
