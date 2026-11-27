@@ -8,7 +8,7 @@
 
 ## Перед першим запуском — рішення власника
 
-1. **Firestore** у `europe-central2` (створення бази незворотне щодо регіону): `firebase firestore:databases:create "(default)" --location=europe-central2 --project commandvibe-ks`, потім `firebase deploy --only firestore:rules,storage --project commandvibe-ks` (правила «заборонено все»).
+1. ✅ **Firestore** створено власником 27.11. Для довідки — як створювалась (у `europe-central2`, регіон незворотний): `firebase firestore:databases:create "(default)" --location=europe-central2 --project commandvibe-ks`, потім `firebase deploy --only firestore:rules,storage --project commandvibe-ks` (правила «заборонено все»).
 2. **Секрет** `session-signing-key` (64 випадкові байти, значення ніде не друкувати):
    `openssl rand -base64 64 | tr -d '\n' | gcloud secrets create session-signing-key --project commandvibe-ks --data-file=-`
    і доступ сервісному акаунту Cloud Run: `roles/secretmanager.secretAccessor`.
