@@ -26,6 +26,13 @@ export interface MemberEvents {
 
 export const MEMBER_EVENTS = Symbol('MemberEvents');
 
+/** Deletes what a member left behind (photos, complaints) when they are removed. */
+export interface MemberDataCleanup {
+  deleteMemberData(groupId: string, memberId: string): Promise<void>;
+}
+
+export const MEMBER_DATA_CLEANUP = Symbol('MemberDataCleanup');
+
 export interface InvitePreview {
   groupName: string;
   memberCount: number;
@@ -53,6 +60,7 @@ export class MembersService {
     private readonly pins: PinService,
     @Inject(MEMBER_EVENTS) private readonly events: MemberEvents,
     @Inject(CLOCK) private readonly now: () => Date,
+    @Inject(MEMBER_DATA_CLEANUP) private readonly cleanup: MemberDataCleanup,
   ) {}
 
   async preview(token: string): Promise<InvitePreview> {
@@ -147,6 +155,7 @@ export class MembersService {
     // Persist first: the realtime check reads the status when the socket reconnects.
     await this.members.update(groupId, memberId, { status: 'removed' });
     await this.sessions.revokeSubject(memberId);
+    await this.cleanup.deleteMemberData(groupId, memberId);
     this.events.removed(groupId, memberId);
   }
 

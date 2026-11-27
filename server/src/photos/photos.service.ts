@@ -212,14 +212,7 @@ export class PhotosService {
     if (!group || !cell || !sub || sub.version !== claims.v) {
       return undefined;
     }
-    const viewer = await this.viewerOf(claims.k, claims.s, group);
-    const ownVisible = viewer.memberId
-      ? (await this.submissions.get(claims.g, claims.d, viewer.memberId))?.status === 'visible'
-      : false;
-    const author = await this.members.get(claims.g, claims.a);
-    const openComplaints = await this.complaints.openCount(claims.g, claims.d, claims.a);
-    const revealed = now.getTime() >= revealAt(cell.opensAt, group.timezone).getTime();
-    const access = this.decide(viewer, ownVisible, sub, author?.status === 'active', openComplaints, revealed);
+    const { access } = await this.accessFor(claims.k, claims.s, group, cell, sub, now);
     const allowed = claims.x === 'photo' ? access.image === 'full' : access.listed && access.image !== 'none';
     if (!allowed) {
       return undefined;
@@ -229,6 +222,38 @@ export class PhotosService {
       return undefined;
     }
     return { bytes, maxAgeSeconds: Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 1000)) };
+  }
+
+  /** The one place that gathers the facts and asks [decidePhotoAccess]; lists, files and moderation all use it. */
+  async accessFor(
+    kind: SubjectKind,
+    id: string,
+    group: Group,
+    cell: Cell,
+    sub: Submission,
+    now: Date,
+  ): Promise<{ viewer: Viewer; access: PhotoAccess }> {
+    const viewer = await this.viewerOf(kind, id, group);
+    const ownVisible = viewer.memberId
+      ? (await this.submissions.get(group.id, sub.dayIndex, viewer.memberId))?.status === 'visible'
+      : false;
+    const author = await this.members.get(group.id, sub.memberId);
+    const openComplaints = await this.complaints.openCount(group.id, sub.dayIndex, sub.memberId);
+    const revealed = now.getTime() >= revealAt(cell.opensAt, group.timezone).getTime();
+    const access = this.decide(viewer, ownVisible, sub, author?.status === 'active', openComplaints, revealed);
+    return { viewer, access };
+  }
+
+  /** Removes everything a member uploaded or filed, files first so no orphan survives a half-done call. */
+  async deleteMemberData(groupId: string, memberId: string): Promise<void> {
+    const group = await this.groups.get(groupId);
+    const days = group?.game?.days ?? 0;
+    const own = await this.submissions.listMember(groupId, memberId, days);
+    for (const sub of own) {
+      await this.store.deletePrefix(photoPaths(groupId, sub.dayIndex, memberId, '').prefix);
+      await this.submissions.delete(groupId, sub.dayIndex, memberId);
+    }
+    await this.complaints.deleteInvolving(groupId, memberId);
   }
 
   private async process(bytes: Buffer) {

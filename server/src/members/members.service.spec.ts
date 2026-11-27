@@ -25,6 +25,7 @@ describe('MembersService', () => {
   let groups: GroupsService;
   let events: RecordingEvents;
   let service: MembersService;
+  let cleaned: string[];
   const clock = () => new Date(now);
 
   beforeEach(async () => {
@@ -34,7 +35,22 @@ describe('MembersService', () => {
     sessions = new SessionService(repos.sessions, 'k'.repeat(32), clock);
     groups = new GroupsService(repos.groups, repos.members, repos.organizers, clock, 'https://app.test');
     events = new RecordingEvents();
-    service = new MembersService(repos.groups, repos.members, groups, sessions, new PinService(), events, clock);
+    cleaned = [];
+    const cleanup = {
+      async deleteMemberData(groupId: string, memberId: string) {
+        cleaned.push(`${groupId}:${memberId}`);
+      },
+    };
+    service = new MembersService(
+      repos.groups,
+      repos.members,
+      groups,
+      sessions,
+      new PinService(),
+      events,
+      clock,
+      cleanup,
+    );
   });
 
   async function newGroup(approveNew = false) {
@@ -192,6 +208,7 @@ describe('MembersService', () => {
       await expect(sessions.verifyAccess(joined.accessToken)).rejects.toThrow();
       expect((await repos.members.get(group.id, joined.member.id))?.status).toBe('removed');
       expect(events.calls).toContain(`removed:${group.id}:${joined.member.id}`);
+      expect(cleaned).toEqual([`${group.id}:${joined.member.id}`]);
     });
 
     it('should approve a pending member', async () => {
