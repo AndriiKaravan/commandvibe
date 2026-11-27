@@ -215,4 +215,55 @@ describe('Photo moderation', () => {
     await api().post(`/groups/${groupId}/members/${taro.memberId}/remove`).set('authorization', owner).expect(204);
     expect((await api().get(link)).status).toBe(404);
   });
+  it('should hear a new complaint after the old one was dismissed, and drop complaints when the photo is replaced', async () => {
+    const { groupId, owner, ira, taro } = await world();
+    const first = await submit(groupId, ira.auth);
+    await submit(groupId, taro.auth);
+    await complain(groupId, taro.auth, ira.memberId);
+    await api()
+      .post(`/groups/${groupId}/days/0/submissions/${ira.memberId}/complaints/dismiss`)
+      .set('authorization', owner);
+    await complain(groupId, taro.auth, ira.memberId);
+    const listed = () => api().get(`/groups/${groupId}/complaints`).set('authorization', owner);
+    expect((await listed()).body.items).toHaveLength(1);
+    await api()
+      .put(`/groups/${groupId}/days/0/submission?replaces=${first.body.version}`)
+      .set('authorization', ira.auth)
+      .set('content-type', 'image/jpeg')
+      .send(await jpeg({ width: 640, height: 480 }))
+      .expect(200);
+    expect((await listed()).body.items).toHaveLength(0);
+  });
+
+  it('should refuse a hidden flag that is not a boolean', async () => {
+    const { groupId, owner, ira } = await world();
+    await submit(groupId, ira.auth);
+    const bad = await api()
+      .put(`/groups/${groupId}/days/0/submissions/${ira.memberId}/hidden`)
+      .set('authorization', owner)
+      .send({ hidden: 'true' });
+    expect(bad.status).toBe(400);
+  });
+
+  it('should not keep the photo of a member removed while the upload was being processed', async () => {
+    const { groupId, owner, ira } = await world();
+    const original = store.put.bind(store);
+    let removed = false;
+    store.put = async (path: string, bytes: Buffer) => {
+      if (!removed) {
+        removed = true;
+        await api().post(`/groups/${groupId}/members/${ira.memberId}/remove`).set('authorization', owner).expect(204);
+      }
+      return original(path, bytes);
+    };
+    try {
+      const response = await submit(groupId, ira.auth);
+      expect([401, 403]).toContain(response.status);
+    } finally {
+      store.put = original;
+    }
+    expect(store.paths().filter((p) => p.includes(`/${ira.memberId}/`))).toHaveLength(0);
+    const asOwner = await list(groupId, owner);
+    expect(asOwner.body.items).toHaveLength(0);
+  });
 });

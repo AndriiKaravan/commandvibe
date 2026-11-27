@@ -1,7 +1,14 @@
-import { BadRequestException, PayloadTooLargeException, UnsupportedMediaTypeException } from '@nestjs/common';
+import {
+  BadRequestException,
+  PayloadTooLargeException,
+  RequestTimeoutException,
+  UnsupportedMediaTypeException,
+} from '@nestjs/common';
 import type { Request } from 'express';
 
 export const maxPhotoBytes = 20 * 1024 * 1024;
+/** A slow or stalled sender must not hold one of the few upload slots for long. */
+export const idleTimeoutMs = 60_000;
 
 function tooLarge(request: Request): PayloadTooLargeException {
   // The rest of an oversized body is never read, so the connection must not be reused.
@@ -10,7 +17,7 @@ function tooLarge(request: Request): PayloadTooLargeException {
 }
 
 /** Reads a raw image body, refusing past [max] bytes both by `Content-Length` and by what actually arrives. */
-export function readPhotoBody(request: Request, max = maxPhotoBytes): Promise<Buffer> {
+export function readPhotoBody(request: Request, max = maxPhotoBytes, idleMs = idleTimeoutMs): Promise<Buffer> {
   const type = (request.headers['content-type'] ?? '').split(';')[0].trim().toLowerCase();
   if (!type.startsWith('image/') && type !== 'application/octet-stream') {
     throw new UnsupportedMediaTypeException('unsupported_type');
@@ -22,13 +29,24 @@ export function readPhotoBody(request: Request, max = maxPhotoBytes): Promise<Bu
   return new Promise<Buffer>((resolve, reject) => {
     const chunks: Buffer[] = [];
     let total = 0;
+    let timer: NodeJS.Timeout;
+    const arm = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        cleanup();
+        request.res?.setHeader('Connection', 'close');
+        reject(new RequestTimeoutException('upload_timeout'));
+      }, idleMs);
+    };
     const cleanup = () => {
+      clearTimeout(timer);
       request.off('data', onData);
       request.off('end', onEnd);
       request.off('error', onError);
       request.off('close', onClose);
     };
     const onData = (chunk: Buffer) => {
+      arm();
       total += chunk.length;
       if (total > max) {
         cleanup();
@@ -52,6 +70,7 @@ export function readPhotoBody(request: Request, max = maxPhotoBytes): Promise<Bu
         reject(new BadRequestException('upload_aborted'));
       }
     };
+    arm();
     request.on('data', onData);
     request.on('end', onEnd);
     request.on('error', onError);

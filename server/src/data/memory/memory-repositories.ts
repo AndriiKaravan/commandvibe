@@ -295,7 +295,7 @@ class MemorySubmissions implements SubmissionRepository {
   async put(submission: Submission, expectedVersion: string | null): Promise<'created' | 'replaced' | 'conflict'> {
     const key = this.key(submission.groupId, submission.dayIndex, submission.memberId);
     const current = this.items.get(key);
-    if (expectedVersion === null ? current : current?.version !== expectedVersion) {
+    if (expectedVersion === null ? current : current?.version !== expectedVersion || current.status === 'hidden') {
       return 'conflict';
     }
     this.items.set(key, copy(submission));
@@ -333,9 +333,11 @@ class MemoryComplaints implements ComplaintRepository {
   private key = (c: Pick<Complaint, 'groupId' | 'id'>): string => `${c.groupId}/${c.id}`;
 
   async add(complaint: Complaint): Promise<boolean> {
-    if (this.items.has(this.key(complaint))) {
+    const existing = this.items.get(this.key(complaint));
+    if (existing?.status === 'open') {
       return false;
     }
+    // A complaint closed earlier counts again when the same person complains anew.
     this.items.set(this.key(complaint), copy(complaint));
     return true;
   }

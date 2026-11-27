@@ -78,6 +78,10 @@ class DayPhotosViewModel extends ChangeNotifier {
       _loadFailed = true;
     } on NetworkException {
       _loadFailed = true;
+    } on FormatException {
+      _loadFailed = true;
+    } on TypeError {
+      _loadFailed = true;
     }
     if (!_disposed) {
       notifyListeners();

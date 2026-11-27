@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
 import { CurrentAuth } from '../auth/current-subject.decorator';
 import { VerifiedAccess } from '../auth/session.service';
 import { DayPipe } from '../common/day.pipe';
@@ -36,7 +36,10 @@ export class ModerationController {
     @Param('memberId', IdPipe) memberId: string,
     @Body() body: { hidden?: unknown },
   ): Promise<void> {
-    await this.moderation.setHidden(organizerUid(auth), id, day, memberId, body?.hidden === true);
+    if (typeof body?.hidden !== 'boolean') {
+      throw new BadRequestException('invalid_hidden');
+    }
+    await this.moderation.setHidden(organizerUid(auth), id, day, memberId, body.hidden);
   }
 
   @Post('days/:day/submissions/:memberId/complaints/dismiss')

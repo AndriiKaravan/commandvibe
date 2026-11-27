@@ -282,6 +282,16 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
         expect((await repos.submissions.listMember(group.id, 'm1', 5)).map((s) => s.dayIndex).sort()).toEqual([1, 3]);
       });
 
+      it('should refuse a replacement of a photo hidden in the meantime', async () => {
+        const group = aGroup();
+        const first = aSubmission(group.id, 1, 'm1');
+        await repos.submissions.put(first, null);
+        await repos.submissions.setStatus(group.id, 1, 'm1', 'hidden', new Date());
+        const next = aSubmission(group.id, 1, 'm1');
+        expect(await repos.submissions.put(next, first.version)).toBe('conflict');
+        expect((await repos.submissions.get(group.id, 1, 'm1'))?.version).toBe(first.version);
+      });
+
       it('should hide, restore and delete a submission', async () => {
         const group = aGroup();
         await repos.submissions.put(aSubmission(group.id, 1, 'm1'), null);
@@ -308,6 +318,16 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
         expect(await repos.complaints.openCount(group.id, 1, 'a')).toBe(2);
         expect(await repos.complaints.openCount(group.id, 1, 'other')).toBe(0);
         expect(await repos.complaints.listOpen(group.id)).toHaveLength(2);
+      });
+
+      it('should reopen a resolved complaint when the same person complains again', async () => {
+        const group = aGroup();
+        await repos.complaints.add(aComplaint(group.id, 1, 'a', 'c1'));
+        await repos.complaints.resolve(group.id, 1, 'a', new Date('2026-12-03T00:00:00Z'));
+        expect(await repos.complaints.openCount(group.id, 1, 'a')).toBe(0);
+        expect(await repos.complaints.add(aComplaint(group.id, 1, 'a', 'c1'))).toBe(true);
+        expect(await repos.complaints.openCount(group.id, 1, 'a')).toBe(1);
+        expect(await repos.complaints.add(aComplaint(group.id, 1, 'a', 'c1'))).toBe(false);
       });
 
       it('should resolve open complaints of one photo only', async () => {

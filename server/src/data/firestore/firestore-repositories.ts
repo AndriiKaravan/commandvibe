@@ -379,7 +379,7 @@ class FirestoreSubmissions implements SubmissionRepository {
     return this.db.runTransaction(async (tx) => {
       const ref = this.ref(submission.groupId, submission.dayIndex, submission.memberId);
       const current = fromStore<Submission>((await tx.get(ref)).data());
-      if (expectedVersion === null ? current : current?.version !== expectedVersion) {
+      if (expectedVersion === null ? current : current?.version !== expectedVersion || current.status === 'hidden') {
         return 'conflict';
       }
       tx.set(ref, toStore(submission));
@@ -417,15 +417,16 @@ class FirestoreComplaints implements ComplaintRepository {
   }
 
   async add(complaint: Complaint): Promise<boolean> {
-    try {
-      await this.collection(complaint.groupId).doc(complaint.id).create(toStore(complaint));
-      return true;
-    } catch (error) {
-      if ((error as { code?: number }).code === 6) {
+    return this.db.runTransaction(async (tx) => {
+      const ref = this.collection(complaint.groupId).doc(complaint.id);
+      const existing = fromStore<Complaint>((await tx.get(ref)).data());
+      if (existing?.status === 'open') {
         return false;
       }
-      throw error;
-    }
+      // A complaint closed earlier counts again when the same person complains anew.
+      tx.set(ref, toStore(complaint));
+      return true;
+    });
   }
 
   async listOpen(groupId: string): Promise<Complaint[]> {

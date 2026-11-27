@@ -161,8 +161,6 @@ export class PhotosService {
     const takenAt = takenAtOf(processed.exifTime, group.timezone, now);
     const version = randomBytes(8).toString('hex');
     const paths = photoPaths(groupId, day, memberId, version);
-    await this.store.put(paths.photo, processed.photo, 'image/jpeg');
-    await this.store.put(paths.blur, processed.blur, 'image/jpeg');
     const submission: Submission = {
       groupId,
       dayIndex: day,
@@ -179,10 +177,28 @@ export class PhotosService {
       flags: { takenBefore: takenAt !== undefined && cell.openedAt !== undefined && takenAt < cell.openedAt },
       status: 'visible',
     };
-    const result = await this.submissions.put(submission, options.mode === 'create' ? null : (options.replaces ?? ''));
+    const discard = () => this.store.delete([paths.photo, paths.blur]).catch(() => undefined);
+    let result: 'created' | 'replaced' | 'conflict';
+    try {
+      await this.store.put(paths.photo, processed.photo, 'image/jpeg');
+      await this.store.put(paths.blur, processed.blur, 'image/jpeg');
+      result = await this.submissions.put(submission, options.mode === 'create' ? null : (options.replaces ?? ''));
+    } catch (error) {
+      await discard();
+      throw error;
+    }
     if (result === 'conflict') {
-      await this.store.delete([paths.photo, paths.blur]);
+      await discard();
       throw await this.conflictFor(options, groupId, day, memberId);
+    }
+    // The member may have been removed while the photo was processed; nothing of theirs may stay.
+    if ((await this.members.get(groupId, memberId))?.status !== 'active') {
+      await this.deleteMemberData(groupId, memberId);
+      throw new ForbiddenException('not_playing');
+    }
+    if (result === 'replaced') {
+      // Complaints were about the earlier photo.
+      await this.complaints.resolve(groupId, day, memberId, now);
     }
     if (result === 'replaced' && existing) {
       await this.store.delete([existing.photoPath, existing.blurPath]).catch((error: unknown) => {
