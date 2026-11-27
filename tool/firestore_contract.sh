@@ -12,7 +12,7 @@ fi
 
 # demo-* keeps the emulator offline: no real project or credentials are touched.
 npx --yes firebase-tools@14 emulators:exec \
-  --only firestore \
+  --only firestore,storage \
   --project demo-commandvibe \
   --config ../firebase.json \
-  "npx jest src/data"
+  "npx jest src/data src/photos/photo-store"

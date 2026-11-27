@@ -32,13 +32,13 @@ jobs:
       - run: npm ci
 
       # A demo-* project id keeps the emulator fully offline: no real project, no credentials.
-      - name: Contract tests on the Firestore emulator
+      - name: Contract tests on the Firestore and Storage emulators
         run: >
           npx --yes firebase-tools@14 emulators:exec
-          --only firestore
+          --only firestore,storage
           --project demo-commandvibe
           --config ../firebase.json
-          "npx jest src/data"
+          "npx jest src/data src/photos/photo-store"
 
       - name: Unit and e2e tests (memory storage)
         run: npx jest && npx jest --config ./test/jest-e2e.json
