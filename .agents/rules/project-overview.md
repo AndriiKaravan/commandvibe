@@ -1,9 +1,9 @@
 # CommandVibe — Project Overview
 
-**Дата оновлення:** 2026-11-26
-**Версія документа:** 2.2 (каталог завдань v2: 9 категорій із дизайну, ≥30 у кожній, сезонність літо/зима)
+**Дата оновлення:** 2026-11-27
+**Версія документа:** 2.3 (сервіс розгорнуто на Cloud Run; база Firestore з назвою `commandvibe` через `FIRESTORE_DATABASE`)
 
-> **Статус:** хвиля 1, частина P1 реалізована (у `main`), на прод не розгорнуто. Дизайн: `docs/specs/2026-11-19-photo-challenge-design.md` (розділ 2а має пріоритет). План: `docs/superpowers/plans/2026-11-26-wave1-roadmap.md`, `…-wave1-p1-foundation.md`.
+> **Статус:** хвиля 1, частина P1 реалізована (у `main`). API розгорнуто 27.11: Cloud Run `commandvibe-api` (ревізія `00002`, `https://commandvibe-api-889388170734.europe-central2.run.app`); веб на живому сайті — ще ні. Дизайн: `docs/specs/2026-11-19-photo-challenge-design.md` (розділ 2а має пріоритет). План: `docs/superpowers/plans/2026-11-26-wave1-roadmap.md`, `…-wave1-p1-foundation.md`.
 
 ## Загальна інформація
 
@@ -47,6 +47,7 @@
 - Guard-и: `AuthGuard` → `AppCheckGuard` (режим `APP_CHECK_MODE`, за замовчуванням `monitor`).
 - Realtime: `verifyToken` = перевірка сесії; `group:<id>` — активні учасники й власник; `org:<id>` — лише власник. Вилучення учасника: статус `removed` → відкликання сесій → `disconnectUser` (закриття `4403`). `member:<id>` — особиста тема учасника (навіть у статусі `pending`): `member.approved` після підтвердження.
 - Один екземпляр сервісу (`min/max-instances=1`), `--timeout=3600 --concurrency=1000`.
+- Firestore: база з назвою `commandvibe` (europe-central2), не `(default)`; сервер бере назву з `FIRESTORE_DATABASE` (за замовчуванням `(default)`, як в емуляторі).
 - Вхід Google у вебі йде через домен сторінки (`authDomain` = домен Hosting): блокування сторонніх cookie ламало redirect (перевірка першого дня).
 - Фото зменшує сервер (дизайн 2а п. 13); клієнт надсилає оригінал (ліміт 15 МБ — P3).
 - Деплой бекенду: ревізія `candidate` без трафіку → перевірки → трафік (з дозволу).
@@ -83,6 +84,7 @@ Firestore (за репозиторіями): `organizers/{uid}` {email, displayN
 
 ## Історія версій
 
+- 2.3 (2026-11-27) — перший деплой API; `FIRESTORE_DATABASE`.
 - 2.2 (2026-11-26) — каталог завдань v2 (див. `content/`).
 - 2.1 (2026-11-26) — виправлення за фінальним рев'ю P1 (див. вище); App Links / Universal Links ще не підключено (потрібні SHA-256 ключа релізу й Apple Team ID).
 - 2.0 (2026-11-26) — P1: сервер (сесії, вхід організатора, групи, приєднання, PIN, realtime, App Check, сторінка запрошення), застосунок Web/Android/iOS (вхід, створення групи, приєднання, PIN, живий список), каталог 76 завдань, скрипти деплою.
