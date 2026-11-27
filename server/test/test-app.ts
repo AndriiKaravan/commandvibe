@@ -1,6 +1,7 @@
 import { INestApplication, UnauthorizedException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
+import { CLOCK } from '../src/auth/session.service';
 import { APP_CHECK_MODE, AppCheckMode } from '../src/shared/app_check';
 import { FirebaseService, VerifiedFirebaseUser } from '../src/firebase/firebase.service';
 import { OidcVerifier, TICK_CONFIG, TickConfig, OIDC_VERIFIER } from '../src/game/tick.guard';
@@ -26,6 +27,8 @@ export async function createTestApp(
     appCheckMode?: AppCheckMode;
     testSeed?: boolean;
     tick?: { config: TickConfig; verifier: OidcVerifier };
+    /** Replaces the server clock; tests move time by assigning `clock.now`. */
+    clock?: { now: Date };
   } = {},
 ): Promise<INestApplication> {
   const builder = Test.createTestingModule({
@@ -35,6 +38,10 @@ export async function createTestApp(
     .useValue(options.firebase ?? new FakeFirebase())
     .overrideProvider(APP_CHECK_MODE)
     .useValue(options.appCheckMode ?? 'off');
+  const clock = options.clock;
+  if (clock) {
+    builder.overrideProvider(CLOCK).useValue(() => new Date(clock.now));
+  }
   if (options.tick) {
     builder
       .overrideProvider(TICK_CONFIG)

@@ -1,33 +1,12 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  Inject,
-  Param,
-  PipeTransform,
-  Post,
-  Put,
-  Query,
-} from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, Inject, Param, Post, Put, Query } from '@nestjs/common';
 import { CurrentAuth } from '../auth/current-subject.decorator';
 import { CLOCK, VerifiedAccess } from '../auth/session.service';
+import { DayPipe } from '../common/day.pipe';
 import { IdPipe } from '../common/id.pipe';
 import { organizerUid } from '../groups/groups.controller';
 import { CalendarService, ConfigureInput, SetTaskInput } from './calendar.service';
 import { GameEngine } from './game-engine';
 import { CalendarView, CatalogTaskView, DayView, TodayView, isCategory, searchCatalog } from './views';
-
-/** A day number in the URL: 0..30 (a game lasts at most 31 days); the service checks it against the game. */
-class DayPipe implements PipeTransform<string, number> {
-  transform(value: string): number {
-    if (typeof value !== 'string' || !/^\d{1,2}$/.test(value) || Number(value) > 30) {
-      throw new BadRequestException('invalid_day');
-    }
-    return Number(value);
-  }
-}
 
 @Controller()
 export class GameController {

@@ -14,7 +14,9 @@ export function configureApp(app: INestApplication): void {
       'x-firebase-appcheck',
       'x-app-platform',
       'x-app-build',
+      'content-length',
     ],
+    exposedHeaders: ['retry-after'],
   });
   app.enableShutdownHooks();
 }

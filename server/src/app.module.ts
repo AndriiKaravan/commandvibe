@@ -6,6 +6,7 @@ import { GameModule } from './game/game.module';
 import { GroupsModule } from './groups/groups.module';
 import { MembersModule } from './members/members.module';
 import { HealthController } from './health/health.controller';
+import { PhotosModule } from './photos/photos.module';
 import { AppCheckGuard, AppCheckModule } from './shared/app_check';
 import { TestSeedModule } from './testing/test-seed.module';
 
@@ -29,6 +30,7 @@ export class AppModule {
         GroupsModule,
         GameModule,
         MembersModule,
+        PhotosModule,
         ...(options.testSeed ? [TestSeedModule] : []),
       ],
       controllers: [HealthController],

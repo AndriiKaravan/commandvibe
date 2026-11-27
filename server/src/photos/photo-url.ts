@@ -46,6 +46,11 @@ export class PhotoUrlSigner {
   }
 
   verify(token: string, now: Date): PhotoUrlClaims | undefined {
+    return this.verifyWithExpiry(token, now)?.claims;
+  }
+
+  /** Like [verify], also telling when the link stops working (for cache headers). */
+  verifyWithExpiry(token: string, now: Date): { claims: PhotoUrlClaims; expiresAt: Date } | undefined {
     const [body, signature, extra] = token.split('.');
     if (!body || !signature || extra !== undefined) {
       return undefined;
@@ -60,7 +65,10 @@ export class PhotoUrlSigner {
       if (typeof parsed.e !== 'number' || parsed.e * 1000 <= now.getTime()) {
         return undefined;
       }
-      return { g: parsed.g, d: parsed.d, a: parsed.a, v: parsed.v, x: parsed.x, k: parsed.k, s: parsed.s };
+      return {
+        claims: { g: parsed.g, d: parsed.d, a: parsed.a, v: parsed.v, x: parsed.x, k: parsed.k, s: parsed.s },
+        expiresAt: new Date(parsed.e * 1000),
+      };
     } catch {
       return undefined;
     }

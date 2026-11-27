@@ -26,6 +26,6 @@ function signingKey(): string {
     SessionService,
     { provide: APP_GUARD, useClass: AuthGuard },
   ],
-  exports: [SessionService, CLOCK],
+  exports: [SessionService, CLOCK, SESSION_SIGNING_KEY],
 })
 export class AuthModule {}
