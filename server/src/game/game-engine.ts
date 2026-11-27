@@ -5,13 +5,13 @@ import { GroupsService } from '../groups/groups.service';
 import { GameEvents } from './game-events';
 import { GAME_EVENTS, RANDOM } from './game.tokens';
 import { pickPicker, spinDoors } from './roulette';
+import { revealAt } from './game-time';
 import { Random } from './task-picker';
 import { TodayView, dayView, spinView, taskVisibleToPlayers } from './views';
 
 const pickWindowMs = 3 * 60 * 60 * 1000;
 const spinLeadMs = 1500;
 const spinDurationMs = 5000;
-const finishAfterMs = 24 * 60 * 60 * 1000;
 const maxSpinTries = 3;
 
 /**
@@ -54,6 +54,7 @@ export class GameEngine {
         await this.performSpin(group, cell, 'picking', 'game', now);
       }
     }
+    await this.revealDue(group, now);
     await this.finishIfOver(group, group.game, now);
   }
 
@@ -91,11 +92,16 @@ export class GameEngine {
     const due = cells.filter((cell) => cell.opensAt.getTime() <= now.getTime());
     if (due.length === 0) {
       const first = cells[0];
-      return { status: 'before_start', game, day: first && dayView(first, game, isOrganizer), serverTime };
+      return {
+        status: 'before_start',
+        game,
+        day: first && dayView(first, game, isOrganizer, group.timezone),
+        serverTime,
+      };
     }
     const current = due[due.length - 1];
     const day = {
-      ...dayView(current, game, isOrganizer || taskVisibleToPlayers(current, now)),
+      ...dayView(current, game, isOrganizer || taskVisibleToPlayers(current, now), group.timezone),
       ...(current.pickerMemberId ? { pickerMemberId: current.pickerMemberId } : {}),
       ...(current.pickDeadlineAt ? { pickDeadlineAt: current.pickDeadlineAt.toISOString() } : {}),
       ...(current.state === 'picking'
@@ -196,9 +202,26 @@ export class GameEngine {
     await this.groups.setStatus(groupId, 'draft', 'active');
   }
 
+  /** Announces each open day whose photos became visible; access itself follows the clock, not this step. */
+  private async revealDue(group: Group, now: Date): Promise<void> {
+    for (const cell of await this.cells.list(group.id)) {
+      if (
+        cell.state !== 'open' ||
+        cell.revealedAt ||
+        revealAt(cell.opensAt, group.timezone).getTime() > now.getTime()
+      ) {
+        continue;
+      }
+      if (await this.cells.markRevealed(group.id, cell.dayIndex, now)) {
+        this.events.publish(group.id, 'photos.revealed', { dayIndex: cell.dayIndex });
+      }
+    }
+  }
+
+  /** The game ends once the last day's photos are revealed; late submissions are possible until then. */
   private async finishIfOver(group: Group, game: GameSettings, now: Date): Promise<void> {
     const last = await this.cells.get(group.id, game.days - 1);
-    if (last?.state !== 'open' || now.getTime() < last.opensAt.getTime() + finishAfterMs) {
+    if (last?.state !== 'open' || now.getTime() < revealAt(last.opensAt, group.timezone).getTime()) {
       return;
     }
     if (await this.groups.setStatus(group.id, 'active', 'finished')) {

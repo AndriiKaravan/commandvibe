@@ -264,6 +264,52 @@ describe('GameEngine', () => {
     });
   });
 
+  describe('revealing photos', () => {
+    it('should announce a day once, at 9:00 two days after it opened', async () => {
+      await setup('auto');
+      await engine.advance(groupId, at('2026-12-01T07:00:00Z'));
+      await engine.advance(groupId, at('2026-12-03T06:59:00Z'));
+      expect(events.of('photos.revealed')).toEqual([]);
+      await engine.advance(groupId, at('2026-12-03T07:00:00Z'));
+      expect(events.of('photos.revealed')).toEqual([{ dayIndex: 0 }]);
+      await engine.advance(groupId, at('2026-12-03T07:05:00Z'));
+      expect(events.of('photos.revealed')).toHaveLength(1);
+      expect((await repos.cells.get(groupId, 0))?.revealedAt).toEqual(at('2026-12-03T07:00:00Z'));
+    });
+
+    it('should announce once when two callers advance at the same moment', async () => {
+      await setup('auto');
+      const moment = at('2026-12-03T07:00:00Z');
+      await Promise.all([engine.advance(groupId, moment), engine.advance(groupId, moment)]);
+      expect(events.of('photos.revealed').filter((p) => p.dayIndex === 0)).toHaveLength(1);
+    });
+
+    it('should reveal every missed day exactly once, in order, after a long silence', async () => {
+      await setup('auto');
+      await engine.advance(groupId, at('2026-12-05T07:00:00Z'));
+      expect(events.of('photos.revealed')).toEqual([{ dayIndex: 0 }, { dayIndex: 1 }, { dayIndex: 2 }]);
+      await engine.advance(groupId, at('2026-12-05T07:01:00Z'));
+      expect(events.of('photos.revealed')).toHaveLength(3);
+    });
+
+    it('should not reveal a day that is not open yet', async () => {
+      await setup('roulette');
+      await addMember('m1');
+      await engine.advance(groupId, at('2026-12-01T07:00:00Z'));
+      expect(events.of('photos.revealed')).toEqual([]);
+    });
+
+    it('should follow the scheduled date, so a day opened late still reveals on time', async () => {
+      await setup('roulette');
+      await addMember('m1');
+      await engine.advance(groupId, at('2026-12-01T07:00:00Z'));
+      await engine.advance(groupId, at('2026-12-01T11:00:00Z'));
+      expect((await repos.cells.get(groupId, 0))?.state).toBe('open');
+      await engine.advance(groupId, at('2026-12-03T07:00:00Z'));
+      expect(events.of('photos.revealed').filter((p) => p.dayIndex === 0)).toHaveLength(1);
+    });
+  });
+
   describe('what players must not learn early', () => {
     it('should keep task details out of every event', async () => {
       await setup('roulette');
@@ -340,15 +386,19 @@ describe('GameEngine', () => {
       expect(active.serverTime).toBe('2026-12-02T08:00:00.000Z');
     });
 
-    it('should finish a day after the last one opened and say so once', async () => {
+    it('should finish only after the last day was revealed and say so once', async () => {
       await setup('auto');
       const m1 = await addMember('m1');
-      const end = at('2026-12-08T07:00:00Z');
+      // The last day (6) opens on 2026-12-07 and its photos are revealed on 2026-12-09 at 9:00 Kyiv.
+      await engine.advance(groupId, at('2026-12-09T06:59:00Z'));
+      expect(events.of('game.finished')).toHaveLength(0);
+      expect((await repos.groups.get(groupId))?.status).toBe('active');
+      const end = at('2026-12-09T07:00:00Z');
       await Promise.all([engine.advance(groupId, end), engine.advance(groupId, end), engine.advance(groupId, end)]);
       expect(events.of('game.finished')).toHaveLength(1);
       expect((await repos.groups.get(groupId))?.status).toBe('finished');
       expect((await engine.today(m1, groupId, end)).status).toBe('finished');
-      await engine.advance(groupId, at('2026-12-09T07:00:00Z'));
+      await engine.advance(groupId, at('2026-12-10T07:00:00Z'));
       expect(events.of('game.finished')).toHaveLength(1);
     });
 

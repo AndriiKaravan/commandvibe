@@ -1,7 +1,7 @@
 import { catalog } from '../content/task-catalog';
 import { Category, TaskCatalogEntry, categories } from '../content/task-catalog.model';
 import { Cell, CellState, GameSettings, RouletteSpin, TaskRef } from '../data/models';
-import { addDays } from './game-time';
+import { addDays, revealAt } from './game-time';
 
 /** A task as clients see it; a catalog task keeps its id, a custom one has none. */
 export interface TaskView {
@@ -17,6 +17,8 @@ export interface DayView {
   date: string;
   opensAt: string;
   state: CellState;
+  /** When this open day's photos become visible to everyone. */
+  revealAt?: string;
   /** Absent for a member until the day is open: players must not see tasks ahead. */
   task?: TaskView;
 }
@@ -70,13 +72,16 @@ export function taskView(ref: TaskRef): TaskView {
   };
 }
 
-export function dayView(cell: Cell, game: GameSettings, showTask: boolean): DayView {
+export function dayView(cell: Cell, game: GameSettings, showTask: boolean, timeZone?: string): DayView {
   const view: DayView = {
     dayIndex: cell.dayIndex,
     date: addDays(game.startDate, cell.dayIndex),
     opensAt: cell.opensAt.toISOString(),
     state: cell.state,
   };
+  if (timeZone && cell.state === 'open') {
+    view.revealAt = revealAt(cell.opensAt, timeZone).toISOString();
+  }
   if (showTask) {
     view.task = taskView(cell.task);
   }
@@ -106,13 +111,14 @@ export function calendarView(
   cells: Cell[],
   isOrganizer: boolean,
   now: Date,
+  timeZone?: string,
 ): CalendarView {
   if (!game) {
     return { days: [], serverTime: now.toISOString() };
   }
   return {
     game,
-    days: cells.map((cell) => dayView(cell, game, isOrganizer || taskVisibleToPlayers(cell, now))),
+    days: cells.map((cell) => dayView(cell, game, isOrganizer || taskVisibleToPlayers(cell, now), timeZone)),
     serverTime: now.toISOString(),
   };
 }

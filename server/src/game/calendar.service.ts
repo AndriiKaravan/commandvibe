@@ -113,7 +113,13 @@ export class CalendarService {
     await this.groupsService.getFor(subject, groupId);
     await this.engine.advance(groupId, this.now());
     const group = await this.groupsService.getFor(subject, groupId);
-    return calendarView(group.game, await this.cells.list(groupId), subject.kind === 'organizer', this.now());
+    return calendarView(
+      group.game,
+      await this.cells.list(groupId),
+      subject.kind === 'organizer',
+      this.now(),
+      group.timezone,
+    );
   }
 
   /** The "Other" button: the next task from the same categories that the game does not use yet. */

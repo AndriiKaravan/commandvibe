@@ -298,6 +298,35 @@ describe('Photos', () => {
     expect(after.body.total).toBe(2);
   });
 
+  describe('reveal', () => {
+    it('should tell clients when an open day is revealed', async () => {
+      const { groupId, owner, opensAt } = await startedGame();
+      const today = await api().get(`/groups/${groupId}/today`).set('authorization', owner);
+      const calendar = await api().get(`/groups/${groupId}/calendar`).set('authorization', owner);
+      for (const day of [today.body.day, calendar.body.days[0]]) {
+        const reveal = new Date(day.revealAt as string);
+        expect(reveal.getTime() - opensAt.getTime()).toBeGreaterThan(2 * 24 * 3600_000);
+        expect(reveal.getTime() - opensAt.getTime()).toBeLessThan(3 * 24 * 3600_000);
+      }
+      expect(calendar.body.days[1].revealAt).toBeUndefined();
+    });
+
+    it('should show everything in full after 9:00 without waiting for any tick', async () => {
+      const { groupId, token, opensAt } = await startedGame();
+      const ira = await join(token, 'Ira');
+      const taro = await join(token, 'Taras');
+      await submit(groupId, ira.auth, await jpeg({ width: 800, height: 600 }));
+      const before = await list(groupId, taro.auth);
+      expect(before.body.items[0].access).toBe('blur');
+      expect(before.body.revealed).toBe(false);
+      clock.now = new Date(opensAt.getTime() + 58 * 3600_000);
+      const after = await list(groupId, await reauth(taro));
+      expect(after.body.revealed).toBe(true);
+      expect(after.body.items[0]).toMatchObject({ displayName: 'Ira', access: 'full' });
+      expect(after.body.items[0].photoUrl).toBeDefined();
+    });
+  });
+
   describe('files', () => {
     async function twoPhotos() {
       const world = await startedGame();
