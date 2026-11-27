@@ -69,6 +69,14 @@ export function localDate(instant: Date, timeZone: string): string {
   return `${value('year')}-${value('month')}-${value('day')}`;
 }
 
+/**
+ * When a day's photos become visible to everyone: 9:00 two days after the scheduled date. It follows `opensAt`,
+ * not the real opening, so a late-opened day still reveals on schedule.
+ */
+export function revealAt(opensAt: Date, timeZone: string): Date {
+  return zonedToUtc(addDays(localDate(opensAt, timeZone), 2), '09:00', timeZone);
+}
+
 export function dayOpensAt(game: { startDate: string; openTime: string }, dayIndex: number, timeZone: string): Date {
   return zonedToUtc(addDays(game.startDate, dayIndex), game.openTime, timeZone);
 }

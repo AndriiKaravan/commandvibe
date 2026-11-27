@@ -126,4 +126,44 @@ export interface Cell {
   pickerMemberId?: string;
   pickDeadlineAt?: Date;
   spin?: RouletteSpin;
+  /** When the day's photos were announced; only dedupes the event, access follows the clock. */
+  revealedAt?: Date;
+}
+
+export type UploadSource = 'camera' | 'gallery' | 'unknown';
+
+/** A member's photo for one day (`groups/{g}/cells/{dd}/submissions/{memberId}`). */
+export interface Submission {
+  groupId: string;
+  dayIndex: number;
+  memberId: string;
+  /** Changes on every upload, so older links and files stop matching. */
+  version: string;
+  photoPath: string;
+  blurPath: string;
+  width: number;
+  height: number;
+  /** First upload; later replacements keep it. */
+  submittedAt: Date;
+  updatedAt: Date;
+  takenAt?: Date;
+  source: UploadSource;
+  flags: { takenBefore: boolean };
+  status: 'visible' | 'hidden';
+  hiddenAt?: Date;
+}
+
+export type ComplaintReason = 'inappropriate' | 'not_task' | 'other';
+
+export interface Complaint {
+  /** `${dd}_${authorMemberId}_${complainerMemberId}`: one complaint per complainer and photo. */
+  id: string;
+  groupId: string;
+  dayIndex: number;
+  authorMemberId: string;
+  complainerMemberId: string;
+  reason: ComplaintReason;
+  status: 'open' | 'resolved';
+  createdAt: Date;
+  resolvedAt?: Date;
 }

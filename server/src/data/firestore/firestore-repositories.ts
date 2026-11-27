@@ -1,10 +1,23 @@
 import { createHash } from 'node:crypto';
 import { FieldValue, Firestore, Timestamp } from 'firebase-admin/firestore';
-import { Cell, CellState, Group, GroupStatus, Member, MemberSecrets, Organizer, Session } from '../models';
+import {
+  Cell,
+  CellState,
+  Complaint,
+  Group,
+  GroupStatus,
+  Member,
+  MemberSecrets,
+  Organizer,
+  Session,
+  Submission,
+} from '../models';
 import { nextPinAttempt } from '../pin-attempts';
 import {
   CellRepository,
+  ComplaintRepository,
   GroupRepository,
+  SubmissionRepository,
   MemberRepository,
   NameTakenError,
   OrganizerRepository,
@@ -321,6 +334,131 @@ class FirestoreCells implements CellRepository {
       return true;
     });
   }
+
+  async markRevealed(groupId: string, dayIndex: number, at: Date): Promise<boolean> {
+    return this.db.runTransaction(async (tx) => {
+      const ref = this.ref(groupId, dayIndex);
+      const current = fromStore<Cell>((await tx.get(ref)).data());
+      if (!current || current.revealedAt) {
+        return false;
+      }
+      tx.update(ref, toPatch({ revealedAt: at }));
+      return true;
+    });
+  }
+}
+
+const dayId = (dayIndex: number): string => String(dayIndex).padStart(2, '0');
+
+class FirestoreSubmissions implements SubmissionRepository {
+  constructor(private readonly db: Firestore) {}
+
+  private ref(groupId: string, dayIndex: number, memberId: string) {
+    return this.db.doc(`groups/${groupId}/cells/${dayId(dayIndex)}/submissions/${memberId}`);
+  }
+
+  async get(groupId: string, dayIndex: number, memberId: string): Promise<Submission | undefined> {
+    return fromStore<Submission>((await this.ref(groupId, dayIndex, memberId).get()).data());
+  }
+
+  async listDay(groupId: string, dayIndex: number): Promise<Submission[]> {
+    const found = await this.db.collection(`groups/${groupId}/cells/${dayId(dayIndex)}/submissions`).get();
+    return found.docs.map((doc) => fromStore<Submission>(doc.data()) as Submission);
+  }
+
+  async listMember(groupId: string, memberId: string, days: number): Promise<Submission[]> {
+    if (days <= 0) {
+      return [];
+    }
+    const refs = Array.from({ length: days }, (_, day) => this.ref(groupId, day, memberId));
+    const snaps = await this.db.getAll(...refs);
+    return snaps.filter((snap) => snap.exists).map((snap) => fromStore<Submission>(snap.data()) as Submission);
+  }
+
+  async put(submission: Submission, expectedVersion: string | null): Promise<'created' | 'replaced' | 'conflict'> {
+    return this.db.runTransaction(async (tx) => {
+      const ref = this.ref(submission.groupId, submission.dayIndex, submission.memberId);
+      const current = fromStore<Submission>((await tx.get(ref)).data());
+      if (expectedVersion === null ? current : current?.version !== expectedVersion) {
+        return 'conflict';
+      }
+      tx.set(ref, toStore(submission));
+      return current ? 'replaced' : 'created';
+    });
+  }
+
+  async setStatus(
+    groupId: string,
+    dayIndex: number,
+    memberId: string,
+    status: Submission['status'],
+    at: Date,
+  ): Promise<boolean> {
+    return this.db.runTransaction(async (tx) => {
+      const ref = this.ref(groupId, dayIndex, memberId);
+      if (!(await tx.get(ref)).exists) {
+        return false;
+      }
+      tx.update(ref, toPatch({ status, hiddenAt: status === 'hidden' ? at : undefined }));
+      return true;
+    });
+  }
+
+  async delete(groupId: string, dayIndex: number, memberId: string): Promise<void> {
+    await this.ref(groupId, dayIndex, memberId).delete();
+  }
+}
+
+class FirestoreComplaints implements ComplaintRepository {
+  constructor(private readonly db: Firestore) {}
+
+  private collection(groupId: string) {
+    return this.db.collection(`groups/${groupId}/complaints`);
+  }
+
+  async add(complaint: Complaint): Promise<boolean> {
+    try {
+      await this.collection(complaint.groupId).doc(complaint.id).create(toStore(complaint));
+      return true;
+    } catch (error) {
+      if ((error as { code?: number }).code === 6) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  async listOpen(groupId: string): Promise<Complaint[]> {
+    const found = await this.collection(groupId).where('status', '==', 'open').get();
+    return found.docs.map((doc) => fromStore<Complaint>(doc.data()) as Complaint);
+  }
+
+  async openCount(groupId: string, dayIndex: number, authorMemberId: string): Promise<number> {
+    return (await this.listOpen(groupId)).filter((c) => c.dayIndex === dayIndex && c.authorMemberId === authorMemberId)
+      .length;
+  }
+
+  async resolve(groupId: string, dayIndex: number, authorMemberId: string, at: Date): Promise<number> {
+    const found = await this.collection(groupId).where('status', '==', 'open').get();
+    const matching = found.docs.filter((doc) => {
+      const c = doc.data();
+      return c.dayIndex === dayIndex && c.authorMemberId === authorMemberId;
+    });
+    const batch = this.db.batch();
+    matching.forEach((doc) => batch.update(doc.ref, toPatch({ status: 'resolved', resolvedAt: at })));
+    await batch.commit();
+    return matching.length;
+  }
+
+  async deleteInvolving(groupId: string, memberId: string): Promise<void> {
+    const [against, by] = await Promise.all([
+      this.collection(groupId).where('authorMemberId', '==', memberId).get(),
+      this.collection(groupId).where('complainerMemberId', '==', memberId).get(),
+    ]);
+    const batch = this.db.batch();
+    [...against.docs, ...by.docs].forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+  }
 }
 
 export function createFirestoreRepositories(db: Firestore): {
@@ -329,8 +467,12 @@ export function createFirestoreRepositories(db: Firestore): {
   sessions: SessionRepository;
   groups: GroupRepository;
   members: MemberRepository;
+  submissions: SubmissionRepository;
+  complaints: ComplaintRepository;
 } {
   return {
+    submissions: new FirestoreSubmissions(db),
+    complaints: new FirestoreComplaints(db),
     cells: new FirestoreCells(db),
     organizers: new FirestoreOrganizers(db),
     sessions: new FirestoreSessions(db),

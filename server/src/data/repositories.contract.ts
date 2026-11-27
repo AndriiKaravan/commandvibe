@@ -1,11 +1,21 @@
-import { Cell, Group, Member, Session, defaultGroupSettings, nameKeyOf } from './models';
-import { CellRepository, GroupRepository, MemberRepository, NameTakenError, SessionRepository } from './repositories';
+import { Cell, Complaint, Group, Member, Session, Submission, defaultGroupSettings, nameKeyOf } from './models';
+import {
+  CellRepository,
+  ComplaintRepository,
+  GroupRepository,
+  MemberRepository,
+  NameTakenError,
+  SessionRepository,
+  SubmissionRepository,
+} from './repositories';
 
 export interface RepositorySet {
   cells: CellRepository;
   groups: GroupRepository;
   members: MemberRepository;
   sessions: SessionRepository;
+  submissions: SubmissionRepository;
+  complaints: ComplaintRepository;
 }
 
 let counter = 0;
@@ -47,6 +57,43 @@ export function aCell(groupId: string, dayIndex: number, overrides: Partial<Cell
     opensAt: new Date(Date.UTC(2026, 11, 1 + dayIndex, 7)),
     state: 'closed',
     ...overrides,
+  };
+}
+
+export function aSubmission(
+  groupId: string,
+  dayIndex: number,
+  memberId: string,
+  overrides: Partial<Submission> = {},
+): Submission {
+  return {
+    groupId,
+    dayIndex,
+    memberId,
+    version: nextId('v'),
+    photoPath: `groups/${groupId}/cells/0${dayIndex}/${memberId}/v/photo.jpg`,
+    blurPath: `groups/${groupId}/cells/0${dayIndex}/${memberId}/v/blur.jpg`,
+    width: 1600,
+    height: 1200,
+    submittedAt: new Date('2026-12-01T08:00:00Z'),
+    updatedAt: new Date('2026-12-01T08:00:00Z'),
+    source: 'camera',
+    flags: { takenBefore: false },
+    status: 'visible',
+    ...overrides,
+  };
+}
+
+export function aComplaint(groupId: string, dayIndex: number, author: string, complainer: string): Complaint {
+  return {
+    id: `0${dayIndex}_${author}_${complainer}`,
+    groupId,
+    dayIndex,
+    authorMemberId: author,
+    complainerMemberId: complainer,
+    reason: 'other',
+    status: 'open',
+    createdAt: new Date('2026-12-02T08:00:00Z'),
   };
 }
 
@@ -190,6 +237,109 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
       expect(secrets.lockedUntil).toBeUndefined();
       expect(secrets.pinFailures).toBe(0);
     });
+    describe('submissions', () => {
+      it('should create a submission once when two creates race', async () => {
+        const group = aGroup();
+        const results = await Promise.all(
+          Array.from({ length: 10 }, () => repos.submissions.put(aSubmission(group.id, 1, 'm1'), null)),
+        );
+        expect(results.filter((r) => r === 'created')).toHaveLength(1);
+        expect(results.filter((r) => r === 'conflict')).toHaveLength(9);
+      });
+
+      it('should replace only when the expected version matches', async () => {
+        const group = aGroup();
+        const first = aSubmission(group.id, 1, 'm1');
+        await repos.submissions.put(first, null);
+        const second = aSubmission(group.id, 1, 'm1', { width: 800 });
+        expect(await repos.submissions.put(second, 'wrong')).toBe('conflict');
+        expect(await repos.submissions.put(second, first.version)).toBe('replaced');
+        expect((await repos.submissions.get(group.id, 1, 'm1'))?.width).toBe(800);
+        expect(await repos.submissions.put(aSubmission(group.id, 2, 'm1'), first.version)).toBe('conflict');
+      });
+
+      it('should round-trip dates, flags and an absent takenAt', async () => {
+        const group = aGroup();
+        const taken = aSubmission(group.id, 1, 'm1', {
+          takenAt: new Date('2026-12-01T06:59:00Z'),
+          flags: { takenBefore: true },
+          source: 'gallery',
+        });
+        await repos.submissions.put(taken, null);
+        expect(await repos.submissions.get(group.id, 1, 'm1')).toEqual(taken);
+        await repos.submissions.put(aSubmission(group.id, 1, 'm2'), null);
+        expect((await repos.submissions.get(group.id, 1, 'm2'))?.takenAt).toBeUndefined();
+        expect(await repos.submissions.get(group.id, 1, 'nobody')).toBeUndefined();
+      });
+
+      it("should list a day and a member's submissions", async () => {
+        const group = aGroup();
+        await repos.submissions.put(aSubmission(group.id, 1, 'm1'), null);
+        await repos.submissions.put(aSubmission(group.id, 1, 'm2'), null);
+        await repos.submissions.put(aSubmission(group.id, 3, 'm1'), null);
+        await repos.submissions.put(aSubmission(group.id, 9, 'm1'), null);
+        expect((await repos.submissions.listDay(group.id, 1)).map((s) => s.memberId).sort()).toEqual(['m1', 'm2']);
+        expect((await repos.submissions.listMember(group.id, 'm1', 5)).map((s) => s.dayIndex).sort()).toEqual([1, 3]);
+      });
+
+      it('should hide, restore and delete a submission', async () => {
+        const group = aGroup();
+        await repos.submissions.put(aSubmission(group.id, 1, 'm1'), null);
+        const at = new Date('2026-12-02T10:00:00Z');
+        expect(await repos.submissions.setStatus(group.id, 1, 'm1', 'hidden', at)).toBe(true);
+        const hidden = await repos.submissions.get(group.id, 1, 'm1');
+        expect(hidden?.status).toBe('hidden');
+        expect(hidden?.hiddenAt).toEqual(at);
+        expect(await repos.submissions.setStatus(group.id, 1, 'm1', 'visible', at)).toBe(true);
+        expect((await repos.submissions.get(group.id, 1, 'm1'))?.hiddenAt).toBeUndefined();
+        expect(await repos.submissions.setStatus(group.id, 1, 'nobody', 'hidden', at)).toBe(false);
+        await repos.submissions.delete(group.id, 1, 'm1');
+        expect(await repos.submissions.get(group.id, 1, 'm1')).toBeUndefined();
+        await repos.submissions.delete(group.id, 1, 'm1');
+      });
+    });
+
+    describe('complaints', () => {
+      it('should count one complaint per complainer and photo', async () => {
+        const group = aGroup();
+        expect(await repos.complaints.add(aComplaint(group.id, 1, 'a', 'c1'))).toBe(true);
+        expect(await repos.complaints.add(aComplaint(group.id, 1, 'a', 'c1'))).toBe(false);
+        expect(await repos.complaints.add(aComplaint(group.id, 1, 'a', 'c2'))).toBe(true);
+        expect(await repos.complaints.openCount(group.id, 1, 'a')).toBe(2);
+        expect(await repos.complaints.openCount(group.id, 1, 'other')).toBe(0);
+        expect(await repos.complaints.listOpen(group.id)).toHaveLength(2);
+      });
+
+      it('should resolve open complaints of one photo only', async () => {
+        const group = aGroup();
+        await repos.complaints.add(aComplaint(group.id, 1, 'a', 'c1'));
+        await repos.complaints.add(aComplaint(group.id, 1, 'b', 'c1'));
+        const resolved = await repos.complaints.resolve(group.id, 1, 'a', new Date('2026-12-03T00:00:00Z'));
+        expect(resolved).toBe(1);
+        expect((await repos.complaints.listOpen(group.id)).map((c) => c.authorMemberId)).toEqual(['b']);
+        expect(await repos.complaints.openCount(group.id, 1, 'a')).toBe(0);
+      });
+
+      it('should delete complaints filed by or against a member', async () => {
+        const group = aGroup();
+        await repos.complaints.add(aComplaint(group.id, 1, 'a', 'c1'));
+        await repos.complaints.add(aComplaint(group.id, 2, 'c1', 'x'));
+        await repos.complaints.add(aComplaint(group.id, 1, 'b', 'y'));
+        await repos.complaints.deleteInvolving(group.id, 'c1');
+        expect((await repos.complaints.listOpen(group.id)).map((c) => c.authorMemberId)).toEqual(['b']);
+      });
+    });
+
+    it('should mark a day revealed once under concurrency', async () => {
+      const group = aGroup();
+      await repos.cells.replaceAll(group.id, [aCell(group.id, 0, { state: 'open' })]);
+      const at = new Date('2026-12-03T07:00:00Z');
+      const results = await Promise.all(Array.from({ length: 5 }, () => repos.cells.markRevealed(group.id, 0, at)));
+      expect(results.filter(Boolean)).toHaveLength(1);
+      expect((await repos.cells.get(group.id, 0))?.revealedAt).toEqual(at);
+      expect(await repos.cells.markRevealed(group.id, 7, at)).toBe(false);
+    });
+
     describe('cells', () => {
       it('should list the cells of a group in day order', async () => {
         const group = aGroup();

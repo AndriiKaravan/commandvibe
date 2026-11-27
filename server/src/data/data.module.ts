@@ -4,7 +4,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { firestoreDatabaseId } from './firestore-database';
 import { createFirestoreRepositories } from './firestore/firestore-repositories';
 import { createMemoryRepositories } from './memory/memory-repositories';
-import { CELLS, GROUPS, MEMBERS, ORGANIZERS, SESSIONS } from './repositories';
+import { CELLS, COMPLAINTS, GROUPS, MEMBERS, ORGANIZERS, SESSIONS, SUBMISSIONS } from './repositories';
 
 /** Provides the repositories; the rest of the server only sees their interfaces. */
 @Module({})
@@ -20,6 +20,8 @@ export class DataModule {
       { provide: SESSIONS, useValue: repos.sessions },
       { provide: GROUPS, useValue: repos.groups },
       { provide: MEMBERS, useValue: repos.members },
+      { provide: SUBMISSIONS, useValue: repos.submissions },
+      { provide: COMPLAINTS, useValue: repos.complaints },
     ];
     return { module: DataModule, global: true, providers, exports: providers };
   }

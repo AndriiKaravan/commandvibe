@@ -1,4 +1,4 @@
-import { addDays, dayOpensAt, isValidDate, isValidTime, localDate, zonedToUtc } from './game-time';
+import { addDays, dayOpensAt, isValidDate, isValidTime, localDate, revealAt, zonedToUtc } from './game-time';
 
 describe('game time', () => {
   describe('zonedToUtc', () => {
@@ -53,6 +53,22 @@ describe('game time', () => {
       expect(isValidTime('9:00')).toBe(false);
       expect(isValidTime('09:60')).toBe(false);
       expect(isValidTime('23:59')).toBe(true);
+    });
+  });
+  describe('revealAt', () => {
+    const reveal = (iso: string) => revealAt(new Date(iso), 'Europe/Kyiv').toISOString();
+
+    it('should reveal at 9:00 two days after the scheduled day', () => {
+      expect(reveal('2026-12-01T07:00:00Z')).toBe('2026-12-03T07:00:00.000Z');
+    });
+
+    it('should follow DST in both directions', () => {
+      expect(reveal('2027-03-26T07:00:00Z')).toBe('2027-03-28T06:00:00.000Z');
+      expect(reveal('2026-10-23T06:00:00Z')).toBe('2026-10-25T07:00:00.000Z');
+    });
+
+    it('should use the local date of opensAt, not the UTC one', () => {
+      expect(reveal('2026-12-01T22:30:00Z')).toBe('2026-12-04T07:00:00.000Z');
     });
   });
 });

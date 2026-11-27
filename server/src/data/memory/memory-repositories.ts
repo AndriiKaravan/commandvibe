@@ -1,8 +1,21 @@
-import { Cell, CellState, Group, GroupStatus, Member, MemberSecrets, Organizer, Session } from '../models';
+import {
+  Cell,
+  CellState,
+  Complaint,
+  Group,
+  GroupStatus,
+  Member,
+  MemberSecrets,
+  Organizer,
+  Session,
+  Submission,
+} from '../models';
 import { nextPinAttempt } from '../pin-attempts';
 import {
   CellRepository,
+  ComplaintRepository,
   GroupRepository,
+  SubmissionRepository,
   MemberRepository,
   NameTakenError,
   OrganizerRepository,
@@ -247,6 +260,120 @@ class MemoryCells implements CellRepository {
     this.items.set(this.key(groupId, b), { ...second, task: first.task });
     return true;
   }
+
+  async markRevealed(groupId: string, dayIndex: number, at: Date): Promise<boolean> {
+    const item = this.items.get(this.key(groupId, dayIndex));
+    if (!item || item.revealedAt) {
+      return false;
+    }
+    this.items.set(this.key(groupId, dayIndex), { ...item, revealedAt: new Date(at) });
+    return true;
+  }
+}
+
+class MemorySubmissions implements SubmissionRepository {
+  private readonly items = new Map<string, Submission>();
+
+  private key = (groupId: string, dayIndex: number, memberId: string): string => `${groupId}/${dayIndex}/${memberId}`;
+
+  async get(groupId: string, dayIndex: number, memberId: string): Promise<Submission | undefined> {
+    const item = this.items.get(this.key(groupId, dayIndex, memberId));
+    return item && copy(item);
+  }
+
+  async listDay(groupId: string, dayIndex: number): Promise<Submission[]> {
+    return [...this.items.values()].filter((s) => s.groupId === groupId && s.dayIndex === dayIndex).map(copy);
+  }
+
+  async listMember(groupId: string, memberId: string, days: number): Promise<Submission[]> {
+    return [...this.items.values()]
+      .filter((s) => s.groupId === groupId && s.memberId === memberId && s.dayIndex < days)
+      .map(copy);
+  }
+
+  // No await between read and write, so this is atomic on the event loop.
+  async put(submission: Submission, expectedVersion: string | null): Promise<'created' | 'replaced' | 'conflict'> {
+    const key = this.key(submission.groupId, submission.dayIndex, submission.memberId);
+    const current = this.items.get(key);
+    if (expectedVersion === null ? current : current?.version !== expectedVersion) {
+      return 'conflict';
+    }
+    this.items.set(key, copy(submission));
+    return current ? 'replaced' : 'created';
+  }
+
+  async setStatus(
+    groupId: string,
+    dayIndex: number,
+    memberId: string,
+    status: Submission['status'],
+    at: Date,
+  ): Promise<boolean> {
+    const key = this.key(groupId, dayIndex, memberId);
+    const current = this.items.get(key);
+    if (!current) {
+      return false;
+    }
+    const next: Submission = { ...current, status, hiddenAt: status === 'hidden' ? at : undefined };
+    if (status === 'visible') {
+      delete next.hiddenAt;
+    }
+    this.items.set(key, next);
+    return true;
+  }
+
+  async delete(groupId: string, dayIndex: number, memberId: string): Promise<void> {
+    this.items.delete(this.key(groupId, dayIndex, memberId));
+  }
+}
+
+class MemoryComplaints implements ComplaintRepository {
+  private readonly items = new Map<string, Complaint>();
+
+  private key = (c: Pick<Complaint, 'groupId' | 'id'>): string => `${c.groupId}/${c.id}`;
+
+  async add(complaint: Complaint): Promise<boolean> {
+    if (this.items.has(this.key(complaint))) {
+      return false;
+    }
+    this.items.set(this.key(complaint), copy(complaint));
+    return true;
+  }
+
+  async listOpen(groupId: string): Promise<Complaint[]> {
+    return [...this.items.values()].filter((c) => c.groupId === groupId && c.status === 'open').map(copy);
+  }
+
+  async openCount(groupId: string, dayIndex: number, authorMemberId: string): Promise<number> {
+    return [...this.items.values()].filter(
+      (c) =>
+        c.groupId === groupId && c.dayIndex === dayIndex && c.authorMemberId === authorMemberId && c.status === 'open',
+    ).length;
+  }
+
+  async resolve(groupId: string, dayIndex: number, authorMemberId: string, at: Date): Promise<number> {
+    let closed = 0;
+    for (const [key, c] of this.items) {
+      if (
+        c.groupId === groupId &&
+        c.dayIndex === dayIndex &&
+        c.authorMemberId === authorMemberId &&
+        c.status === 'open'
+      ) {
+        this.items.set(key, { ...c, status: 'resolved', resolvedAt: at });
+        closed++;
+      }
+    }
+    return closed;
+  }
+
+  async deleteInvolving(groupId: string, memberId: string): Promise<void> {
+    for (const [key, c] of this.items) {
+      if (c.groupId === groupId && (c.authorMemberId === memberId || c.complainerMemberId === memberId)) {
+        this.items.delete(key);
+      }
+    }
+  }
 }
 
 export function createMemoryRepositories(): {
@@ -255,8 +382,12 @@ export function createMemoryRepositories(): {
   sessions: SessionRepository;
   groups: GroupRepository;
   members: MemberRepository;
+  submissions: SubmissionRepository;
+  complaints: ComplaintRepository;
 } {
   return {
+    submissions: new MemorySubmissions(),
+    complaints: new MemoryComplaints(),
     cells: new MemoryCells(),
     organizers: new MemoryOrganizers(),
     sessions: new MemorySessions(),

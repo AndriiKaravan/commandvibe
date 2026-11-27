@@ -1,4 +1,15 @@
-import { Cell, CellState, Group, GroupStatus, Member, MemberSecrets, Organizer, Session } from './models';
+import {
+  Cell,
+  CellState,
+  Complaint,
+  Group,
+  GroupStatus,
+  Member,
+  MemberSecrets,
+  Organizer,
+  Session,
+  Submission,
+} from './models';
 
 /** Thrown by [MemberRepository.createUnique] when the name is taken in the group. */
 export class NameTakenError extends Error {
@@ -68,6 +79,39 @@ export interface CellRepository {
   ): Promise<'won' | 'lost' | 'retry'>;
   /** Atomically swaps the tasks of two days when [onlyIf] accepts their current state. */
   swapTasks(groupId: string, a: number, b: number, onlyIf: (cellA: Cell, cellB: Cell) => boolean): Promise<boolean>;
+  /** Compare-and-set: stamps `revealedAt` only while it is empty; true only for the winning call. */
+  markRevealed(groupId: string, dayIndex: number, at: Date): Promise<boolean>;
+}
+
+export interface SubmissionRepository {
+  get(groupId: string, dayIndex: number, memberId: string): Promise<Submission | undefined>;
+  listDay(groupId: string, dayIndex: number): Promise<Submission[]>;
+  /** Submissions of the member over days `0..days-1`. */
+  listMember(groupId: string, memberId: string, days: number): Promise<Submission[]>;
+  /**
+   * Transaction: `null` creates only when absent; a version string replaces only while the stored version is the same.
+   */
+  put(submission: Submission, expectedVersion: string | null): Promise<'created' | 'replaced' | 'conflict'>;
+  /** False when there is no such submission. Hiding stamps `hiddenAt`, restoring clears it. */
+  setStatus(
+    groupId: string,
+    dayIndex: number,
+    memberId: string,
+    status: Submission['status'],
+    at: Date,
+  ): Promise<boolean>;
+  delete(groupId: string, dayIndex: number, memberId: string): Promise<void>;
+}
+
+export interface ComplaintRepository {
+  /** False when this complainer has already complained about this photo. */
+  add(complaint: Complaint): Promise<boolean>;
+  listOpen(groupId: string): Promise<Complaint[]>;
+  openCount(groupId: string, dayIndex: number, authorMemberId: string): Promise<number>;
+  /** Closes the open complaints of one photo; returns how many were closed. */
+  resolve(groupId: string, dayIndex: number, authorMemberId: string, at: Date): Promise<number>;
+  /** Removes complaints filed by or against the member. */
+  deleteInvolving(groupId: string, memberId: string): Promise<void>;
 }
 
 /** Result of reserving one PIN attempt before the (slow) hash check. */
@@ -97,3 +141,5 @@ export const ORGANIZERS = Symbol('OrganizerRepository');
 export const SESSIONS = Symbol('SessionRepository');
 export const GROUPS = Symbol('GroupRepository');
 export const MEMBERS = Symbol('MemberRepository');
+export const SUBMISSIONS = Symbol('SubmissionRepository');
+export const COMPLAINTS = Symbol('ComplaintRepository');
