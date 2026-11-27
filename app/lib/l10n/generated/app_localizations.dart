@@ -757,6 +757,264 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Рулетку вже крутнули.'**
   String get todayTurnOver;
+
+  /// No description provided for @photosTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Фото дня'**
+  String get photosTitle;
+
+  /// No description provided for @photoSubmit.
+  ///
+  /// In uk, this message translates to:
+  /// **'Виконати'**
+  String get photoSubmit;
+
+  /// No description provided for @photoDone.
+  ///
+  /// In uk, this message translates to:
+  /// **'Виконано ✓'**
+  String get photoDone;
+
+  /// No description provided for @photoReplace.
+  ///
+  /// In uk, this message translates to:
+  /// **'Замінити фото'**
+  String get photoReplace;
+
+  /// No description provided for @photoFromCamera.
+  ///
+  /// In uk, this message translates to:
+  /// **'Зняти'**
+  String get photoFromCamera;
+
+  /// No description provided for @photoFromGallery.
+  ///
+  /// In uk, this message translates to:
+  /// **'Обрати з галереї'**
+  String get photoFromGallery;
+
+  /// No description provided for @photoUploading.
+  ///
+  /// In uk, this message translates to:
+  /// **'Надсилаємо…'**
+  String get photoUploading;
+
+  /// No description provided for @photoConfirmReplace.
+  ///
+  /// In uk, this message translates to:
+  /// **'Замінити фото? Попереднє зникне'**
+  String get photoConfirmReplace;
+
+  /// No description provided for @photoReplaceYes.
+  ///
+  /// In uk, this message translates to:
+  /// **'Замінити'**
+  String get photoReplaceYes;
+
+  /// No description provided for @photoCancel.
+  ///
+  /// In uk, this message translates to:
+  /// **'Скасувати'**
+  String get photoCancel;
+
+  /// No description provided for @photoRetry.
+  ///
+  /// In uk, this message translates to:
+  /// **'Спробувати ще раз'**
+  String get photoRetry;
+
+  /// No description provided for @photoClose.
+  ///
+  /// In uk, this message translates to:
+  /// **'Закрити'**
+  String get photoClose;
+
+  /// No description provided for @photoErrTooLarge.
+  ///
+  /// In uk, this message translates to:
+  /// **'Фото завелике — зніми ще раз або обери менше'**
+  String get photoErrTooLarge;
+
+  /// No description provided for @photoErrHeic.
+  ///
+  /// In uk, this message translates to:
+  /// **'Формат HEIC поки не підтримується — зніми фото камерою або обери інше'**
+  String get photoErrHeic;
+
+  /// No description provided for @photoErrInvalid.
+  ///
+  /// In uk, this message translates to:
+  /// **'Не вдалося прочитати фото — обери інше'**
+  String get photoErrInvalid;
+
+  /// No description provided for @photoErrRevealPassed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Фото цього дня вже відкрились — замінити не можна'**
+  String get photoErrRevealPassed;
+
+  /// No description provided for @photoErrDayClosed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Цей день уже не приймає фото'**
+  String get photoErrDayClosed;
+
+  /// No description provided for @photoErrHidden.
+  ///
+  /// In uk, this message translates to:
+  /// **'Твоє фото приховав організатор — замінити не можна'**
+  String get photoErrHidden;
+
+  /// No description provided for @photoErrNetwork.
+  ///
+  /// In uk, this message translates to:
+  /// **'Не вдалося надіслати — перевір з\'єднання і спробуй ще раз'**
+  String get photoErrNetwork;
+
+  /// No description provided for @photoBlurTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Виконай завдання — і побач одразу'**
+  String get photoBlurTitle;
+
+  /// No description provided for @photoBlurReveal.
+  ///
+  /// In uk, this message translates to:
+  /// **'або відкриється {date} о {time}'**
+  String photoBlurReveal(String date, String time);
+
+  /// No description provided for @photoLateHint.
+  ///
+  /// In uk, this message translates to:
+  /// **'Ще можна виконати — до кінця челенджу'**
+  String get photoLateHint;
+
+  /// No description provided for @photoCount.
+  ///
+  /// In uk, this message translates to:
+  /// **'Виконали: {count}'**
+  String photoCount(int count);
+
+  /// No description provided for @photoNoOthers.
+  ///
+  /// In uk, this message translates to:
+  /// **'Поки ніхто не виконав'**
+  String get photoNoOthers;
+
+  /// No description provided for @photoReport.
+  ///
+  /// In uk, this message translates to:
+  /// **'Поскаржитись'**
+  String get photoReport;
+
+  /// No description provided for @photoReasonInappropriate.
+  ///
+  /// In uk, this message translates to:
+  /// **'Недоречне фото'**
+  String get photoReasonInappropriate;
+
+  /// No description provided for @photoReasonNotTask.
+  ///
+  /// In uk, this message translates to:
+  /// **'Не за завданням'**
+  String get photoReasonNotTask;
+
+  /// No description provided for @photoReasonOther.
+  ///
+  /// In uk, this message translates to:
+  /// **'Інше'**
+  String get photoReasonOther;
+
+  /// No description provided for @photoReported.
+  ///
+  /// In uk, this message translates to:
+  /// **'Скаргу надіслано'**
+  String get photoReported;
+
+  /// No description provided for @photoTakenEarlier.
+  ///
+  /// In uk, this message translates to:
+  /// **'Знято раніше, ніж відкрито завдання'**
+  String get photoTakenEarlier;
+
+  /// No description provided for @photoSourceCamera.
+  ///
+  /// In uk, this message translates to:
+  /// **'Камера (підказка)'**
+  String get photoSourceCamera;
+
+  /// No description provided for @photoSourceGallery.
+  ///
+  /// In uk, this message translates to:
+  /// **'Галерея (підказка)'**
+  String get photoSourceGallery;
+
+  /// No description provided for @photoHide.
+  ///
+  /// In uk, this message translates to:
+  /// **'Приховати'**
+  String get photoHide;
+
+  /// No description provided for @photoRestore.
+  ///
+  /// In uk, this message translates to:
+  /// **'Повернути'**
+  String get photoRestore;
+
+  /// No description provided for @photoDismiss.
+  ///
+  /// In uk, this message translates to:
+  /// **'Відхилити скаргу'**
+  String get photoDismiss;
+
+  /// No description provided for @photoHiddenBadge.
+  ///
+  /// In uk, this message translates to:
+  /// **'Приховано організатором'**
+  String get photoHiddenBadge;
+
+  /// No description provided for @photoOpenComplaints.
+  ///
+  /// In uk, this message translates to:
+  /// **'Скарг: {count}'**
+  String photoOpenComplaints(int count);
+
+  /// No description provided for @photoViewerFailed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Не вдалося завантажити фото'**
+  String get photoViewerFailed;
+
+  /// No description provided for @complaintsTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Скарги'**
+  String get complaintsTitle;
+
+  /// No description provided for @complaintsButton.
+  ///
+  /// In uk, this message translates to:
+  /// **'Скарги ({count})'**
+  String complaintsButton(int count);
+
+  /// No description provided for @complaintsEmpty.
+  ///
+  /// In uk, this message translates to:
+  /// **'Скарг немає'**
+  String get complaintsEmpty;
+
+  /// No description provided for @complaintsDay.
+  ///
+  /// In uk, this message translates to:
+  /// **'День {day}'**
+  String complaintsDay(int day);
+
+  /// No description provided for @photoOpen.
+  ///
+  /// In uk, this message translates to:
+  /// **'Відкрити фото'**
+  String get photoOpen;
 }
 
 class _AppLocalizationsDelegate

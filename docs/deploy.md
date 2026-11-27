@@ -38,10 +38,30 @@ gcloud scheduler jobs create http commandvibe-tick \
 
 Змінні `TICK_AUDIENCE` і `TICK_INVOKER` вже передає `tool/deploy_api.sh`.
 
+## Сховище фото
+
+Фото лежать в окремому бакеті `gs://commandvibe-ks-photos` (europe-central2, uniform access, заборона публічного доступу, `--soft-delete-duration=0`). Бакет і роль `roles/storage.objectUser` для `889388170734-compute@developer.gserviceaccount.com` уже створено (27.11, хабом). Для довідки, як це відтворити:
+
+```
+gcloud storage buckets create gs://commandvibe-ks-photos --project commandvibe-ks \
+  --location europe-central2 --uniform-bucket-level-access --public-access-prevention \
+  --soft-delete-duration=0
+gcloud storage buckets add-iam-policy-binding gs://commandvibe-ks-photos \
+  --member "serviceAccount:889388170734-compute@developer.gserviceaccount.com" --role roles/storage.objectUser
+```
+
+- `--soft-delete-duration=0` обов'язково: інакше GCS тримає видалені фото ще 7 днів, всупереч обіцянці видалення.
+- Роль видано лише на бакет, не на проєкт.
+- Сервер читає назву з `PHOTOS_BUCKET` (її передає `tool/deploy_api.sh`); без неї за `STORAGE=firestore` він не стартує.
+- Пам'ять Cloud Run піднято до 1 ГіБ (`--memory=1Gi --cpu=1`): дві обробки фото 48 Мп йдуть одночасно, а екземпляр один.
+- Окрему `storage.rules` для цього бакета не потрібно: сервер ходить через Admin SDK, клієнти до бакета напряму не звертаються.
+
+Контрактні тести Storage йдуть разом із Firestore (`tool/firestore_contract.sh` або workflow `server-firestore-contract`).
+
 ## Звичайний цикл
 
 1. `tool/deploy_api.sh` → ревізія `candidate` без трафіку; друкує її URL.
-2. Перевірки: `curl <url>/health`; `API=<url> CHANNEL=candidate tool/deploy_web_preview.sh` → preview-канал; наскрізний сценарій (`spike/e2e/run.mjs`-подібний, з посиланням каналу).
+2. Перевірки: `curl <url>/health`; workflow `server-firestore-contract` зелений; на тестовій групі `POST …/submission` з фото з GPS → відкрити посилання з відповіді й переконатися, що в файлі немає метаданих; `API=<url> CHANNEL=candidate tool/deploy_web_preview.sh` → preview-канал; наскрізний сценарій (`spike/e2e/run.mjs`-подібний, з посиланням каналу).
 3. Трафік на ревізію — після перевірок і з дозволу (CLAUDE.md проєкту): `gcloud run services update-traffic commandvibe-api --to-tags candidate=100 --region europe-central2 --project commandvibe-ks`.
 4. Веб на живий сайт — `cd app && flutter build web --release --dart-define=API=https://<api>` і `firebase deploy --only hosting --project commandvibe-ks` — з «так» власника.
 

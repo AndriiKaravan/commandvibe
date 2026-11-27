@@ -179,5 +179,86 @@
   "todaySpinning": "Рулетка крутиться…",
   "todayLoadingTask": "Завантажуємо завдання…",
   "todayFinished": "Гру завершено. Дякуємо за гру!",
-  "todayTurnOver": "Рулетку вже крутнули."
+  "todayTurnOver": "Рулетку вже крутнули.",
+  "photosTitle": "Фото дня",
+  "photoSubmit": "Виконати",
+  "photoDone": "Виконано ✓",
+  "photoReplace": "Замінити фото",
+  "photoFromCamera": "Зняти",
+  "photoFromGallery": "Обрати з галереї",
+  "photoUploading": "Надсилаємо…",
+  "photoConfirmReplace": "Замінити фото? Попереднє зникне",
+  "photoReplaceYes": "Замінити",
+  "photoCancel": "Скасувати",
+  "photoRetry": "Спробувати ще раз",
+  "photoClose": "Закрити",
+  "photoErrTooLarge": "Фото завелике — зніми ще раз або обери менше",
+  "photoErrHeic": "Формат HEIC поки не підтримується — зніми фото камерою або обери інше",
+  "photoErrInvalid": "Не вдалося прочитати фото — обери інше",
+  "photoErrRevealPassed": "Фото цього дня вже відкрились — замінити не можна",
+  "photoErrDayClosed": "Цей день уже не приймає фото",
+  "photoErrHidden": "Твоє фото приховав організатор — замінити не можна",
+  "photoErrNetwork": "Не вдалося надіслати — перевір з'єднання і спробуй ще раз",
+  "photoBlurTitle": "Виконай завдання — і побач одразу",
+  "photoBlurReveal": "або відкриється {date} о {time}",
+  "@photoBlurReveal": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "photoLateHint": "Ще можна виконати — до кінця челенджу",
+  "photoCount": "Виконали: {count}",
+  "@photoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "photoNoOthers": "Поки ніхто не виконав",
+  "photoReport": "Поскаржитись",
+  "photoReasonInappropriate": "Недоречне фото",
+  "photoReasonNotTask": "Не за завданням",
+  "photoReasonOther": "Інше",
+  "photoReported": "Скаргу надіслано",
+  "photoTakenEarlier": "Знято раніше, ніж відкрито завдання",
+  "photoSourceCamera": "Камера (підказка)",
+  "photoSourceGallery": "Галерея (підказка)",
+  "photoHide": "Приховати",
+  "photoRestore": "Повернути",
+  "photoDismiss": "Відхилити скаргу",
+  "photoHiddenBadge": "Приховано організатором",
+  "photoOpenComplaints": "Скарг: {count}",
+  "@photoOpenComplaints": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "photoViewerFailed": "Не вдалося завантажити фото",
+  "complaintsTitle": "Скарги",
+  "complaintsButton": "Скарги ({count})",
+  "@complaintsButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "complaintsEmpty": "Скарг немає",
+  "complaintsDay": "День {day}",
+  "@complaintsDay": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "photoOpen": "Відкрити фото"
 }

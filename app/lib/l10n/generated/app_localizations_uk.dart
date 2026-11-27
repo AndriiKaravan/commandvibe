@@ -366,4 +366,147 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get todayTurnOver => 'Рулетку вже крутнули.';
+
+  @override
+  String get photosTitle => 'Фото дня';
+
+  @override
+  String get photoSubmit => 'Виконати';
+
+  @override
+  String get photoDone => 'Виконано ✓';
+
+  @override
+  String get photoReplace => 'Замінити фото';
+
+  @override
+  String get photoFromCamera => 'Зняти';
+
+  @override
+  String get photoFromGallery => 'Обрати з галереї';
+
+  @override
+  String get photoUploading => 'Надсилаємо…';
+
+  @override
+  String get photoConfirmReplace => 'Замінити фото? Попереднє зникне';
+
+  @override
+  String get photoReplaceYes => 'Замінити';
+
+  @override
+  String get photoCancel => 'Скасувати';
+
+  @override
+  String get photoRetry => 'Спробувати ще раз';
+
+  @override
+  String get photoClose => 'Закрити';
+
+  @override
+  String get photoErrTooLarge => 'Фото завелике — зніми ще раз або обери менше';
+
+  @override
+  String get photoErrHeic =>
+      'Формат HEIC поки не підтримується — зніми фото камерою або обери інше';
+
+  @override
+  String get photoErrInvalid => 'Не вдалося прочитати фото — обери інше';
+
+  @override
+  String get photoErrRevealPassed =>
+      'Фото цього дня вже відкрились — замінити не можна';
+
+  @override
+  String get photoErrDayClosed => 'Цей день уже не приймає фото';
+
+  @override
+  String get photoErrHidden =>
+      'Твоє фото приховав організатор — замінити не можна';
+
+  @override
+  String get photoErrNetwork =>
+      'Не вдалося надіслати — перевір з\'єднання і спробуй ще раз';
+
+  @override
+  String get photoBlurTitle => 'Виконай завдання — і побач одразу';
+
+  @override
+  String photoBlurReveal(String date, String time) {
+    return 'або відкриється $date о $time';
+  }
+
+  @override
+  String get photoLateHint => 'Ще можна виконати — до кінця челенджу';
+
+  @override
+  String photoCount(int count) {
+    return 'Виконали: $count';
+  }
+
+  @override
+  String get photoNoOthers => 'Поки ніхто не виконав';
+
+  @override
+  String get photoReport => 'Поскаржитись';
+
+  @override
+  String get photoReasonInappropriate => 'Недоречне фото';
+
+  @override
+  String get photoReasonNotTask => 'Не за завданням';
+
+  @override
+  String get photoReasonOther => 'Інше';
+
+  @override
+  String get photoReported => 'Скаргу надіслано';
+
+  @override
+  String get photoTakenEarlier => 'Знято раніше, ніж відкрито завдання';
+
+  @override
+  String get photoSourceCamera => 'Камера (підказка)';
+
+  @override
+  String get photoSourceGallery => 'Галерея (підказка)';
+
+  @override
+  String get photoHide => 'Приховати';
+
+  @override
+  String get photoRestore => 'Повернути';
+
+  @override
+  String get photoDismiss => 'Відхилити скаргу';
+
+  @override
+  String get photoHiddenBadge => 'Приховано організатором';
+
+  @override
+  String photoOpenComplaints(int count) {
+    return 'Скарг: $count';
+  }
+
+  @override
+  String get photoViewerFailed => 'Не вдалося завантажити фото';
+
+  @override
+  String get complaintsTitle => 'Скарги';
+
+  @override
+  String complaintsButton(int count) {
+    return 'Скарги ($count)';
+  }
+
+  @override
+  String get complaintsEmpty => 'Скарг немає';
+
+  @override
+  String complaintsDay(int day) {
+    return 'День $day';
+  }
+
+  @override
+  String get photoOpen => 'Відкрити фото';
 }

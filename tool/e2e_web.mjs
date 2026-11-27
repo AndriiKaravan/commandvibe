@@ -7,6 +7,8 @@ import { createRequire } from 'node:module';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const photoFixture = fileURLToPath(new URL('./fixtures/e2e-photo.jpg', import.meta.url));
+
 const require = createRequire(import.meta.url);
 const puppeteer = require('puppeteer-core');
 
@@ -44,6 +46,51 @@ async function fill(page, value) {
   await page.keyboard.type(value, { delay: 30 });
 }
 
+// Taps the first semantics node whose label contains [text]; a real click, so the browser allows a file chooser.
+async function tap(page, text) {
+  let handle;
+  try {
+    handle = await page.waitForFunction(
+      (t) => {
+        const nodes = [...document.querySelectorAll('flt-semantics')];
+        const label = (e) => e.getAttribute('aria-label') ?? e.textContent ?? '';
+        // A container's label contains its children's; the exact label is the button itself.
+        return nodes.find((e) => label(e) === t) ?? nodes.find((e) => label(e).includes(t)) ?? false;
+      },
+      { timeout: 20000 },
+      text,
+    );
+  } catch (error) {
+    const labels = await page.evaluate(() =>
+      [...document.querySelectorAll('flt-semantics')].map((e) => e.getAttribute('aria-label') ?? e.textContent ?? '').filter(Boolean));
+    throw new Error(`no "${text}" on screen; labels: ${JSON.stringify(labels)}`, { cause: error });
+  }
+  await handle.asElement().click();
+}
+
+async function sendPhoto(page, source) {
+  await tap(page, 'Виконати');
+  const [chooser] = await Promise.all([page.waitForFileChooser(), tap(page, source)]);
+  await chooser.accept([photoFixture]);
+  await waitText(page, 'Виконано');
+}
+
+// The whole join flow: invite page, name, PIN, group home.
+async function joinAs(page, token, name, groupName) {
+  await page.goto(`${app}join?t=${token}`, { waitUntil: 'load' });
+  await page.waitForSelector('flt-semantics-placeholder', { timeout: 60000 });
+  await page.evaluate(() => document.querySelector('flt-semantics-placeholder')?.click());
+  await waitText(page, groupName);
+  await fill(page, name);
+  await page.keyboard.press('Enter');
+  await waitText(page, 'PIN');
+  // The PIN field is autofocused; a click would move focus away from Flutter's editing host.
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  await page.keyboard.type('1357', { delay: 30 });
+  await page.keyboard.press('Enter');
+  await waitText(page, name);
+}
+
 const webRoot = fileURLToPath(new URL('../app/build/web/', import.meta.url));
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.wasm': 'application/wasm', '.png': 'image/png', '.otf': 'font/otf', '.ttf': 'font/ttf' };
 // Hosting rewrites every unknown path to index.html; so does this server.
@@ -61,20 +108,7 @@ const browser = await puppeteer.launch({ executablePath: chrome, headless: true 
 try {
   const page = await browser.newPage();
   await page.setViewport({ width: 400, height: 860 });
-  await page.goto(`${app}join?t=${token}`, { waitUntil: 'load' });
-  await page.waitForSelector('flt-semantics-placeholder', { timeout: 60000 });
-  await page.evaluate(() => document.querySelector('flt-semantics-placeholder')?.click());
-  await waitText(page, 'Web group');
-  console.log('invite page opened the join screen');
-  await fill(page, 'Webby');
-  await page.keyboard.press('Enter');
-  await waitText(page, 'PIN');
-  console.log('PIN screen');
-  // The PIN field is autofocused; a click would move focus away from Flutter's editing host.
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  await page.keyboard.type('1357', { delay: 30 });
-  await page.keyboard.press('Enter');
-  await waitText(page, 'Webby');
+  await joinAs(page, token, 'Webby', 'Web group');
   console.log('joined and set a PIN');
   await waitText(page, 'Завдання дня');
   console.log('today card shows the task of the day');
@@ -82,6 +116,22 @@ try {
   await post('/join', { token, displayName: 'Other' });
   await waitText(page, 'Other');
   console.log('new member arrived live');
+
+  // Photos: Webby sends one; a second member sees it blurred until they send their own.
+  await sendPhoto(page, 'Обрати з галереї');
+  console.log('Webby submitted a photo from the gallery');
+  const second = await (await browser.createBrowserContext()).newPage();
+  await second.setViewport({ width: 400, height: 860 });
+  await joinAs(second, token, 'Bella', 'Web group');
+  await waitText(second, 'Виконай завдання — і побач одразу');
+  console.log('Bella sees the other photo blurred, with the invitation');
+  await sendPhoto(second, 'Обрати з галереї');
+  await second.waitForFunction(
+    () => ![...document.querySelectorAll('[aria-label], flt-semantics')].some((e) =>
+      (e.getAttribute('aria-label') ?? e.textContent ?? '').includes('Виконай завдання — і побач одразу')),
+    { timeout: 20000 },
+  );
+  console.log('after her own photo, Bella sees the other one in full');
 } finally {
   await browser.close();
   server.close();

@@ -4,6 +4,7 @@ import 'package:commandvibe/core/services_scope.dart';
 import 'package:commandvibe/core/theme/glass_panel.dart';
 import 'package:commandvibe/core/ui/glass_page.dart';
 import 'package:commandvibe/features/calendar/data/calendar_models.dart';
+import 'package:commandvibe/features/photos/ui/day_photos_section.dart';
 import 'package:commandvibe/features/today/ui/roulette_motion.dart';
 import 'package:commandvibe/features/today/ui/roulette_wheel.dart';
 import 'package:commandvibe/features/today/ui/today_view_model.dart';
@@ -44,7 +45,31 @@ class _TodayCardState extends State<TodayCard> {
   }
 
   @override
-  Widget build(BuildContext context) => TodayCardBody(viewModel: _viewModel!);
+  Widget build(BuildContext context) {
+    final viewModel = _viewModel!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 16,
+      children: [
+        TodayCardBody(viewModel: viewModel),
+        ListenableBuilder(
+          listenable: viewModel,
+          builder: (context, _) {
+            final state = viewModel.state;
+            // Photos belong to a day that is open and whose task the player can already read.
+            if (state is TodayOpen && state.task != null) {
+              return DayPhotosCard(
+                key: ValueKey('photos-${state.dayIndex}'),
+                groupId: widget.groupId,
+                dayIndex: state.dayIndex,
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      ],
+    );
+  }
 }
 
 /// What the card shows for each stage of the day.

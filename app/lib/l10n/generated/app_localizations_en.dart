@@ -368,4 +368,149 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todayTurnOver => 'The roulette has already been spun.';
+
+  @override
+  String get photosTitle => 'Photos of the day';
+
+  @override
+  String get photoSubmit => 'Submit';
+
+  @override
+  String get photoDone => 'Done ✓';
+
+  @override
+  String get photoReplace => 'Replace photo';
+
+  @override
+  String get photoFromCamera => 'Take a photo';
+
+  @override
+  String get photoFromGallery => 'Choose from gallery';
+
+  @override
+  String get photoUploading => 'Sending…';
+
+  @override
+  String get photoConfirmReplace =>
+      'Replace the photo? The previous one will disappear';
+
+  @override
+  String get photoReplaceYes => 'Replace';
+
+  @override
+  String get photoCancel => 'Cancel';
+
+  @override
+  String get photoRetry => 'Try again';
+
+  @override
+  String get photoClose => 'Close';
+
+  @override
+  String get photoErrTooLarge =>
+      'The photo is too big — take it again or pick a smaller one';
+
+  @override
+  String get photoErrHeic =>
+      'HEIC isn\'t supported yet — take a photo with the camera or pick another';
+
+  @override
+  String get photoErrInvalid => 'Couldn\'t read the photo — pick another';
+
+  @override
+  String get photoErrRevealPassed =>
+      'This day\'s photos are already revealed — you can\'t replace yours';
+
+  @override
+  String get photoErrDayClosed => 'This day no longer accepts photos';
+
+  @override
+  String get photoErrHidden =>
+      'Your photo was hidden by the organizer — you can\'t replace it';
+
+  @override
+  String get photoErrNetwork =>
+      'Couldn\'t send — check your connection and try again';
+
+  @override
+  String get photoBlurTitle => 'Do the task to see it right away';
+
+  @override
+  String photoBlurReveal(String date, String time) {
+    return 'or it opens on $date at $time';
+  }
+
+  @override
+  String get photoLateHint => 'You can still do it — until the challenge ends';
+
+  @override
+  String photoCount(int count) {
+    return 'Done: $count';
+  }
+
+  @override
+  String get photoNoOthers => 'Nobody has done it yet';
+
+  @override
+  String get photoReport => 'Report';
+
+  @override
+  String get photoReasonInappropriate => 'Inappropriate photo';
+
+  @override
+  String get photoReasonNotTask => 'Not the task';
+
+  @override
+  String get photoReasonOther => 'Other';
+
+  @override
+  String get photoReported => 'Report sent';
+
+  @override
+  String get photoTakenEarlier => 'Taken before the task opened';
+
+  @override
+  String get photoSourceCamera => 'Camera (a hint)';
+
+  @override
+  String get photoSourceGallery => 'Gallery (a hint)';
+
+  @override
+  String get photoHide => 'Hide';
+
+  @override
+  String get photoRestore => 'Restore';
+
+  @override
+  String get photoDismiss => 'Dismiss report';
+
+  @override
+  String get photoHiddenBadge => 'Hidden by the organizer';
+
+  @override
+  String photoOpenComplaints(int count) {
+    return 'Reports: $count';
+  }
+
+  @override
+  String get photoViewerFailed => 'Couldn\'t load the photo';
+
+  @override
+  String get complaintsTitle => 'Reports';
+
+  @override
+  String complaintsButton(int count) {
+    return 'Reports ($count)';
+  }
+
+  @override
+  String get complaintsEmpty => 'No reports';
+
+  @override
+  String complaintsDay(int day) {
+    return 'Day $day';
+  }
+
+  @override
+  String get photoOpen => 'Open photo';
 }

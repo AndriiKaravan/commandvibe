@@ -2,6 +2,7 @@ import 'package:commandvibe/core/services_scope.dart';
 import 'package:commandvibe/core/theme/glass_panel.dart';
 import 'package:commandvibe/features/groups/data/groups_repository.dart';
 import 'package:commandvibe/features/groups/ui/group_home_view_model.dart';
+import 'package:commandvibe/features/photos/ui/complaints_view.dart';
 import 'package:commandvibe/features/today/ui/today_card.dart';
 import 'package:commandvibe/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -107,6 +108,11 @@ class _GroupHomeViewState extends State<GroupHomeView> {
                           icon: const Icon(Icons.calendar_month),
                           label: Text(l10n.groupCalendarButton),
                         ),
+                      ),
+                    if (widget.isOwner)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: ComplaintsButton(groupId: widget.groupId),
                       ),
                     if (widget.isOwner && viewModel.pending.isNotEmpty) ...[
                       Text(l10n.pendingMembers, style: text.titleMedium),

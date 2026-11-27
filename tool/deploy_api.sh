@@ -25,11 +25,13 @@ gcloud run deploy "$service" \
   "${traffic_flag[@]}" \
   --timeout=3600 \
   --concurrency=1000 \
+  --memory=1Gi \
+  --cpu=1 \
   --min-instances=1 \
   --max-instances=1 \
   --allow-unauthenticated \
   --set-secrets SESSION_SIGNING_KEY=session-signing-key:latest \
-  --set-env-vars "^#^STORAGE=firestore#APP_CHECK_MODE=monitor#FIRESTORE_DATABASE=commandvibe#ALLOWED_ORIGINS=$origins#PUBLIC_APP_URL=https://commandvibe.karavanstudio.dev#TICK_AUDIENCE=$tick_audience#TICK_INVOKER=$tick_invoker" \
+  --set-env-vars "^#^STORAGE=firestore#APP_CHECK_MODE=monitor#FIRESTORE_DATABASE=commandvibe#PHOTOS_BUCKET=commandvibe-ks-photos#ALLOWED_ORIGINS=$origins#PUBLIC_APP_URL=https://commandvibe.karavanstudio.dev#TICK_AUDIENCE=$tick_audience#TICK_INVOKER=$tick_invoker" \
   --quiet
 
 url=$(gcloud run services describe "$service" --project "$project" --region "$region" \

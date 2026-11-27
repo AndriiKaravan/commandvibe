@@ -151,5 +151,86 @@
   "todaySpinning": "The roulette is spinning…",
   "todayLoadingTask": "Loading the task…",
   "todayFinished": "The game is over. Thanks for playing!",
-  "todayTurnOver": "The roulette has already been spun."
+  "todayTurnOver": "The roulette has already been spun.",
+  "photosTitle": "Photos of the day",
+  "photoSubmit": "Submit",
+  "photoDone": "Done ✓",
+  "photoReplace": "Replace photo",
+  "photoFromCamera": "Take a photo",
+  "photoFromGallery": "Choose from gallery",
+  "photoUploading": "Sending…",
+  "photoConfirmReplace": "Replace the photo? The previous one will disappear",
+  "photoReplaceYes": "Replace",
+  "photoCancel": "Cancel",
+  "photoRetry": "Try again",
+  "photoClose": "Close",
+  "photoErrTooLarge": "The photo is too big — take it again or pick a smaller one",
+  "photoErrHeic": "HEIC isn't supported yet — take a photo with the camera or pick another",
+  "photoErrInvalid": "Couldn't read the photo — pick another",
+  "photoErrRevealPassed": "This day's photos are already revealed — you can't replace yours",
+  "photoErrDayClosed": "This day no longer accepts photos",
+  "photoErrHidden": "Your photo was hidden by the organizer — you can't replace it",
+  "photoErrNetwork": "Couldn't send — check your connection and try again",
+  "photoBlurTitle": "Do the task to see it right away",
+  "photoBlurReveal": "or it opens on {date} at {time}",
+  "@photoBlurReveal": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "photoLateHint": "You can still do it — until the challenge ends",
+  "photoCount": "Done: {count}",
+  "@photoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "photoNoOthers": "Nobody has done it yet",
+  "photoReport": "Report",
+  "photoReasonInappropriate": "Inappropriate photo",
+  "photoReasonNotTask": "Not the task",
+  "photoReasonOther": "Other",
+  "photoReported": "Report sent",
+  "photoTakenEarlier": "Taken before the task opened",
+  "photoSourceCamera": "Camera (a hint)",
+  "photoSourceGallery": "Gallery (a hint)",
+  "photoHide": "Hide",
+  "photoRestore": "Restore",
+  "photoDismiss": "Dismiss report",
+  "photoHiddenBadge": "Hidden by the organizer",
+  "photoOpenComplaints": "Reports: {count}",
+  "@photoOpenComplaints": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "photoViewerFailed": "Couldn't load the photo",
+  "complaintsTitle": "Reports",
+  "complaintsButton": "Reports ({count})",
+  "@complaintsButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "complaintsEmpty": "No reports",
+  "complaintsDay": "Day {day}",
+  "@complaintsDay": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "photoOpen": "Open photo"
 }
