@@ -2,6 +2,7 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { DataModule } from './data/data.module';
+import { GameModule } from './game/game.module';
 import { GroupsModule } from './groups/groups.module';
 import { MembersModule } from './members/members.module';
 import { HealthController } from './health/health.controller';
@@ -26,11 +27,15 @@ export class AppModule {
         AuthModule,
         AppCheckModule,
         GroupsModule,
+        GameModule,
         MembersModule,
         ...(options.testSeed ? [TestSeedModule] : []),
       ],
       controllers: [HealthController],
-      providers: [{ provide: 'APP_OPTIONS', useValue: options }, { provide: APP_GUARD, useExisting: AppCheckGuard }],
+      providers: [
+        { provide: 'APP_OPTIONS', useValue: options },
+        { provide: APP_GUARD, useExisting: AppCheckGuard },
+      ],
     };
   }
 }

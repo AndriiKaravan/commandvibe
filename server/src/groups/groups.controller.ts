@@ -14,7 +14,7 @@ export function groupView(group: Group): GroupView {
   return view;
 }
 
-function organizerUid(auth: VerifiedAccess): string {
+export function organizerUid(auth: VerifiedAccess): string {
   if (auth.subject.kind !== 'organizer') {
     throw new ForbiddenException('organizer_only');
   }
@@ -26,7 +26,10 @@ export class GroupsController {
   constructor(private readonly groups: GroupsService) {}
 
   @Post()
-  async create(@CurrentAuth() auth: VerifiedAccess, @Body() body: CreateGroupInput): Promise<{ group: GroupView; inviteUrl: string }> {
+  async create(
+    @CurrentAuth() auth: VerifiedAccess,
+    @Body() body: CreateGroupInput,
+  ): Promise<{ group: GroupView; inviteUrl: string }> {
     const { group, inviteUrl } = await this.groups.create(organizerUid(auth), body ?? ({} as CreateGroupInput));
     return { group: groupView(group), inviteUrl };
   }
