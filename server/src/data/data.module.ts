@@ -1,24 +1,19 @@
-import { DynamicModule, Module } from "@nestjs/common";
-import { getApps, initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
-import { firestoreDatabaseId } from "./firestore-database";
-import { createFirestoreRepositories } from "./firestore/firestore-repositories";
-import { createMemoryRepositories } from "./memory/memory-repositories";
-import { GROUPS, MEMBERS, ORGANIZERS, SESSIONS } from "./repositories";
+import { DynamicModule, Module } from '@nestjs/common';
+import { getApps, initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { firestoreDatabaseId } from './firestore-database';
+import { createFirestoreRepositories } from './firestore/firestore-repositories';
+import { createMemoryRepositories } from './memory/memory-repositories';
+import { GROUPS, MEMBERS, ORGANIZERS, SESSIONS } from './repositories';
 
 /** Provides the repositories; the rest of the server only sees their interfaces. */
 @Module({})
 export class DataModule {
-  static forRoot(storage: "memory" | "firestore"): DynamicModule {
+  static forRoot(storage: 'memory' | 'firestore'): DynamicModule {
     const repos =
-      storage === "memory"
+      storage === 'memory'
         ? createMemoryRepositories()
-        : createFirestoreRepositories(
-            getFirestore(
-              getApps()[0] ?? initializeApp(),
-              firestoreDatabaseId(process.env),
-            ),
-          );
+        : createFirestoreRepositories(getFirestore(getApps()[0] ?? initializeApp(), firestoreDatabaseId(process.env)));
     const providers = [
       { provide: ORGANIZERS, useValue: repos.organizers },
       { provide: SESSIONS, useValue: repos.sessions },
