@@ -149,7 +149,8 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
       const secrets = await repos.members.secrets(group.id, member.id);
       expect(secrets.pinFailures).toBe(5);
       expect(secrets.lockedUntil?.getTime()).toBe(now.getTime() + 900_000);
-    });
+      // Twelve transactions on one document queue up on the Firestore emulator for a few seconds.
+    }, 30_000);
 
     it('should start a fresh series after the lock expires', async () => {
       const group = aGroup();
