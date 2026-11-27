@@ -42,7 +42,7 @@ export type TodayStatus = 'not_configured' | 'before_start' | 'active' | 'finish
 export interface TodayView {
   status: TodayStatus;
   game?: GameSettings;
-  day?: DayView & { pickerMemberId?: string; pickDeadlineAt?: string; spin?: SpinView };
+  day?: DayView & { pickerMemberId?: string; pickDeadlineAt?: string; isMyTurn?: boolean; spin?: SpinView };
   serverTime: string;
 }
 

@@ -97,6 +97,9 @@ export class GameEngine {
       ...dayView(current, game, isOrganizer || taskVisibleToPlayers(current, now)),
       ...(current.pickerMemberId ? { pickerMemberId: current.pickerMemberId } : {}),
       ...(current.pickDeadlineAt ? { pickDeadlineAt: current.pickDeadlineAt.toISOString() } : {}),
+      ...(current.state === 'picking'
+        ? { isMyTurn: current.pickerMemberId === (await this.memberIdOf(subject, groupId)) }
+        : {}),
       ...(current.spin ? { spin: spinView(current.spin) } : {}),
     };
     return { status: group.status === 'finished' ? 'finished' : 'active', game, day, serverTime };

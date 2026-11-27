@@ -275,6 +275,38 @@ describe('GameEngine', () => {
     });
   });
 
+  describe('whose turn it is', () => {
+    it('should tell only the chosen member that it is their turn', async () => {
+      await setup('roulette');
+      const m1 = await addMember('m1');
+      const m2 = await addMember('m2');
+      await engine.advance(groupId, at('2026-12-01T07:00:00Z'));
+      const picker = (await repos.cells.get(groupId, 0))?.pickerMemberId;
+      const [mine, theirs] = picker === 'm1' ? [m1, m2] : [m2, m1];
+      const when = at('2026-12-01T07:00:10Z');
+      expect((await engine.today(mine, groupId, when)).day).toMatchObject({ pickerMemberId: picker, isMyTurn: true });
+      expect((await engine.today(theirs, groupId, when)).day).toMatchObject({
+        pickerMemberId: picker,
+        isMyTurn: false,
+      });
+    });
+
+    it('should not claim a turn for the organizer who does not play', async () => {
+      await setup('roulette');
+      await addMember('m1');
+      await engine.advance(groupId, at('2026-12-01T07:00:00Z'));
+      const view = await engine.today(ownerSubject, groupId, at('2026-12-01T07:00:10Z'));
+      expect(view.day).toMatchObject({ isMyTurn: false });
+    });
+
+    it('should leave isMyTurn out once the day is open', async () => {
+      await setup('auto');
+      const m1 = await addMember('m1');
+      const view = await engine.today(m1, groupId, at('2026-12-01T07:00:10Z'));
+      expect(view.day).not.toHaveProperty('isMyTurn');
+    });
+  });
+
   describe('today', () => {
     it('should report each stage of the game', async () => {
       const m1 = await addMember('m1');
