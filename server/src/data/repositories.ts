@@ -54,6 +54,18 @@ export interface CellRepository {
     expected: CellState,
     patch: Partial<Omit<Cell, 'groupId' | 'dayIndex'>>,
   ): Promise<boolean>;
+  /**
+   * Opens [day] through the roulette in one atomic step: applies [patch], and the task behind the winning
+   * door [winnerDay] moves to [day] while [day]'s old task takes its place.
+   * `lost` — [day] is no longer in [expected]; `retry` — the winning door has opened meanwhile, spin again; nothing changed in both.
+   */
+  openBySpin(
+    groupId: string,
+    day: number,
+    expected: CellState,
+    winnerDay: number,
+    patch: Partial<Omit<Cell, 'groupId' | 'dayIndex' | 'task'>>,
+  ): Promise<'won' | 'lost' | 'retry'>;
   /** Atomically swaps the tasks of two days when [onlyIf] accepts their current state. */
   swapTasks(groupId: string, a: number, b: number, onlyIf: (cellA: Cell, cellB: Cell) => boolean): Promise<boolean>;
 }

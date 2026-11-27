@@ -271,6 +271,36 @@ class FirestoreCells implements CellRepository {
     });
   }
 
+  async openBySpin(
+    groupId: string,
+    day: number,
+    expected: CellState,
+    winnerDay: number,
+    patch: Partial<Omit<Cell, 'groupId' | 'dayIndex' | 'task'>>,
+  ): Promise<'won' | 'lost' | 'retry'> {
+    return this.db.runTransaction(async (tx) => {
+      const dayRef = this.ref(groupId, day);
+      const winnerRef = this.ref(groupId, winnerDay);
+      const [daySnap, winnerSnap] = await Promise.all([
+        tx.get(dayRef),
+        winnerDay === day ? undefined : tx.get(winnerRef),
+      ]);
+      const current = fromStore<Cell>(daySnap.data());
+      if (!current || current.state !== expected) {
+        return 'lost';
+      }
+      const winner = winnerSnap ? fromStore<Cell>(winnerSnap.data()) : current;
+      if (!winner || (winnerDay !== day && winner.state !== 'closed')) {
+        return 'retry';
+      }
+      tx.update(dayRef, toPatch({ ...patch, task: winner.task }));
+      if (winnerDay !== day) {
+        tx.update(winnerRef, toPatch({ task: current.task }));
+      }
+      return 'won';
+    });
+  }
+
   async swapTasks(
     groupId: string,
     a: number,

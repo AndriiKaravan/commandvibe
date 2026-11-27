@@ -84,14 +84,14 @@
 | POST | `/groups/:id/calendar/days/:day/move` | власник | `{to}` — обмін завдань двох днів |
 | GET | `/groups/:id/today` | власник / учасник | `{status, game?, day?, serverTime}`; у `day` — `pickerMemberId`, `pickDeadlineAt`, `isMyTurn`, `spin`; завдання рулетки з'являється після кінця анімації |
 | POST | `/groups/:id/roulette/spin` | вибраний учасник | `204`; `403 not_your_turn`, `409 not_picking/deadline_passed` |
-| POST | `/internal/tick` | Cloud Scheduler (OIDC) | відкриває дні й крутить рулетку в усіх групах з грою; `404`, доки не задано `TICK_AUDIENCE` і `TICK_INVOKER` |
+| POST | `/internal/tick` | Cloud Scheduler (OIDC) | відкриває дні й крутить рулетку в усіх групах з грою (збій однієї групи не зупиняє решту; відповідь `{advanced, failed}`); `404`, доки не задано `TICK_AUDIENCE` і `TICK_INVOKER` |
 | WS | `/ws` | сесія | протокол ks_server v1; теми `group:`, `org:`, `member:`; події гри `day.opened`, `roulette.waiting`, `roulette.spin`, `game.finished` (у `group:`; без вмісту завдань); події `member.joined`, `member.removed`, `member.pending` (`org:`), `member.approved` (`member:`) |
 | POST | `/test/seed-group` | лише `NODE_ENV=test` | тестова група; `{game:{mode}}` — гра, що почалась сьогодні |
 
 ## Моделі даних
 
 Firestore (за репозиторіями): `organizers/{uid}` {email, displayName?}; `sessions/{id}` {subject{kind,id,groupId?}, refreshTokenHash, deviceInfo, createdAt, revokedAt?}; `groups/{id}` {ownerUid, name, timezone, status, settings{approveNew, memberLimit=50, likesCountOnly, departments[]}, inviteTokenHash, inviteClosed}; `groups/{id}/members/{mid}` {displayName, nameKey, status pending|active|removed, isOrganizer, organizerUid?, department?}; `…/members/{mid}/private/secrets` {pinHash?, pinFailures, lockedUntil?}; `groups/{id}/nameIndex/{nameKey}` {memberId} — унікальність імені в транзакції.
-`groups/{id}.game` {startDate, days, openTime, mode auto|roulette, categories[]}; `groups/{id}/cells/{dayIndex 2 цифри}` {task (catalog taskId або custom title/description), opensAt, state closed|picking|open, openedAt?, pickerMemberId?, pickDeadlineAt?, spin? {startAt, durationMs, doors[], winnerIndex, by}} — усі переходи через `transition` (порівняти й замінити); статус групи міняє `setStatus` (теж порівняти й замінити).
+`groups/{id}.game` {startDate, days, openTime, mode auto|roulette, categories[]}; `groups/{id}/cells/{dayIndex 2 цифри}` {task (catalog taskId або custom title/description), opensAt, state closed|picking|open, openedAt?, pickerMemberId?, pickDeadlineAt?, spin? {startAt, durationMs, doors[], winnerIndex, by}} — усі переходи через `transition` (порівняти й замінити); відкриття рулеткою — `openBySpin` (одна транзакція: день відкривається, завдання з обраних дверцят і сьогоднішнє міняються місцями); статус групи міняє `setStatus` (теж порівняти й замінити).
 Наступні частини (P3–P7): `submissions`, `likes`, `comments`, `points`, `standings` — за розділом 12 дизайну.
 
 ## Історія версій

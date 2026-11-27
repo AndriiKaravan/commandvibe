@@ -12,6 +12,7 @@ const pickWindowMs = 3 * 60 * 60 * 1000;
 const spinLeadMs = 1500;
 const spinDurationMs = 5000;
 const finishAfterMs = 24 * 60 * 60 * 1000;
+const maxSpinTries = 3;
 
 /**
  * Moves the game forward: opens days on schedule and runs the roulette.
@@ -141,7 +142,8 @@ export class GameEngine {
 
   /**
    * Opens [cell] through the wheel. The wheel carries day numbers only; the task behind the winning
-   * door becomes today's task and today's old task goes to that door. True only for the winning caller.
+   * door becomes today's task and today's old task goes to that door, in one atomic repository step.
+   * True only for the winning caller. A winning door that opened meanwhile means a fresh wheel.
    */
   private async performSpin(
     group: Group,
@@ -150,51 +152,44 @@ export class GameEngine {
     by: RouletteSpin['by'],
     now: Date,
   ): Promise<boolean> {
-    const cells = await this.cells.list(group.id);
-    const current = cells.find((item) => item.dayIndex === cell.dayIndex);
-    if (!current) {
-      return false;
+    for (let attempt = 0; attempt < maxSpinTries; attempt++) {
+      const cells = await this.cells.list(group.id);
+      const closedDays = cells
+        .filter((item) => item.dayIndex >= cell.dayIndex && item.state !== 'open')
+        .map((item) => item.dayIndex);
+      const { doors, winnerIndex } = spinDoors(closedDays, this.random);
+      const spin: RouletteSpin = {
+        startAt: new Date(now.getTime() + spinLeadMs),
+        durationMs: spinDurationMs,
+        doors,
+        winnerIndex,
+        by,
+      };
+      const result = await this.cells.openBySpin(group.id, cell.dayIndex, expected, doors[winnerIndex], {
+        state: 'open',
+        openedAt: now,
+        spin,
+      });
+      if (result === 'retry') {
+        continue;
+      }
+      if (result === 'lost') {
+        return false;
+      }
+      await this.activate(group.id);
+      this.events.publish(group.id, 'roulette.spin', {
+        dayIndex: cell.dayIndex,
+        doors,
+        winnerIndex,
+        startAt: spin.startAt.toISOString(),
+        durationMs: spin.durationMs,
+        serverTime: now.toISOString(),
+        by,
+      });
+      this.events.publish(group.id, 'day.opened', { dayIndex: cell.dayIndex });
+      return true;
     }
-    const closedDays = cells
-      .filter((item) => item.dayIndex >= cell.dayIndex && item.state !== 'open')
-      .map((item) => item.dayIndex);
-    const { doors, winnerIndex } = spinDoors(closedDays, this.random);
-    const winnerDay = doors[winnerIndex];
-    const winner = cells.find((item) => item.dayIndex === winnerDay);
-    if (!winner) {
-      return false;
-    }
-    const spin: RouletteSpin = {
-      startAt: new Date(now.getTime() + spinLeadMs),
-      durationMs: spinDurationMs,
-      doors,
-      winnerIndex,
-      by,
-    };
-    const won = await this.cells.transition(group.id, cell.dayIndex, expected, {
-      state: 'open',
-      openedAt: now,
-      spin,
-      task: winner.task,
-    });
-    if (!won) {
-      return false;
-    }
-    if (winnerDay !== cell.dayIndex) {
-      await this.cells.transition(group.id, winnerDay, 'closed', { task: current.task });
-    }
-    await this.activate(group.id);
-    this.events.publish(group.id, 'roulette.spin', {
-      dayIndex: cell.dayIndex,
-      doors,
-      winnerIndex,
-      startAt: spin.startAt.toISOString(),
-      durationMs: spin.durationMs,
-      serverTime: now.toISOString(),
-      by,
-    });
-    this.events.publish(group.id, 'day.opened', { dayIndex: cell.dayIndex });
-    return true;
+    return false;
   }
 
   private async activate(groupId: string): Promise<void> {

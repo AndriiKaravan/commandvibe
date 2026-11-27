@@ -210,6 +210,28 @@ class MemoryCells implements CellRepository {
     return true;
   }
 
+  async openBySpin(
+    groupId: string,
+    day: number,
+    expected: CellState,
+    winnerDay: number,
+    patch: Partial<Omit<Cell, 'groupId' | 'dayIndex' | 'task'>>,
+  ): Promise<'won' | 'lost' | 'retry'> {
+    const current = this.items.get(this.key(groupId, day));
+    if (!current || current.state !== expected) {
+      return 'lost';
+    }
+    const winner = this.items.get(this.key(groupId, winnerDay));
+    if (!winner || (winnerDay !== day && winner.state !== 'closed')) {
+      return 'retry';
+    }
+    this.items.set(this.key(groupId, day), { ...current, ...copy(patch), task: winner.task });
+    if (winnerDay !== day) {
+      this.items.set(this.key(groupId, winnerDay), { ...winner, task: current.task });
+    }
+    return 'won';
+  }
+
   async swapTasks(
     groupId: string,
     a: number,

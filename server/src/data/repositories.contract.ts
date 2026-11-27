@@ -252,6 +252,81 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
         expect(results.filter(Boolean)).toHaveLength(1);
       });
 
+      describe('openBySpin', () => {
+        const spinPatch = (extra: object = {}) => ({
+          state: 'open' as const,
+          openedAt: new Date(Date.UTC(2026, 11, 1, 7)),
+          spin: {
+            startAt: new Date(Date.UTC(2026, 11, 1, 7)),
+            durationMs: 5000,
+            doors: [0, 2],
+            winnerIndex: 1,
+            by: 'game' as const,
+          },
+          ...extra,
+        });
+
+        it('should open the day and swap the tasks of the day and the winning door in one step', async () => {
+          const group = aGroup();
+          await repos.cells.replaceAll(group.id, [
+            aCell(group.id, 0, { state: 'picking' }),
+            aCell(group.id, 1),
+            aCell(group.id, 2),
+          ]);
+          expect(await repos.cells.openBySpin(group.id, 0, 'picking', 2, spinPatch())).toBe('won');
+          const [today, middle, winner] = await repos.cells.list(group.id);
+          expect(today.state).toBe('open');
+          expect(today.task).toEqual({ kind: 'catalog', taskId: 'task-2' });
+          expect(middle.task).toEqual({ kind: 'catalog', taskId: 'task-1' });
+          expect(winner.task).toEqual({ kind: 'catalog', taskId: 'task-0' });
+          expect(winner.state).toBe('closed');
+        });
+
+        it('should keep the task when the day itself is the winning door', async () => {
+          const group = aGroup();
+          await repos.cells.replaceAll(group.id, [aCell(group.id, 0, { state: 'picking' }), aCell(group.id, 1)]);
+          expect(await repos.cells.openBySpin(group.id, 0, 'picking', 0, spinPatch())).toBe('won');
+          expect((await repos.cells.get(group.id, 0))?.task).toEqual({ kind: 'catalog', taskId: 'task-0' });
+        });
+
+        it('should lose when the day is no longer in the expected state, changing nothing', async () => {
+          const group = aGroup();
+          await repos.cells.replaceAll(group.id, [aCell(group.id, 0, { state: 'open' }), aCell(group.id, 1)]);
+          expect(await repos.cells.openBySpin(group.id, 0, 'picking', 1, spinPatch())).toBe('lost');
+          expect((await repos.cells.get(group.id, 1))?.task).toEqual({ kind: 'catalog', taskId: 'task-1' });
+        });
+
+        it('should ask for a new wheel when the winning door has opened meanwhile, changing nothing', async () => {
+          const group = aGroup();
+          await repos.cells.replaceAll(group.id, [
+            aCell(group.id, 0, { state: 'picking' }),
+            aCell(group.id, 1, { state: 'open' }),
+          ]);
+          expect(await repos.cells.openBySpin(group.id, 0, 'picking', 1, spinPatch())).toBe('retry');
+          expect((await repos.cells.get(group.id, 0))?.state).toBe('picking');
+          expect((await repos.cells.get(group.id, 1))?.task).toEqual({ kind: 'catalog', taskId: 'task-1' });
+        });
+
+        it('should never duplicate or lose a task when spins race for the same winning door', async () => {
+          const group = aGroup();
+          await repos.cells.replaceAll(group.id, [
+            aCell(group.id, 0, { state: 'picking' }),
+            aCell(group.id, 1, { state: 'picking' }),
+            aCell(group.id, 2),
+          ]);
+          const results = await Promise.all([
+            repos.cells.openBySpin(group.id, 0, 'picking', 2, spinPatch()),
+            repos.cells.openBySpin(group.id, 1, 'picking', 2, spinPatch()),
+          ]);
+          // The winning door stays closed after a swap, so both may win; what must hold is that no task is lost or doubled.
+          expect(results).toEqual(['won', 'won']);
+          const ids = (await repos.cells.list(group.id)).map((cell) =>
+            cell.task.kind === 'catalog' ? cell.task.taskId : '',
+          );
+          expect([...ids].sort()).toEqual(['task-0', 'task-1', 'task-2']);
+        });
+      });
+
       it('should clear a field patched with undefined', async () => {
         const group = aGroup();
         await repos.cells.replaceAll(group.id, [aCell(group.id, 0, { state: 'picking', pickerMemberId: 'm1' })]);

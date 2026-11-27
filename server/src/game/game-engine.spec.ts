@@ -223,6 +223,23 @@ describe('GameEngine', () => {
       expect((await repos.cells.get(groupId, 0))?.spin?.by).toBe('game');
     });
 
+    it('should keep every task exactly once when parallel advances catch up on missed days', async () => {
+      await setup('roulette');
+      await addMember('m1');
+      await addMember('m2');
+      const taskIds = async () =>
+        (await repos.cells.list(groupId)).map((cell) => (cell.task.kind === 'catalog' ? cell.task.taskId : '')).sort();
+      const before = await taskIds();
+      const later = at('2026-12-05T08:00:00Z');
+      await Promise.all([
+        engine.advance(groupId, later),
+        engine.advance(groupId, later),
+        engine.advance(groupId, later),
+      ]);
+      expect(await taskIds()).toEqual(before);
+      expect(events.of('day.opened').map((opened) => opened.dayIndex)).toEqual([0, 1, 2, 3]);
+    });
+
     it('should let an organizer who plays spin', async () => {
       const ownGroup = (await groupsService.create('org-1', { name: 'Own', timezone: 'Europe/Kyiv' })).group.id;
       await calendar.configure('org-1', ownGroup, {
