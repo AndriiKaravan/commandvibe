@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:commandvibe/core/api/api_client.dart';
 import 'package:commandvibe/core/api/api_exception.dart';
@@ -205,6 +206,74 @@ void main() {
     test('should return null for 204', () async {
       final client = clientWith((request) async => http.Response('', 204));
       expect(await client.put('/me/pin', body: {'pin': '1234'}), isNull);
+    });
+    group('upload', () {
+      ApiClient uploading(
+        Future<http.Response> Function(http.Request request) handler,
+      ) => ApiClient(
+        baseUri: Uri.parse('https://api.test'),
+        sessionStore: store,
+        client: MockClient(handler),
+      );
+
+      final bytes = Uint8List.fromList([0xff, 0xd8, 0xff, 1, 2, 3]);
+
+      test('should send raw bytes with the token and the given type', () async {
+        late http.Request seen;
+        final client = uploading((request) async {
+          seen = request;
+          return _json({'ok': true}, 201);
+        });
+        await client.upload(
+          'POST',
+          '/groups/g1/days/0/submission?source=camera',
+          bytes,
+          contentType: 'image/jpeg',
+        );
+        expect(seen.method, 'POST');
+        expect(seen.headers['authorization'], 'Bearer old-access');
+        expect(seen.headers['content-type'], startsWith('image/jpeg'));
+        expect(seen.bodyBytes, bytes);
+        expect(seen.url.queryParameters['source'], 'camera');
+      });
+
+      test(
+        'should refresh on token_invalid and resend the same bytes',
+        () async {
+          final bodies = <List<int>>[];
+          final client = uploading((request) async {
+            if (request.url.path == '/auth/refresh') {
+              return refreshOk(request);
+            }
+            bodies.add(request.bodyBytes);
+            if (request.headers['authorization'] == 'Bearer new-access') {
+              return _json({'ok': true}, 201);
+            }
+            return _json({'code': 'token_invalid'}, 401);
+          });
+          await client.upload('PUT', '/x', bytes, contentType: 'image/png');
+          expect(refreshCalls, 1);
+          expect(bodies, [bytes, bytes]);
+        },
+      );
+
+      test(
+        'should expose the error body, e.g. the version to replace',
+        () async {
+          final client = uploading(
+            (request) async =>
+                _json({'message': 'already_submitted', 'version': 'v9'}, 409),
+          );
+          await expectLater(
+            client.upload('POST', '/x', bytes, contentType: 'image/jpeg'),
+            throwsA(
+              isA<ApiException>()
+                  .having((e) => e.code, 'code', 'already_submitted')
+                  .having((e) => e.details['version'], 'version', 'v9'),
+            ),
+          );
+        },
+      );
     });
   });
 }

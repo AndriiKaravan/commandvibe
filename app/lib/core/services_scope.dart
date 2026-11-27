@@ -6,6 +6,7 @@ import 'package:commandvibe/core/platform/observed_session_store.dart';
 import 'package:commandvibe/features/calendar/data/calendar_repository.dart';
 import 'package:commandvibe/features/groups/data/groups_repository.dart';
 import 'package:commandvibe/features/join/data/join_repository.dart';
+import 'package:commandvibe/features/photos/data/photos_repository.dart';
 import 'package:commandvibe/features/today/data/today_repository.dart';
 import 'package:commandvibe/features/organizer_auth/data/organizer_auth_repository.dart';
 import 'package:flutter/widgets.dart';
@@ -33,6 +34,7 @@ class AppServices {
   late final GroupsRepository groups = ApiGroupsRepository(api);
   late final CalendarRepository calendar = ApiCalendarRepository(api);
   late final TodayRepository today = ApiTodayRepository(api);
+  late final PhotosRepository photoSubmissions = ApiPhotosRepository(api);
   late final OrganizerAuthRepository organizerAuth = ApiOrganizerAuthRepository(
     api,
     sessions,

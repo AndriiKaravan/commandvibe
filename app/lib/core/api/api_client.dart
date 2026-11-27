@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:commandvibe/core/api/api_exception.dart';
 import 'package:commandvibe/core/platform/session_store.dart';
 import 'package:http/http.dart' as http;
+
+typedef _RawBody = ({Uint8List bytes, String contentType});
 
 /// JSON client of the CommandVibe server.
 ///
@@ -49,15 +52,28 @@ class ApiClient {
 
   Future<Object?> delete(String path) => _send('DELETE', path);
 
-  Future<Object?> _send(String method, String path, {Object? body}) async {
+  /// Sends raw [bytes] (a photo) with the same session handling; the answer is JSON like any other.
+  Future<Object?> upload(
+    String method,
+    String path,
+    Uint8List bytes, {
+    required String contentType,
+  }) => _send(method, path, raw: (bytes: bytes, contentType: contentType));
+
+  Future<Object?> _send(
+    String method,
+    String path, {
+    Object? body,
+    _RawBody? raw,
+  }) async {
     final session = await _sessions.read();
-    var response = await _request(method, path, body, session);
+    var response = await _request(method, path, body, session, raw: raw);
     if (session != null && _isTokenFailure(response)) {
       final renewed = await _renewAfter(session);
       if (renewed == null) {
         throw ApiException(401, code: 'session_expired');
       }
-      response = await _request(method, path, body, renewed);
+      response = await _request(method, path, body, renewed, raw: raw);
     }
     return _decode(response);
   }
@@ -88,8 +104,9 @@ class ApiClient {
     String method,
     String path,
     Object? body,
-    StoredSession? session,
-  ) async {
+    StoredSession? session, {
+    _RawBody? raw,
+  }) async {
     final request = http.Request(method, baseUri.resolve(path))
       ..headers['accept'] = 'application/json';
     if (session != null) {
@@ -99,7 +116,11 @@ class ApiClient {
     if (realtime != null && realtime.isNotEmpty) {
       request.headers[realtimeHeader] = realtime;
     }
-    if (body != null) {
+    if (raw != null) {
+      request
+        ..headers['content-type'] = raw.contentType
+        ..bodyBytes = raw.bytes;
+    } else if (body != null) {
       request
         ..headers['content-type'] = 'application/json'
         ..body = jsonEncode(body);
