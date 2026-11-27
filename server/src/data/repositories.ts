@@ -32,6 +32,8 @@ export interface GroupRepository {
   update(id: string, patch: Partial<Omit<Group, 'id'>>): Promise<void>;
   /** Atomic compare-and-set of the status: true only for the call that changed it. */
   setStatus(id: string, expected: GroupStatus, next: GroupStatus): Promise<boolean>;
+  /** Groups that have a game and whose status is one of [statuses]; the Scheduler tick walks these. */
+  listWithGame(statuses: GroupStatus[]): Promise<Group[]>;
   /** Group whose current invite has this hash, closed or not. */
   findByInviteHash(hash: string): Promise<Group | undefined>;
 }

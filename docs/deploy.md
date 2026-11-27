@@ -20,6 +20,24 @@
 - **Без локальної Java:** GitHub → Actions → `server-firestore-contract` → Run workflow (лише ручний запуск; емулятор з проєктом `demo-commandvibe`, без доступу до справжнього Firebase).
 - **Локально з Java 11+:** `tool/firestore_contract.sh`.
 
+## Cloud Scheduler для `/internal/tick` (кроки власника, один раз)
+
+Раз на хвилину Scheduler викликає `POST /internal/tick`, щоб дні відкривалися вчасно, навіть коли ніхто не відкрив застосунок. Сервіс перевіряє OIDC-токен сам (`--allow-unauthenticated` лишається), тож ролі `run.invoker` не потрібно. Без цих кроків `/internal/tick` відповідає `404`, а гра просувається при читаннях календаря й «Сьогодні».
+
+```
+gcloud services enable cloudscheduler.googleapis.com --project commandvibe-ks
+gcloud iam service-accounts create commandvibe-scheduler --display-name "CommandVibe tick" --project commandvibe-ks
+gcloud scheduler jobs create http commandvibe-tick \
+  --project commandvibe-ks --location europe-central2 --schedule "* * * * *" --time-zone Etc/UTC \
+  --uri https://commandvibe-api-889388170734.europe-central2.run.app/internal/tick --http-method POST \
+  --oidc-service-account-email commandvibe-scheduler@commandvibe-ks.iam.gserviceaccount.com \
+  --oidc-token-audience https://commandvibe-api-889388170734.europe-central2.run.app
+```
+
+Перевірка: `gcloud scheduler jobs run commandvibe-tick --project commandvibe-ks --location europe-central2`, далі в логах Cloud Run — `POST /internal/tick 201`. Якщо `europe-central2` для Scheduler недоступний (`gcloud scheduler locations list`), візьміть найближчий регіон: на роботу це не впливає.
+
+Змінні `TICK_AUDIENCE` і `TICK_INVOKER` вже передає `tool/deploy_api.sh`.
+
 ## Звичайний цикл
 
 1. `tool/deploy_api.sh` → ревізія `candidate` без трафіку; друкує її URL.

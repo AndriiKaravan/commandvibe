@@ -282,6 +282,27 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
         expect((await repos.groups.get(group.id))?.status).toBe('finished');
       });
 
+      it('should list only groups with a game in the asked statuses', async () => {
+        const game = {
+          startDate: '2026-12-01',
+          days: 7,
+          openTime: '09:00',
+          mode: 'auto' as const,
+          categories: ['home' as const],
+        };
+        const draft = aGroup({ game });
+        const active = aGroup({ game, status: 'active' });
+        const finished = aGroup({ game, status: 'finished' });
+        const noGame = aGroup();
+        for (const group of [draft, active, finished, noGame]) {
+          await repos.groups.create(group);
+        }
+        const ids = (await repos.groups.listWithGame(['draft', 'active'])).map((group) => group.id);
+        expect(ids).toEqual(expect.arrayContaining([draft.id, active.id]));
+        expect(ids).not.toContain(finished.id);
+        expect(ids).not.toContain(noGame.id);
+      });
+
       it('should store and read the game settings of a group', async () => {
         const group = aGroup();
         await repos.groups.create(group);

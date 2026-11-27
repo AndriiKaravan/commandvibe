@@ -37,6 +37,7 @@
     "@nestjs/websockets": "^11.2.12",
     "argon2": "^0.45.2",
     "firebase-admin": "^13.10.0",
+    "google-auth-library": "^10.9.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "ws": "^8.23.0"

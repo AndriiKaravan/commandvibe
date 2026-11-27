@@ -8,6 +8,9 @@ project=commandvibe-ks
 region=europe-central2
 service=commandvibe-api
 origins=https://commandvibe.karavanstudio.dev,https://commandvibe-ks.web.app
+# The Scheduler job's token audience is the service's stable URL; the invoker is its service account.
+tick_audience=https://commandvibe-api-889388170734.europe-central2.run.app
+tick_invoker=commandvibe-scheduler@commandvibe-ks.iam.gserviceaccount.com
 
 traffic_flag=(--no-traffic --tag candidate)
 if [ "${FIRST_DEPLOY:-0}" = "1" ]; then
@@ -26,7 +29,7 @@ gcloud run deploy "$service" \
   --max-instances=1 \
   --allow-unauthenticated \
   --set-secrets SESSION_SIGNING_KEY=session-signing-key:latest \
-  --set-env-vars "^@^STORAGE=firestore@APP_CHECK_MODE=monitor@FIRESTORE_DATABASE=commandvibe@ALLOWED_ORIGINS=$origins@PUBLIC_APP_URL=https://commandvibe.karavanstudio.dev" \
+  --set-env-vars "^#^STORAGE=firestore#APP_CHECK_MODE=monitor#FIRESTORE_DATABASE=commandvibe#ALLOWED_ORIGINS=$origins#PUBLIC_APP_URL=https://commandvibe.karavanstudio.dev#TICK_AUDIENCE=$tick_audience#TICK_INVOKER=$tick_invoker" \
   --quiet
 
 url=$(gcloud run services describe "$service" --project "$project" --region "$region" \

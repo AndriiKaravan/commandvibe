@@ -82,6 +82,10 @@ class MemoryGroups implements GroupRepository {
     }
   }
 
+  async listWithGame(statuses: GroupStatus[]): Promise<Group[]> {
+    return [...this.items.values()].filter((group) => group.game && statuses.includes(group.status)).map(copy);
+  }
+
   async setStatus(id: string, expected: GroupStatus, next: GroupStatus): Promise<boolean> {
     const item = this.items.get(id);
     if (!item || item.status !== expected) {
