@@ -1,4 +1,4 @@
-import { Group, Member, MemberSecrets, Organizer, Session } from './models';
+import { Cell, CellState, Group, Member, MemberSecrets, Organizer, Session } from './models';
 
 /** Thrown by [MemberRepository.createUnique] when the name is taken in the group. */
 export class NameTakenError extends Error {
@@ -34,10 +34,29 @@ export interface GroupRepository {
   findByInviteHash(hash: string): Promise<Group | undefined>;
 }
 
+export interface CellRepository {
+  /** Cells of the group ordered by day. */
+  list(groupId: string): Promise<Cell[]>;
+  get(groupId: string, dayIndex: number): Promise<Cell | undefined>;
+  /** Drops every cell of the group and stores [cells] instead. */
+  replaceAll(groupId: string, cells: Cell[]): Promise<void>;
+  /**
+   * Atomic compare-and-set: applies [patch] only while the cell is still in [expected].
+   * A key patched with `undefined` is cleared. Returns whether this call won.
+   */
+  transition(
+    groupId: string,
+    dayIndex: number,
+    expected: CellState,
+    patch: Partial<Omit<Cell, 'groupId' | 'dayIndex'>>,
+  ): Promise<boolean>;
+  /** Atomically swaps the tasks of two days when [onlyIf] accepts their current state. */
+  swapTasks(groupId: string, a: number, b: number, onlyIf: (cellA: Cell, cellB: Cell) => boolean): Promise<boolean>;
+}
+
 /** Result of reserving one PIN attempt before the (slow) hash check. */
 export type PinAttempt =
-  | { kind: 'attempt'; attempt: number; pinHash: string | undefined }
-  | { kind: 'locked'; lockedUntil: Date };
+  { kind: 'attempt'; attempt: number; pinHash: string | undefined } | { kind: 'locked'; lockedUntil: Date };
 
 export interface MemberRepository {
   /**
@@ -57,6 +76,7 @@ export interface MemberRepository {
   updateSecrets(groupId: string, id: string, patch: Partial<MemberSecrets>): Promise<void>;
 }
 
+export const CELLS = Symbol('CellRepository');
 export const ORGANIZERS = Symbol('OrganizerRepository');
 export const SESSIONS = Symbol('SessionRepository');
 export const GROUPS = Symbol('GroupRepository');

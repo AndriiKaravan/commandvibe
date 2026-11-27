@@ -1,6 +1,7 @@
-import { Group, Member, MemberSecrets, Organizer, Session } from '../models';
+import { Cell, CellState, Group, Member, MemberSecrets, Organizer, Session } from '../models';
 import { nextPinAttempt } from '../pin-attempts';
 import {
+  CellRepository,
   GroupRepository,
   MemberRepository,
   NameTakenError,
@@ -150,13 +151,78 @@ class MemoryMembers implements MemberRepository {
   }
 }
 
+class MemoryCells implements CellRepository {
+  private readonly items = new Map<string, Cell>();
+
+  private key = (groupId: string, dayIndex: number): string => `${groupId}/${dayIndex}`;
+
+  async list(groupId: string): Promise<Cell[]> {
+    return [...this.items.values()]
+      .filter((cell) => cell.groupId === groupId)
+      .sort((a, b) => a.dayIndex - b.dayIndex)
+      .map(copy);
+  }
+
+  async get(groupId: string, dayIndex: number): Promise<Cell | undefined> {
+    const item = this.items.get(this.key(groupId, dayIndex));
+    return item && copy(item);
+  }
+
+  async replaceAll(groupId: string, cells: Cell[]): Promise<void> {
+    for (const cell of [...this.items.values()].filter((item) => item.groupId === groupId)) {
+      this.items.delete(this.key(groupId, cell.dayIndex));
+    }
+    for (const cell of cells) {
+      this.items.set(this.key(groupId, cell.dayIndex), copy(cell));
+    }
+  }
+
+  async transition(
+    groupId: string,
+    dayIndex: number,
+    expected: CellState,
+    patch: Partial<Omit<Cell, 'groupId' | 'dayIndex'>>,
+  ): Promise<boolean> {
+    const item = this.items.get(this.key(groupId, dayIndex));
+    if (!item || item.state !== expected) {
+      return false;
+    }
+    const next: Cell = { ...item, ...copy(patch) };
+    for (const [field, value] of Object.entries(patch)) {
+      if (value === undefined) {
+        delete (next as unknown as Record<string, unknown>)[field];
+      }
+    }
+    this.items.set(this.key(groupId, dayIndex), next);
+    return true;
+  }
+
+  async swapTasks(
+    groupId: string,
+    a: number,
+    b: number,
+    onlyIf: (cellA: Cell, cellB: Cell) => boolean,
+  ): Promise<boolean> {
+    const first = this.items.get(this.key(groupId, a));
+    const second = this.items.get(this.key(groupId, b));
+    if (!first || !second || !onlyIf(copy(first), copy(second))) {
+      return false;
+    }
+    this.items.set(this.key(groupId, a), { ...first, task: second.task });
+    this.items.set(this.key(groupId, b), { ...second, task: first.task });
+    return true;
+  }
+}
+
 export function createMemoryRepositories(): {
+  cells: CellRepository;
   organizers: OrganizerRepository;
   sessions: SessionRepository;
   groups: GroupRepository;
   members: MemberRepository;
 } {
   return {
+    cells: new MemoryCells(),
     organizers: new MemoryOrganizers(),
     sessions: new MemorySessions(),
     groups: new MemoryGroups(),

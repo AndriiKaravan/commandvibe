@@ -1,7 +1,8 @@
-import { Group, Member, Session, defaultGroupSettings, nameKeyOf } from './models';
-import { GroupRepository, MemberRepository, NameTakenError, SessionRepository } from './repositories';
+import { Cell, Group, Member, Session, defaultGroupSettings, nameKeyOf } from './models';
+import { CellRepository, GroupRepository, MemberRepository, NameTakenError, SessionRepository } from './repositories';
 
 export interface RepositorySet {
+  cells: CellRepository;
   groups: GroupRepository;
   members: MemberRepository;
   sessions: SessionRepository;
@@ -34,6 +35,17 @@ export function aMember(groupId: string, displayName: string, overrides: Partial
     status: 'active',
     isOrganizer: false,
     createdAt: new Date(),
+    ...overrides,
+  };
+}
+
+export function aCell(groupId: string, dayIndex: number, overrides: Partial<Cell> = {}): Cell {
+  return {
+    groupId,
+    dayIndex,
+    task: { kind: 'catalog', taskId: `task-${dayIndex}` },
+    opensAt: new Date(Date.UTC(2026, 11, 1 + dayIndex, 7)),
+    state: 'closed',
     ...overrides,
   };
 }
@@ -168,11 +180,108 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
       await repos.groups.create(group);
       const member = await repos.members.createUnique(aMember(group.id, 'Olena'));
       await repos.members.updateSecrets(group.id, member.id, { pinHash: 'x', pinFailures: 5, lockedUntil: new Date() });
-      await repos.members.updateSecrets(group.id, member.id, { pinHash: undefined, pinFailures: 0, lockedUntil: undefined });
+      await repos.members.updateSecrets(group.id, member.id, {
+        pinHash: undefined,
+        pinFailures: 0,
+        lockedUntil: undefined,
+      });
       const secrets = await repos.members.secrets(group.id, member.id);
       expect(secrets.pinHash).toBeUndefined();
       expect(secrets.lockedUntil).toBeUndefined();
       expect(secrets.pinFailures).toBe(0);
+    });
+    describe('cells', () => {
+      it('should list the cells of a group in day order', async () => {
+        const group = aGroup();
+        await repos.cells.replaceAll(group.id, [aCell(group.id, 2), aCell(group.id, 0), aCell(group.id, 1)]);
+        const days = (await repos.cells.list(group.id)).map((cell) => cell.dayIndex);
+        expect(days).toEqual([0, 1, 2]);
+      });
+
+      it('should replace all cells of a group and leave other groups alone', async () => {
+        const group = aGroup();
+        const other = aGroup();
+        await repos.cells.replaceAll(group.id, [aCell(group.id, 0), aCell(group.id, 1), aCell(group.id, 2)]);
+        await repos.cells.replaceAll(other.id, [aCell(other.id, 0)]);
+        await repos.cells.replaceAll(group.id, [aCell(group.id, 0, { task: { kind: 'catalog', taskId: 'new' } })]);
+        const cells = await repos.cells.list(group.id);
+        expect(cells).toHaveLength(1);
+        expect(cells[0].task).toEqual({ kind: 'catalog', taskId: 'new' });
+        expect(await repos.cells.list(other.id)).toHaveLength(1);
+      });
+
+      it('should round-trip dates, custom tasks and a spin', async () => {
+        const group = aGroup();
+        const cell = aCell(group.id, 0, {
+          task: { kind: 'custom', title: { uk: 'Моє' }, description: { uk: 'Опис', en: 'Text' } },
+          state: 'open',
+          openedAt: new Date(Date.UTC(2026, 11, 1, 7, 0, 1)),
+          pickerMemberId: 'm1',
+          pickDeadlineAt: new Date(Date.UTC(2026, 11, 1, 10)),
+          spin: {
+            startAt: new Date(Date.UTC(2026, 11, 1, 7, 0, 2)),
+            durationMs: 5000,
+            doors: [3, 1, 2],
+            winnerIndex: 1,
+            by: 'game',
+          },
+        });
+        await repos.cells.replaceAll(group.id, [cell]);
+        expect(await repos.cells.get(group.id, 0)).toEqual(cell);
+      });
+
+      it('should return undefined for an unknown day', async () => {
+        expect(await repos.cells.get('nope', 0)).toBeUndefined();
+      });
+
+      it('should not change a cell whose state differs from the expected one', async () => {
+        const group = aGroup();
+        await repos.cells.replaceAll(group.id, [aCell(group.id, 0)]);
+        expect(await repos.cells.transition(group.id, 0, 'picking', { state: 'open' })).toBe(false);
+        expect((await repos.cells.get(group.id, 0))?.state).toBe('closed');
+      });
+
+      it('should let exactly one of ten parallel transitions win', async () => {
+        const group = aGroup();
+        await repos.cells.replaceAll(group.id, [aCell(group.id, 0)]);
+        const results = await Promise.all(
+          Array.from({ length: 10 }, () =>
+            repos.cells.transition(group.id, 0, 'closed', { state: 'open', openedAt: new Date() }),
+          ),
+        );
+        expect(results.filter(Boolean)).toHaveLength(1);
+      });
+
+      it('should clear a field patched with undefined', async () => {
+        const group = aGroup();
+        await repos.cells.replaceAll(group.id, [aCell(group.id, 0, { state: 'picking', pickerMemberId: 'm1' })]);
+        await repos.cells.transition(group.id, 0, 'picking', { state: 'open', pickerMemberId: undefined });
+        expect((await repos.cells.get(group.id, 0))?.pickerMemberId).toBeUndefined();
+      });
+
+      it('should swap the tasks of two days, and only when the guard allows it', async () => {
+        const group = aGroup();
+        await repos.cells.replaceAll(group.id, [aCell(group.id, 0), aCell(group.id, 1)]);
+        expect(await repos.cells.swapTasks(group.id, 0, 1, () => false)).toBe(false);
+        expect((await repos.cells.get(group.id, 0))?.task).toEqual({ kind: 'catalog', taskId: 'task-0' });
+        expect(await repos.cells.swapTasks(group.id, 0, 1, () => true)).toBe(true);
+        expect((await repos.cells.get(group.id, 0))?.task).toEqual({ kind: 'catalog', taskId: 'task-1' });
+        expect((await repos.cells.get(group.id, 1))?.task).toEqual({ kind: 'catalog', taskId: 'task-0' });
+      });
+
+      it('should store and read the game settings of a group', async () => {
+        const group = aGroup();
+        await repos.groups.create(group);
+        const game = {
+          startDate: '2026-12-01',
+          days: 14,
+          openTime: '09:00',
+          mode: 'roulette' as const,
+          categories: ['home' as const, 'kids' as const],
+        };
+        await repos.groups.update(group.id, { game });
+        expect((await repos.groups.get(group.id))?.game).toEqual(game);
+      });
     });
   });
 }

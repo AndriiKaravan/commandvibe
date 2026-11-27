@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
 import { FieldValue, Firestore, Timestamp } from 'firebase-admin/firestore';
-import { Group, Member, MemberSecrets, Organizer, Session } from '../models';
+import { Cell, CellState, Group, Member, MemberSecrets, Organizer, Session } from '../models';
 import { nextPinAttempt } from '../pin-attempts';
 import {
+  CellRepository,
   GroupRepository,
   MemberRepository,
   NameTakenError,
@@ -212,13 +213,79 @@ class FirestoreMembers implements MemberRepository {
   }
 }
 
+class FirestoreCells implements CellRepository {
+  constructor(private readonly db: Firestore) {}
+
+  // Two digits keep the ids in day order (a month is at most 31 days).
+  private ref(groupId: string, dayIndex: number) {
+    return this.db.doc(`groups/${groupId}/cells/${String(dayIndex).padStart(2, '0')}`);
+  }
+
+  async list(groupId: string): Promise<Cell[]> {
+    const found = await this.db.collection(`groups/${groupId}/cells`).orderBy('dayIndex').get();
+    return found.docs.map((doc) => fromStore<Cell>(doc.data()) as Cell);
+  }
+
+  async get(groupId: string, dayIndex: number): Promise<Cell | undefined> {
+    return fromStore<Cell>((await this.ref(groupId, dayIndex).get()).data());
+  }
+
+  async replaceAll(groupId: string, cells: Cell[]): Promise<void> {
+    const batch = this.db.batch();
+    const existing = await this.db.collection(`groups/${groupId}/cells`).get();
+    existing.docs.forEach((doc) => batch.delete(doc.ref));
+    cells.forEach((cell) => batch.set(this.ref(groupId, cell.dayIndex), toStore(cell)));
+    await batch.commit();
+  }
+
+  async transition(
+    groupId: string,
+    dayIndex: number,
+    expected: CellState,
+    patch: Partial<Omit<Cell, 'groupId' | 'dayIndex'>>,
+  ): Promise<boolean> {
+    return this.db.runTransaction(async (tx) => {
+      const ref = this.ref(groupId, dayIndex);
+      const current = fromStore<Cell>((await tx.get(ref)).data());
+      if (!current || current.state !== expected) {
+        return false;
+      }
+      tx.update(ref, toPatch(patch));
+      return true;
+    });
+  }
+
+  async swapTasks(
+    groupId: string,
+    a: number,
+    b: number,
+    onlyIf: (cellA: Cell, cellB: Cell) => boolean,
+  ): Promise<boolean> {
+    return this.db.runTransaction(async (tx) => {
+      const refA = this.ref(groupId, a);
+      const refB = this.ref(groupId, b);
+      const [first, second] = (await Promise.all([tx.get(refA), tx.get(refB)])).map((snap) =>
+        fromStore<Cell>(snap.data()),
+      );
+      if (!first || !second || !onlyIf(first, second)) {
+        return false;
+      }
+      tx.update(refA, toPatch({ task: second.task }));
+      tx.update(refB, toPatch({ task: first.task }));
+      return true;
+    });
+  }
+}
+
 export function createFirestoreRepositories(db: Firestore): {
+  cells: CellRepository;
   organizers: OrganizerRepository;
   sessions: SessionRepository;
   groups: GroupRepository;
   members: MemberRepository;
 } {
   return {
+    cells: new FirestoreCells(db),
     organizers: new FirestoreOrganizers(db),
     sessions: new FirestoreSessions(db),
     groups: new FirestoreGroups(db),
