@@ -9,6 +9,7 @@ import { SessionSubject } from '../data/models';
 import { createMemoryRepositories } from '../data/memory/memory-repositories';
 import { GroupsService } from '../groups/groups.service';
 import { CalendarService, ConfigureInput } from './calendar.service';
+import { GameEngine } from './game-engine';
 
 function seeded(seed: number): () => number {
   let state = seed;
@@ -39,7 +40,15 @@ describe('CalendarService', () => {
     repos = createMemoryRepositories();
     await repos.organizers.upsert(organizer);
     const groups = new GroupsService(repos.groups, repos.members, repos.organizers, () => now, 'https://app.test');
-    service = new CalendarService(groups, repos.groups, repos.cells, () => now, seeded(1));
+    const engine = new GameEngine(
+      groups,
+      repos.groups,
+      repos.cells,
+      repos.members,
+      { publish: () => undefined },
+      seeded(2),
+    );
+    service = new CalendarService(groups, repos.groups, repos.cells, () => now, seeded(1), engine);
     groupId = (await groups.create('org-1', { name: 'Office', timezone: 'Europe/Kyiv', playsToo: false })).group.id;
   });
 

@@ -1,6 +1,6 @@
 import { catalog } from '../content/task-catalog';
 import { Category, TaskCatalogEntry, categories } from '../content/task-catalog.model';
-import { Cell, CellState, GameSettings, TaskRef } from '../data/models';
+import { Cell, CellState, GameSettings, RouletteSpin, TaskRef } from '../data/models';
 import { addDays } from './game-time';
 
 /** A task as clients see it; a catalog task keeps its id, a custom one has none. */
@@ -25,6 +25,24 @@ export interface CalendarView {
   game?: GameSettings;
   days: DayView[];
   /** Lets clients correct their clock before animating anything. */
+  serverTime: string;
+}
+
+export interface SpinView {
+  startAt: string;
+  durationMs: number;
+  /** Day numbers around the wheel; never task titles. */
+  doors: number[];
+  winnerIndex: number;
+  by: RouletteSpin['by'];
+}
+
+export type TodayStatus = 'not_configured' | 'before_start' | 'active' | 'finished';
+
+export interface TodayView {
+  status: TodayStatus;
+  game?: GameSettings;
+  day?: DayView & { pickerMemberId?: string; pickDeadlineAt?: string; spin?: SpinView };
   serverTime: string;
 }
 
@@ -65,6 +83,24 @@ export function dayView(cell: Cell, game: GameSettings, showTask: boolean): DayV
   return view;
 }
 
+export function spinView(spin: RouletteSpin): SpinView {
+  return {
+    startAt: spin.startAt.toISOString(),
+    durationMs: spin.durationMs,
+    doors: spin.doors,
+    winnerIndex: spin.winnerIndex,
+    by: spin.by,
+  };
+}
+
+/** Players learn a day's task once it is open and, after a roulette, once the wheel has stopped. */
+export function taskVisibleToPlayers(cell: Cell, now: Date): boolean {
+  if (cell.state !== 'open') {
+    return false;
+  }
+  return !cell.spin || now.getTime() >= cell.spin.startAt.getTime() + cell.spin.durationMs;
+}
+
 export function calendarView(
   game: GameSettings | undefined,
   cells: Cell[],
@@ -76,7 +112,7 @@ export function calendarView(
   }
   return {
     game,
-    days: cells.map((cell) => dayView(cell, game, isOrganizer || cell.state === 'open')),
+    days: cells.map((cell) => dayView(cell, game, isOrganizer || taskVisibleToPlayers(cell, now))),
     serverTime: now.toISOString(),
   };
 }

@@ -1,4 +1,4 @@
-import { Cell, CellState, Group, Member, MemberSecrets, Organizer, Session } from '../models';
+import { Cell, CellState, Group, GroupStatus, Member, MemberSecrets, Organizer, Session } from '../models';
 import { nextPinAttempt } from '../pin-attempts';
 import {
   CellRepository,
@@ -80,6 +80,15 @@ class MemoryGroups implements GroupRepository {
     if (item) {
       this.items.set(id, { ...item, ...copy(patch) });
     }
+  }
+
+  async setStatus(id: string, expected: GroupStatus, next: GroupStatus): Promise<boolean> {
+    const item = this.items.get(id);
+    if (!item || item.status !== expected) {
+      return false;
+    }
+    this.items.set(id, { ...item, status: next });
+    return true;
   }
 
   async findByInviteHash(hash: string): Promise<Group | undefined> {

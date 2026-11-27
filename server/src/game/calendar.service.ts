@@ -11,6 +11,7 @@ import { Cell, GameMode, GameSettings, Group, SessionSubject, TaskRef } from '..
 import { CELLS, CellRepository, GROUPS, GroupRepository } from '../data/repositories';
 import { GroupsService } from '../groups/groups.service';
 import { addDays, dayOpensAt, isValidDate, isValidTime, localDate } from './game-time';
+import { GameEngine } from './game-engine';
 import { RANDOM } from './game.tokens';
 import { Random, autoPick, nextOther } from './task-picker';
 import { CalendarView, DayView, calendarView, catalogById, dayView, isCategory } from './views';
@@ -81,6 +82,7 @@ export class CalendarService {
     @Inject(CELLS) private readonly cells: CellRepository,
     @Inject(CLOCK) private readonly now: () => Date,
     @Inject(RANDOM) private readonly random: Random,
+    private readonly engine: GameEngine,
   ) {}
 
   /** Sets up the game and draws the calendar; allowed until the first day opens. */
@@ -108,6 +110,8 @@ export class CalendarService {
 
   /** The calendar for the owner (every task) or an active member (open days only). */
   async calendar(subject: SessionSubject, groupId: string): Promise<CalendarView> {
+    await this.groupsService.getFor(subject, groupId);
+    await this.engine.advance(groupId, this.now());
     const group = await this.groupsService.getFor(subject, groupId);
     return calendarView(group.game, await this.cells.list(groupId), subject.kind === 'organizer', this.now());
   }

@@ -1,10 +1,23 @@
-import { BadRequestException, Body, Controller, Get, Param, PipeTransform, Post, Put, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Inject,
+  Param,
+  PipeTransform,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { CurrentAuth } from '../auth/current-subject.decorator';
-import { VerifiedAccess } from '../auth/session.service';
+import { CLOCK, VerifiedAccess } from '../auth/session.service';
 import { IdPipe } from '../common/id.pipe';
 import { organizerUid } from '../groups/groups.controller';
 import { CalendarService, ConfigureInput, SetTaskInput } from './calendar.service';
-import { CalendarView, CatalogTaskView, DayView, isCategory, searchCatalog } from './views';
+import { GameEngine } from './game-engine';
+import { CalendarView, CatalogTaskView, DayView, TodayView, isCategory, searchCatalog } from './views';
 
 /** A day number in the URL: 0..30 (a game lasts at most 31 days); the service checks it against the game. */
 class DayPipe implements PipeTransform<string, number> {
@@ -18,7 +31,11 @@ class DayPipe implements PipeTransform<string, number> {
 
 @Controller()
 export class GameController {
-  constructor(private readonly calendar: CalendarService) {}
+  constructor(
+    private readonly calendar: CalendarService,
+    private readonly engine: GameEngine,
+    @Inject(CLOCK) private readonly now: () => Date,
+  ) {}
 
   @Get('catalog')
   catalog(
@@ -74,5 +91,16 @@ export class GameController {
     @Body() body: { to?: number },
   ): Promise<CalendarView> {
     return this.calendar.move(organizerUid(auth), id, day, body?.to as number);
+  }
+
+  @Get('groups/:id/today')
+  today(@CurrentAuth() auth: VerifiedAccess, @Param('id', IdPipe) id: string): Promise<TodayView> {
+    return this.engine.today(auth.subject, id, this.now());
+  }
+
+  @Post('groups/:id/roulette/spin')
+  @HttpCode(204)
+  async spin(@CurrentAuth() auth: VerifiedAccess, @Param('id', IdPipe) id: string): Promise<void> {
+    await this.engine.spin(auth.subject, id, this.now());
   }
 }

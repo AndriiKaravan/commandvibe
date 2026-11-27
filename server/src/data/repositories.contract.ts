@@ -269,6 +269,19 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
         expect((await repos.cells.get(group.id, 1))?.task).toEqual({ kind: 'catalog', taskId: 'task-0' });
       });
 
+      it('should change the group status only from the expected one, once under concurrency', async () => {
+        const group = aGroup();
+        await repos.groups.create(group);
+        expect(await repos.groups.setStatus(group.id, 'active', 'finished')).toBe(false);
+        expect(await repos.groups.setStatus(group.id, 'draft', 'active')).toBe(true);
+        expect((await repos.groups.get(group.id))?.status).toBe('active');
+        const results = await Promise.all(
+          Array.from({ length: 5 }, () => repos.groups.setStatus(group.id, 'active', 'finished')),
+        );
+        expect(results.filter(Boolean)).toHaveLength(1);
+        expect((await repos.groups.get(group.id))?.status).toBe('finished');
+      });
+
       it('should store and read the game settings of a group', async () => {
         const group = aGroup();
         await repos.groups.create(group);

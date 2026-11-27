@@ -1,4 +1,4 @@
-import { Cell, CellState, Group, Member, MemberSecrets, Organizer, Session } from './models';
+import { Cell, CellState, Group, GroupStatus, Member, MemberSecrets, Organizer, Session } from './models';
 
 /** Thrown by [MemberRepository.createUnique] when the name is taken in the group. */
 export class NameTakenError extends Error {
@@ -30,6 +30,8 @@ export interface GroupRepository {
   create(group: Group): Promise<void>;
   get(id: string): Promise<Group | undefined>;
   update(id: string, patch: Partial<Omit<Group, 'id'>>): Promise<void>;
+  /** Atomic compare-and-set of the status: true only for the call that changed it. */
+  setStatus(id: string, expected: GroupStatus, next: GroupStatus): Promise<boolean>;
   /** Group whose current invite has this hash, closed or not. */
   findByInviteHash(hash: string): Promise<Group | undefined>;
 }

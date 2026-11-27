@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { FieldValue, Firestore, Timestamp } from 'firebase-admin/firestore';
-import { Cell, CellState, Group, Member, MemberSecrets, Organizer, Session } from '../models';
+import { Cell, CellState, Group, GroupStatus, Member, MemberSecrets, Organizer, Session } from '../models';
 import { nextPinAttempt } from '../pin-attempts';
 import {
   CellRepository,
@@ -122,6 +122,17 @@ class FirestoreGroups implements GroupRepository {
 
   async update(id: string, patch: Partial<Omit<Group, 'id'>>): Promise<void> {
     await this.db.doc(`groups/${id}`).update(toPatch(patch));
+  }
+
+  async setStatus(id: string, expected: GroupStatus, next: GroupStatus): Promise<boolean> {
+    return this.db.runTransaction(async (tx) => {
+      const ref = this.db.doc(`groups/${id}`);
+      if ((await tx.get(ref)).data()?.status !== expected) {
+        return false;
+      }
+      tx.update(ref, { status: next });
+      return true;
+    });
   }
 
   async findByInviteHash(hash: string): Promise<Group | undefined> {
