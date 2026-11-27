@@ -1,9 +1,9 @@
 # CommandVibe — Project Overview
 
 **Дата оновлення:** 2026-11-27
-**Версія документа:** 2.5 (P1 перевірено власником на проді)
+**Версія документа:** 2.6 (P2: календар, режими «авто щодня» і «рулетка», двигун гри, /internal/tick, картка «Сьогодні»)
 
-> **Статус:** хвиля 1, частина P1 реалізована (у `main`) і **перевірена власником на проді 27.11** (вхід Google, створення групи, приєднання з іменем і PIN, живий список). Далі — P2. API розгорнуто 27.11: Cloud Run `commandvibe-api` (ревізія `00002`, `https://commandvibe-api-889388170734.europe-central2.run.app`); веб — на живому сайті `commandvibe.karavanstudio.dev` (27.11). Дизайн: `docs/specs/2026-11-19-photo-challenge-design.md` (розділ 2а має пріоритет). План: `docs/superpowers/plans/2026-11-26-wave1-roadmap.md`, `…-wave1-p1-foundation.md`.
+> **Статус:** хвиля 1, частина P1 реалізована (у `main`) і **перевірена власником на проді 27.11** (вхід Google, створення групи, приєднання з іменем і PIN, живий список). P2 (календар і рулетка) реалізовано в гілці `worktree-p2-calendar`; на прод ще не розгорнуто. API розгорнуто 27.11: Cloud Run `commandvibe-api` (ревізія `00002`, `https://commandvibe-api-889388170734.europe-central2.run.app`); веб — на живому сайті `commandvibe.karavanstudio.dev` (27.11). Дизайн: `docs/specs/2026-11-19-photo-challenge-design.md` (розділ 2а має пріоритет). План: `docs/superpowers/plans/2026-11-26-wave1-roadmap.md`, `…-wave1-p1-foundation.md`.
 
 ## Загальна інформація
 
@@ -22,6 +22,7 @@
   - `organizers/` — вхід організатора: Firebase ID token → сесія сервісу.
   - `groups/` — створення групи, посилання-запрошення (ротація, закриття), доступ власника/учасника.
   - `members/` — приєднання за посиланням, підтвердження нових, PIN, дії організатора, сторінка запрошення `/j/:token`.
+  - `game/` — гра: `game-time.ts` (час у поясі групи з урахуванням DST), `task-picker.ts` (авто-підбір без повторів з урахуванням категорій і сезону, «Інше»), `roulette.ts` (кому крутити — хто крутив найменше; колесо з номерів днів), `calendar.service.ts` (налаштування гри, конструктор календаря), `game-engine.ts` (`advance` — ідемпотентне відкриття днів і рулетка; `spin`; `today`), `tick.controller.ts` + `tick.guard.ts` (`POST /internal/tick` для Cloud Scheduler з власною перевіркою OIDC), `game-events.ts` (події в тему `group:<id>`).
   - `realtime/` — підключення ks_server realtime: доступ до тем `group:<id>` і `org:<id>`, події учасників.
   - `content/` — каталог завдань дня v2 (171 завдання UA + EN; дані — `task-catalog.data.ts`, модель — `task-catalog.model.ts`). Категорії: `home` вдома, `street` вулиця, `office`, `cheap` дешево, `kids` з дітьми, `winter`, `summer`, `team` командне, `pair` парне — 1–4 на завдання, ≥30 у кожній (тест). Аудиторії v1 (офіс/студенти/друзі/сім’я) лишилися полем «для кого»; теми v1 «креатив» і «вихідні» прибрано. `isOfferedInMonth`: літо — травень–вересень, зима — листопад–березень. Таблиця для правки власником — `docs/content/task-catalog-v2.md` (генерує `src/content/render-catalog.ts`; тест звіряє її з даними; v1 — історична). У Firestore — лише після «каталог погоджено».
   - `shared/realtime`, `shared/app_check` — копії бібліотек (sync із чистих клонів тегів ks_server v0.3.0, ks_core v0.6.2), не редагуються.
@@ -30,7 +31,7 @@
   - `core/platform/` — абстракції з реалізаціями для вебу й застосунків: `SessionStore` (localStorage / secure storage), `InviteLinkSource` (`/join?t=` / App Links і Universal Links `/j/`: пакет і bundle ID `com.karavanstudio.commandvibe`, `app/web/.well-known/assetlinks.json` і `apple-app-site-association` з Team ID `8RTTR2Y32B`; тест `app_links_config_test.dart` звіряє їх із нативними проєктами), `PhotoSource` (image_picker без зменшення — EXIF зберігається), `OrganizerSignIn` (popup→redirect / signInWithProvider).
   - `core/api/` — `ApiClient` (токен, `x-realtime-session`, один спільний refresh на `401`).
   - `core/theme/` — «Скло»: `GlassTokens` (макети E/E2), `GlassPanel` з запасним варіантом без розмиття.
-  - `features/` — `welcome`, `organizer_auth`, `groups` (створення, поширення запрошення, головна групи з живим списком), `join` (приєднання, очікування підтвердження, PIN, повернення; організатор, що відкрив своє посилання, не перезаписує сесію).
+  - `features/` — `welcome`, `organizer_auth`, `groups` (створення, поширення запрошення, головна групи з живим списком), `calendar` (налаштування гри, редактор календаря: «Інше», з каталогу, своє завдання, переставити дні), `today` (картка «Сьогодні»: завдання дня або рулетка з синхронною анімацією), `join` (приєднання, очікування підтвердження, PIN, повернення; організатор, що відкрив своє посилання, не перезаписує сесію).
   - `l10n/` — UA (основна) і EN.
 - **`tool/`** — `deploy_api.sh` (ревізія `candidate`), `deploy_web_preview.sh`, `e2e_web.mjs` (сценарій у headless Chrome). Порядок деплою — `docs/deploy.md`.
 - **Спільні бібліотеки (змінювати звідси заборонено):** ks_core (клієнт; веб-прогалини — задача ks_core/2026-11-26-web-support), ks_server (сервер).
@@ -50,6 +51,7 @@
 - Firestore: база з назвою `commandvibe` (europe-central2), не `(default)`; сервер бере назву з `FIRESTORE_DATABASE` (за замовчуванням `(default)`, як в емуляторі).
 - Вхід Google у вебі йде через домен сторінки (`authDomain` = домен Hosting): блокування сторонніх cookie ламало redirect (перевірка першого дня).
 - Фото зменшує сервер (дизайн 2а п. 13); клієнт надсилає оригінал (ліміт 15 МБ — P3).
+- Гра: день відкривається о `openTime` у поясі групи (DST враховано). `GameEngine.advance` викликають і `/internal/tick` (щохвилини), і читання `calendar`/`today`, тож гра йде й без Scheduler. Рулетка: гра обирає учасника, що крутив найменше; на це 3 год від початку вибору, далі крутить гра; колесо — номери закритих днів (не назви), завдання за обраними дверцятами міняється місцями з сьогоднішнім; пропущені дні відкриває гра. Анімація однакова в усіх: клієнти рахують її від часу сервера.
 - Деплой бекенду: ревізія `candidate` без трафіку → перевірки → трафік (з дозволу).
 
 ## API
@@ -74,16 +76,27 @@
 | POST | `/join/returning` | публічно | `{token, displayName, pin}` → сесія; `401 wrong_pin {attemptsLeft}`, `429 pin_locked {retryAfterSeconds}`, `401 no_such_login` |
 | GET | `/me` · PUT `/me/pin` | учасник | профіль · PIN рівно 4 цифри |
 | GET | `/j/:token` | публічно | HTML з OG-тегами → `/join?t=`; закрите → `410` |
-| WS | `/ws` | сесія | протокол ks_server v1; теми `group:`, `org:`, `member:`; події `member.joined`, `member.removed`, `member.pending` (`org:`), `member.approved` (`member:`) |
-| POST | `/test/seed-group` | лише `NODE_ENV=test` | тестова група |
+| GET | `/catalog?category=&q=` | організатор | завдання каталогу для вибору |
+| PUT | `/groups/:id/game` | власник | `{startDate, days 7–31, openTime?, mode auto\|roulette, categories}` → календар; `422 invalid_date/start_in_past/invalid_days/invalid_time/invalid_mode/invalid_categories`, `409 game_started` |
+| GET | `/groups/:id/calendar` | власник / учасник | `{game, days[], serverTime}`; учасник бачить `task` лише відкритих днів |
+| POST | `/groups/:id/calendar/days/:day/other` | власник | інше завдання з тих самих категорій; `409 day_opened/no_more_tasks` |
+| PUT | `/groups/:id/calendar/days/:day/task` | власник | `{taskId}` або `{custom:{title,description}}`; `422 unknown_task/invalid_custom`, `409 task_in_game/day_opened` |
+| POST | `/groups/:id/calendar/days/:day/move` | власник | `{to}` — обмін завдань двох днів |
+| GET | `/groups/:id/today` | власник / учасник | `{status, game?, day?, serverTime}`; у `day` — `pickerMemberId`, `pickDeadlineAt`, `isMyTurn`, `spin`; завдання рулетки з'являється після кінця анімації |
+| POST | `/groups/:id/roulette/spin` | вибраний учасник | `204`; `403 not_your_turn`, `409 not_picking/deadline_passed` |
+| POST | `/internal/tick` | Cloud Scheduler (OIDC) | відкриває дні й крутить рулетку в усіх групах з грою; `404`, доки не задано `TICK_AUDIENCE` і `TICK_INVOKER` |
+| WS | `/ws` | сесія | протокол ks_server v1; теми `group:`, `org:`, `member:`; події гри `day.opened`, `roulette.waiting`, `roulette.spin`, `game.finished` (у `group:`; без вмісту завдань); події `member.joined`, `member.removed`, `member.pending` (`org:`), `member.approved` (`member:`) |
+| POST | `/test/seed-group` | лише `NODE_ENV=test` | тестова група; `{game:{mode}}` — гра, що почалась сьогодні |
 
 ## Моделі даних
 
 Firestore (за репозиторіями): `organizers/{uid}` {email, displayName?}; `sessions/{id}` {subject{kind,id,groupId?}, refreshTokenHash, deviceInfo, createdAt, revokedAt?}; `groups/{id}` {ownerUid, name, timezone, status, settings{approveNew, memberLimit=50, likesCountOnly, departments[]}, inviteTokenHash, inviteClosed}; `groups/{id}/members/{mid}` {displayName, nameKey, status pending|active|removed, isOrganizer, organizerUid?, department?}; `…/members/{mid}/private/secrets` {pinHash?, pinFailures, lockedUntil?}; `groups/{id}/nameIndex/{nameKey}` {memberId} — унікальність імені в транзакції.
-Наступні частини (P2–P7): `cells`, `submissions`, `likes`, `comments`, `points`, `standings`, `tasks` — за розділом 12 дизайну.
+`groups/{id}.game` {startDate, days, openTime, mode auto|roulette, categories[]}; `groups/{id}/cells/{dayIndex 2 цифри}` {task (catalog taskId або custom title/description), opensAt, state closed|picking|open, openedAt?, pickerMemberId?, pickDeadlineAt?, spin? {startAt, durationMs, doors[], winnerIndex, by}} — усі переходи через `transition` (порівняти й замінити); статус групи міняє `setStatus` (теж порівняти й замінити).
+Наступні частини (P3–P7): `submissions`, `likes`, `comments`, `points`, `standings` — за розділом 12 дизайну.
 
 ## Історія версій
 
+- 2.6 (2026-11-27) — P2: календар, «авто щодня» і рулетка, двигун гри, `/internal/tick`, картка «Сьогодні».
 - 2.5 (2026-11-27) — P1 перевірено власником на проді.
 - 2.4 (2026-11-27) — веб на живому сайті; пакет `com.*`; App Links і Universal Links.
 - 2.3 (2026-11-27) — перший деплой API; `FIRESTORE_DATABASE`.
