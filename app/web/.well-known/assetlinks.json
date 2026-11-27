@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.karavanstudio.commandvibe",
+      "sha256_cert_fingerprints": [
+        "D4:F1:A5:22:29:93:79:1E:F9:70:C7:EC:9D:1D:18:6E:E6:51:52:CC:80:6B:7E:7C:10:91:AB:1F:79:F0:CB:C2"
+      ]
+    }
+  }
+]

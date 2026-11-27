@@ -1,0 +1,10 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["8RTTR2Y32B.com.karavanstudio.commandvibe"],
+        "components": [{ "/": "/j/*" }]
+      }
+    ]
+  }
+}

@@ -1,14 +1,48 @@
 {
-  "firestore": { "rules": "firestore.rules", "indexes": "firestore.indexes.json" },
-  "storage": { "rules": "storage.rules" },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "hosting": {
     "site": "commandvibe-ks",
     "public": "app/build/web",
-    "ignore": ["firebase.json", "**/.*"],
+    "ignore": [
+      "firebase.json",
+      "**/.DS_Store",
+      ".last_build_id"
+    ],
+    "headers": [
+      {
+        "source": "/.well-known/apple-app-site-association",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    ],
     "rewrites": [
-      { "source": "/j/**", "run": { "serviceId": "commandvibe-api", "region": "europe-central2" } },
-      { "source": "**", "destination": "/index.html" }
+      {
+        "source": "/j/**",
+        "run": {
+          "serviceId": "commandvibe-api",
+          "region": "europe-central2"
+        }
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
     ]
   },
-  "emulators": { "firestore": { "port": 8085 }, "singleProjectMode": true }
+  "emulators": {
+    "firestore": {
+      "port": 8085
+    },
+    "singleProjectMode": true
+  }
 }

@@ -23,7 +23,7 @@ FirebaseOptions firebaseOptionsFor(Uri page) {
       messagingSenderId: '889388170734',
       projectId: 'commandvibe-ks',
       storageBucket: 'commandvibe-ks.firebasestorage.app',
-      iosBundleId: 'dev.karavanstudio.commandvibe',
+      iosBundleId: 'com.karavanstudio.commandvibe',
     ),
     _ => throw UnsupportedError('CommandVibe runs on web, Android and iOS'),
   };

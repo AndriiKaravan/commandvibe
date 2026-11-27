@@ -1,4 +1,4 @@
-package dev.karavanstudio.commandvibe
+package com.karavanstudio.commandvibe
 
 import io.flutter.embedding.android.FlutterActivity
 
