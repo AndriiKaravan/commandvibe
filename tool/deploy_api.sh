@@ -26,7 +26,7 @@ gcloud run deploy "$service" \
   --max-instances=1 \
   --allow-unauthenticated \
   --set-secrets SESSION_SIGNING_KEY=session-signing-key:latest \
-  --set-env-vars "^@^STORAGE=firestore@APP_CHECK_MODE=monitor@ALLOWED_ORIGINS=$origins@PUBLIC_APP_URL=https://commandvibe.karavanstudio.dev" \
+  --set-env-vars "^@^STORAGE=firestore@APP_CHECK_MODE=monitor@FIRESTORE_DATABASE=commandvibe@ALLOWED_ORIGINS=$origins@PUBLIC_APP_URL=https://commandvibe.karavanstudio.dev" \
   --quiet
 
 url=$(gcloud run services describe "$service" --project "$project" --region "$region" \
