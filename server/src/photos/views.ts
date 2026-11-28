@@ -22,6 +22,8 @@ export interface SubmissionView {
   submittedAt: string;
   access: 'full' | 'blur';
   likes: LikeInfo;
+  /** Comments under the photo; zero for a photo the viewer sees blurred. */
+  commentCount: number;
   /** Only for `full`; a short-lived link to the server. */
   photoUrl?: string;
   blurUrl: string;

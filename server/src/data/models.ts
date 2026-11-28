@@ -163,6 +163,17 @@ export interface Like {
   createdAt: Date;
 }
 
+/** A comment under a photo; `memberId` wrote it, `authorMemberId` took the photo. */
+export interface Comment {
+  id: string;
+  groupId: string;
+  dayIndex: number;
+  authorMemberId: string;
+  memberId: string;
+  text: string;
+  createdAt: Date;
+}
+
 export type ComplaintReason = 'inappropriate' | 'not_task' | 'other';
 
 export interface Complaint {

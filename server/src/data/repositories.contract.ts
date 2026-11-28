@@ -1,6 +1,7 @@
-import { Cell, Complaint, Group, Like, Member, Session, Submission, defaultGroupSettings, nameKeyOf } from './models';
+import { Cell, Comment, Complaint, Group, Like, Member, Session, Submission, defaultGroupSettings, nameKeyOf } from './models';
 import {
   CellRepository,
+  CommentRepository,
   ComplaintRepository,
   GroupRepository,
   LikeRepository,
@@ -18,6 +19,7 @@ export interface RepositorySet {
   submissions: SubmissionRepository;
   complaints: ComplaintRepository;
   likes: LikeRepository;
+  comments: CommentRepository;
 }
 
 let counter = 0;
@@ -96,6 +98,25 @@ export function aComplaint(groupId: string, dayIndex: number, author: string, co
     reason: 'other',
     status: 'open',
     createdAt: new Date('2026-12-02T08:00:00Z'),
+  };
+}
+
+export function aComment(
+  groupId: string,
+  dayIndex: number,
+  author: string,
+  commenter: string,
+  overrides: Partial<Comment> = {},
+): Comment {
+  return {
+    id: nextId('c'),
+    groupId,
+    dayIndex,
+    authorMemberId: author,
+    memberId: commenter,
+    text: 'Nice!',
+    createdAt: new Date('2026-12-02T09:00:00Z'),
+    ...overrides,
   };
 }
 
@@ -342,6 +363,60 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
         await repos.submissions.delete(group.id, 1, 'm1');
         expect(await repos.submissions.get(group.id, 1, 'm1')).toBeUndefined();
         await repos.submissions.delete(group.id, 1, 'm1');
+      });
+    });
+
+    describe('comments', () => {
+      it('should list the comments under one photo from the oldest', async () => {
+        const group = aGroup();
+        const late = aComment(group.id, 1, 'a', 'b', { text: 'second', createdAt: new Date('2026-12-02T10:00:00Z') });
+        const early = aComment(group.id, 1, 'a', 'c', { text: 'first', createdAt: new Date('2026-12-02T09:00:00Z') });
+        await repos.comments.add(late);
+        await repos.comments.add(early);
+        await repos.comments.add(aComment(group.id, 1, 'x', 'b'));
+        await repos.comments.add(aComment(group.id, 2, 'a', 'b'));
+        expect((await repos.comments.listForPhoto(group.id, 1, 'a')).map((c) => c.text)).toEqual(['first', 'second']);
+      });
+
+      it('should count the comments of each photo of a group', async () => {
+        const group = aGroup();
+        await repos.comments.add(aComment(group.id, 1, 'a', 'b'));
+        await repos.comments.add(aComment(group.id, 1, 'a', 'c'));
+        await repos.comments.add(aComment(group.id, 2, 'a', 'b'));
+        await repos.comments.add(aComment(aGroup().id, 1, 'a', 'b'));
+        const counts = await repos.comments.countsByGroup(group.id);
+        expect(counts.get('1/a')).toBe(2);
+        expect(counts.get('2/a')).toBe(1);
+        expect(counts.size).toBe(2);
+      });
+
+      it('should find and delete one comment', async () => {
+        const group = aGroup();
+        const comment = aComment(group.id, 1, 'a', 'b');
+        await repos.comments.add(comment);
+        expect((await repos.comments.get(group.id, comment.id))?.text).toBe('Nice!');
+        await repos.comments.delete(group.id, comment.id);
+        expect(await repos.comments.get(group.id, comment.id)).toBeUndefined();
+      });
+
+      it('should delete the comments under one photo only', async () => {
+        const group = aGroup();
+        await repos.comments.add(aComment(group.id, 1, 'a', 'b'));
+        await repos.comments.add(aComment(group.id, 1, 'x', 'b'));
+        await repos.comments.add(aComment(group.id, 2, 'a', 'b'));
+        await repos.comments.deleteForPhoto(group.id, 1, 'a');
+        const counts = await repos.comments.countsByGroup(group.id);
+        expect([...counts.keys()].sort()).toEqual(['1/x', '2/a']);
+      });
+
+      it('should delete the comments a member wrote and received', async () => {
+        const group = aGroup();
+        await repos.comments.add(aComment(group.id, 1, 'a', 'b'));
+        await repos.comments.add(aComment(group.id, 1, 'b', 'c'));
+        await repos.comments.add(aComment(group.id, 1, 'c', 'd'));
+        await repos.comments.deleteInvolving(group.id, 'b');
+        const counts = await repos.comments.countsByGroup(group.id);
+        expect([...counts.keys()]).toEqual(['1/c']);
       });
     });
 

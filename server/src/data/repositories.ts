@@ -1,6 +1,7 @@
 import {
   Cell,
   CellState,
+  Comment,
   Complaint,
   Like,
   Group,
@@ -108,6 +109,19 @@ export interface SubmissionRepository {
   delete(groupId: string, dayIndex: number, memberId: string): Promise<void>;
 }
 
+export interface CommentRepository {
+  add(comment: Comment): Promise<void>;
+  get(groupId: string, id: string): Promise<Comment | undefined>;
+  /** Oldest first. */
+  listForPhoto(groupId: string, dayIndex: number, authorMemberId: string): Promise<Comment[]>;
+  /** Comments per photo of the group, keyed `${dayIndex}/${authorMemberId}`. */
+  countsByGroup(groupId: string): Promise<Map<string, number>>;
+  delete(groupId: string, id: string): Promise<void>;
+  deleteForPhoto(groupId: string, dayIndex: number, authorMemberId: string): Promise<void>;
+  /** Removes comments written by and left under the photos of the member. */
+  deleteInvolving(groupId: string, memberId: string): Promise<void>;
+}
+
 export interface LikeRepository {
   /** False when this person already likes the photo. */
   add(like: Like): Promise<boolean>;
@@ -160,3 +174,4 @@ export const MEMBERS = Symbol('MemberRepository');
 export const SUBMISSIONS = Symbol('SubmissionRepository');
 export const COMPLAINTS = Symbol('ComplaintRepository');
 export const LIKES = Symbol('LikeRepository');
+export const COMMENTS = Symbol('CommentRepository');

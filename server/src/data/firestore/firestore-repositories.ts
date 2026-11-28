@@ -3,6 +3,7 @@ import { FieldValue, Firestore, Timestamp } from 'firebase-admin/firestore';
 import {
   Cell,
   CellState,
+  Comment,
   Complaint,
   Like,
   Group,
@@ -16,6 +17,7 @@ import {
 import { nextPinAttempt } from '../pin-attempts';
 import {
   CellRepository,
+  CommentRepository,
   ComplaintRepository,
   LikeRepository,
   GroupRepository,
@@ -429,6 +431,66 @@ class FirestoreSubmissions implements SubmissionRepository {
   }
 }
 
+class FirestoreComments implements CommentRepository {
+  constructor(private readonly db: Firestore) {}
+
+  private collection(groupId: string) {
+    return this.db.collection(`groups/${groupId}/comments`);
+  }
+
+  async add(comment: Comment): Promise<void> {
+    await this.collection(comment.groupId).doc(comment.id).create(toStore(comment));
+  }
+
+  async get(groupId: string, id: string): Promise<Comment | undefined> {
+    return fromStore<Comment>((await this.collection(groupId).doc(id).get()).data());
+  }
+
+  async listForPhoto(groupId: string, dayIndex: number, authorMemberId: string): Promise<Comment[]> {
+    const found = await this.collection(groupId)
+      .where('dayIndex', '==', dayIndex)
+      .where('authorMemberId', '==', authorMemberId)
+      .get();
+    return found.docs
+      .map((doc) => fromStore<Comment>(doc.data()) as Comment)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || (a.id < b.id ? -1 : 1));
+  }
+
+  async countsByGroup(groupId: string): Promise<Map<string, number>> {
+    const counts = new Map<string, number>();
+    const found = await this.collection(groupId).get();
+    for (const doc of found.docs) {
+      const key = `${doc.get('dayIndex')}/${doc.get('authorMemberId')}`;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return counts;
+  }
+
+  async delete(groupId: string, id: string): Promise<void> {
+    await this.collection(groupId).doc(id).delete();
+  }
+
+  async deleteForPhoto(groupId: string, dayIndex: number, authorMemberId: string): Promise<void> {
+    const found = await this.collection(groupId)
+      .where('dayIndex', '==', dayIndex)
+      .where('authorMemberId', '==', authorMemberId)
+      .get();
+    const batch = this.db.batch();
+    found.docs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+  }
+
+  async deleteInvolving(groupId: string, memberId: string): Promise<void> {
+    const [under, written] = await Promise.all([
+      this.collection(groupId).where('authorMemberId', '==', memberId).get(),
+      this.collection(groupId).where('memberId', '==', memberId).get(),
+    ]);
+    const batch = this.db.batch();
+    [...under.docs, ...written.docs].forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+  }
+}
+
 class FirestoreLikes implements LikeRepository {
   constructor(private readonly db: Firestore) {}
 
@@ -548,8 +610,10 @@ export function createFirestoreRepositories(db: Firestore): {
   submissions: SubmissionRepository;
   complaints: ComplaintRepository;
   likes: LikeRepository;
+  comments: CommentRepository;
 } {
   return {
+    comments: new FirestoreComments(db),
     likes: new FirestoreLikes(db),
     submissions: new FirestoreSubmissions(db),
     complaints: new FirestoreComplaints(db),

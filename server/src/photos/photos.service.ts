@@ -14,7 +14,9 @@ import { Cell, Group, Like, Member, SessionSubject, SubjectKind, Submission, Upl
 import {
   CELLS,
   CellRepository,
+  COMMENTS,
   COMPLAINTS,
+  CommentRepository,
   ComplaintRepository,
   LIKES,
   LikeRepository,
@@ -72,6 +74,7 @@ export class PhotosService {
     @Inject(SUBMISSIONS) private readonly submissions: SubmissionRepository,
     @Inject(COMPLAINTS) private readonly complaints: ComplaintRepository,
     @Inject(LIKES) private readonly likes: LikeRepository,
+    @Inject(COMMENTS) private readonly comments: CommentRepository,
     @Inject(PHOTO_STORE) private readonly store: PhotoStore,
     @Inject(PHOTO_EVENTS) private readonly events: PhotoEvents,
     @Inject(PHOTO_URL_SIGNER) private readonly signer: PhotoUrlSigner,
@@ -86,11 +89,12 @@ export class PhotosService {
     const viewer = await this.viewerOf(subject.kind, subject.id, group);
     const reveal = revealAt(cell.opensAt, group.timezone);
     const revealed = now.getTime() >= reveal.getTime();
-    const [stored, members, complaints, allLikes] = await Promise.all([
+    const [stored, members, complaints, allLikes, commentCounts] = await Promise.all([
       this.submissions.listDay(groupId, day),
       this.members.list(groupId),
       this.complaints.listOpen(groupId),
       this.likes.listByGroup(groupId),
+      this.comments.countsByGroup(groupId),
     ]);
     const names = new Map(members.map((member) => [member.id, member]));
     const open = (authorId: string): number =>
@@ -110,15 +114,18 @@ export class PhotosService {
       if (!access.listed) {
         continue;
       }
-      const likes = this.likeInfo(
-        allLikes,
-        sub,
-        access.image === 'full',
-        viewer.memberId,
-        names,
-        group.settings.likesCountOnly,
-      );
-      const view = this.toView(sub, author, access, likes, subject, viewer, open(sub.memberId), now);
+      const social = {
+        likes: this.likeInfo(
+          allLikes,
+          sub,
+          access.image === 'full',
+          viewer.memberId,
+          names,
+          group.settings.likesCountOnly,
+        ),
+        commentCount: access.image === 'full' ? (commentCounts.get(`${day}/${sub.memberId}`) ?? 0) : 0,
+      };
+      const view = this.toView(sub, author, access, social, subject, viewer, open(sub.memberId), now);
       if (sub.memberId === viewer.memberId) {
         mine = view;
       } else {
@@ -152,11 +159,12 @@ export class PhotosService {
     const now = this.clock();
     const group = await this.groupsService.getFor(subject, groupId);
     const viewer = await this.viewerOf(subject.kind, subject.id, group);
-    const [members, complaints, cells, allLikes] = await Promise.all([
+    const [members, complaints, cells, allLikes, commentCounts] = await Promise.all([
       this.members.list(groupId),
       this.complaints.listOpen(groupId),
       this.cells.list(groupId),
       this.likes.listByGroup(groupId),
+      this.comments.countsByGroup(groupId),
     ]);
     const stored = await this.submissions.listByGroup(groupId, openedDayCount(cells));
     const names = new Map(members.map((member) => [member.id, member]));
@@ -182,7 +190,17 @@ export class PhotosService {
           sub,
           author,
           access,
-          this.likeInfo(allLikes, sub, access.image === 'full', viewer.memberId, names, group.settings.likesCountOnly),
+          {
+            likes: this.likeInfo(
+              allLikes,
+              sub,
+              access.image === 'full',
+              viewer.memberId,
+              names,
+              group.settings.likesCountOnly,
+            ),
+            commentCount: access.image === 'full' ? (commentCounts.get(`${sub.dayIndex}/${sub.memberId}`) ?? 0) : 0,
+          },
           subject,
           viewer,
           open,
@@ -265,6 +283,7 @@ export class PhotosService {
       // Complaints and likes were about the earlier photo.
       await this.complaints.resolve(groupId, day, memberId, now);
       await this.likes.deleteForPhoto(groupId, day, memberId);
+      await this.comments.deleteForPhoto(groupId, day, memberId);
     }
     if (result === 'replaced' && existing) {
       await this.store.delete([existing.photoPath, existing.blurPath]).catch((error: unknown) => {
@@ -277,7 +296,16 @@ export class PhotosService {
     });
     const author = await this.members.get(groupId, memberId);
     const access = this.decide(viewer, true, submission, true, 0, false);
-    return this.toView(submission, author, access, { count: 0, mine: false }, subject, viewer, 0, now);
+    return this.toView(
+      submission,
+      author,
+      access,
+      { likes: { count: 0, mine: false }, commentCount: 0 },
+      subject,
+      viewer,
+      0,
+      now,
+    );
   }
 
   /** The bytes behind a link, or undefined when the link must not work: the caller answers 404 either way. */
@@ -337,6 +365,7 @@ export class PhotosService {
     }
     await this.complaints.deleteInvolving(groupId, memberId);
     await this.likes.deleteInvolving(groupId, memberId);
+    await this.comments.deleteInvolving(groupId, memberId);
   }
 
   private async process(bytes: Buffer) {
@@ -456,7 +485,7 @@ export class PhotosService {
     sub: Submission,
     author: Pick<Member, 'displayName' | 'avatar'> | undefined,
     access: PhotoAccess,
-    likes: LikeInfo,
+    social: { likes: LikeInfo; commentCount: number },
     subject: SessionSubject,
     viewer: Viewer,
     openComplaints: number,
@@ -474,7 +503,8 @@ export class PhotosService {
       ...(author?.avatar ? { avatar: author.avatar } : {}),
       submittedAt: sub.submittedAt.toISOString(),
       access: access.image === 'full' ? 'full' : 'blur',
-      likes,
+      likes: social.likes,
+      commentCount: social.commentCount,
       blurUrl: link('blur'),
       width: sub.width,
       height: sub.height,

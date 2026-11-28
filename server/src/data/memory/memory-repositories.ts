@@ -1,6 +1,7 @@
 import {
   Cell,
   CellState,
+  Comment,
   Complaint,
   Like,
   Group,
@@ -14,6 +15,7 @@ import {
 import { nextPinAttempt } from '../pin-attempts';
 import {
   CellRepository,
+  CommentRepository,
   ComplaintRepository,
   LikeRepository,
   GroupRepository,
@@ -337,6 +339,59 @@ class MemorySubmissions implements SubmissionRepository {
   }
 }
 
+class MemoryComments implements CommentRepository {
+  private readonly items = new Map<string, Comment>();
+
+  private key = (groupId: string, id: string): string => `${groupId}/${id}`;
+
+  async add(comment: Comment): Promise<void> {
+    this.items.set(this.key(comment.groupId, comment.id), copy(comment));
+  }
+
+  async get(groupId: string, id: string): Promise<Comment | undefined> {
+    const found = this.items.get(this.key(groupId, id));
+    return found && copy(found);
+  }
+
+  async listForPhoto(groupId: string, dayIndex: number, authorMemberId: string): Promise<Comment[]> {
+    return [...this.items.values()]
+      .filter((c) => c.groupId === groupId && c.dayIndex === dayIndex && c.authorMemberId === authorMemberId)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || (a.id < b.id ? -1 : 1))
+      .map(copy);
+  }
+
+  async countsByGroup(groupId: string): Promise<Map<string, number>> {
+    const counts = new Map<string, number>();
+    for (const c of this.items.values()) {
+      if (c.groupId === groupId) {
+        const key = `${c.dayIndex}/${c.authorMemberId}`;
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+    }
+    return counts;
+  }
+
+  async delete(groupId: string, id: string): Promise<void> {
+    this.items.delete(this.key(groupId, id));
+  }
+
+  async deleteForPhoto(groupId: string, dayIndex: number, authorMemberId: string): Promise<void> {
+    for (const [key, c] of this.items) {
+      if (c.groupId === groupId && c.dayIndex === dayIndex && c.authorMemberId === authorMemberId) {
+        this.items.delete(key);
+      }
+    }
+  }
+
+  async deleteInvolving(groupId: string, memberId: string): Promise<void> {
+    for (const [key, c] of this.items) {
+      if (c.groupId === groupId && (c.memberId === memberId || c.authorMemberId === memberId)) {
+        this.items.delete(key);
+      }
+    }
+  }
+}
+
 class MemoryLikes implements LikeRepository {
   private readonly items = new Map<string, Like>();
 
@@ -437,8 +492,10 @@ export function createMemoryRepositories(): {
   submissions: SubmissionRepository;
   complaints: ComplaintRepository;
   likes: LikeRepository;
+  comments: CommentRepository;
 } {
   return {
+    comments: new MemoryComments(),
     likes: new MemoryLikes(),
     submissions: new MemorySubmissions(),
     complaints: new MemoryComplaints(),

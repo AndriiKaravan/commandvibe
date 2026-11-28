@@ -1,6 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
+import { CommentsModule } from './comments/comments.module';
 import { DataModule } from './data/data.module';
 import { FeedModule } from './feed/feed.module';
 import { GameModule } from './game/game.module';
@@ -36,6 +37,7 @@ export class AppModule {
         MembersModule,
         PhotosModule,
         LikesModule,
+        CommentsModule,
         FeedModule,
         ProgressModule,
         StandingsModule,
