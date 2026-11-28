@@ -36,6 +36,7 @@ class LiveLoader<T> extends ChangeNotifier {
   RealtimeSubscription? _subscription;
   T? _value;
   bool _loadFailed = false;
+  bool _revoked = false;
   bool _running = false;
   bool _again = false;
   bool _disposed = false;
@@ -43,6 +44,9 @@ class LiveLoader<T> extends ChangeNotifier {
   T? get value => _value;
   bool get isLoaded => _value != null;
   bool get loadFailed => _loadFailed;
+
+  /// True while the server refuses this member's reads (401/403/404): they no longer belong.
+  bool get revoked => _revoked;
 
   /// The first resync after subscribing loads; later ones cover what was missed offline.
   void start() {
@@ -62,11 +66,14 @@ class LiveLoader<T> extends ChangeNotifier {
       return;
     }
     _running = true;
-    do {
-      _again = false;
-      await _loadOnce();
-    } while (_again && !_disposed);
-    _running = false;
+    try {
+      do {
+        _again = false;
+        await _loadOnce();
+      } while (_again && !_disposed);
+    } finally {
+      _running = false;
+    }
   }
 
   Future<void> _loadOnce() async {
@@ -77,8 +84,10 @@ class LiveLoader<T> extends ChangeNotifier {
       }
       _value = loaded;
       _loadFailed = false;
-    } on ApiException {
+      _revoked = false;
+    } on ApiException catch (error) {
       _loadFailed = true;
+      _revoked = const {401, 403, 404}.contains(error.statusCode);
     } on NetworkException {
       _loadFailed = true;
     } on FormatException {

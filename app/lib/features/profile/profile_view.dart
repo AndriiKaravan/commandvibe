@@ -1,4 +1,4 @@
-import 'package:commandvibe/core/realtime/live_loader.dart';
+import 'package:commandvibe/core/realtime/group_live.dart';
 import 'package:commandvibe/core/services_scope.dart';
 import 'package:commandvibe/core/theme/glass_panel.dart';
 import 'package:commandvibe/core/ui/tab_page.dart';
@@ -9,8 +9,6 @@ import 'package:commandvibe/features/groups/ui/group_home_view_model.dart';
 import 'package:commandvibe/features/photos/ui/complaints_view.dart';
 import 'package:commandvibe/features/profile/profile_card.dart';
 import 'package:commandvibe/features/profile/profile_summary.dart';
-import 'package:commandvibe/features/progress/data/progress_models.dart';
-import 'package:commandvibe/features/standings/data/standings_models.dart';
 import 'package:commandvibe/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -28,8 +26,7 @@ class ProfileView extends StatefulWidget {
 
 class _ProfileViewState extends State<ProfileView> {
   GroupHomeViewModel? _group;
-  LiveLoader<Standings>? _standings;
-  LiveLoader<GameProgress>? _progress;
+  GroupLive? _live;
   bool _leaving = false;
 
   @override
@@ -39,8 +36,6 @@ class _ProfileViewState extends State<ProfileView> {
       return;
     }
     final services = ServicesScope.of(context);
-    final topic = 'group:${widget.groupId}';
-    const reloadOn = {...submissionEvents, ...membershipEvents, 'day.opened'};
     _group =
         GroupHomeViewModel(
             services.groups,
@@ -50,25 +45,12 @@ class _ProfileViewState extends State<ProfileView> {
           )
           ..addListener(_onGroupChanged)
           ..start();
-    _standings = LiveLoader<Standings>(
-      services.realtime,
-      topic: topic,
-      reloadOn: reloadOn,
-      load: () => services.standings.standings(widget.groupId),
-    )..start();
-    _progress = LiveLoader<GameProgress>(
-      services.realtime,
-      topic: topic,
-      reloadOn: reloadOn,
-      load: () => services.progress.progress(widget.groupId),
-    )..start();
+    _live = GroupLive.of(context);
   }
 
   @override
   void dispose() {
     _group?.dispose();
-    _standings?.dispose();
-    _progress?.dispose();
     super.dispose();
   }
 
@@ -97,7 +79,7 @@ class _ProfileViewState extends State<ProfileView> {
       current: summary.avatar,
       onPick: (id) async {
         await services.groups.setAvatar(widget.groupId, id);
-        await _standings!.reload();
+        await _live!.standings.reload();
         await _group!.reload();
       },
     );
@@ -108,11 +90,11 @@ class _ProfileViewState extends State<ProfileView> {
     final l10n = AppLocalizations.of(context);
     final group = _group!;
     return ListenableBuilder(
-      listenable: Listenable.merge([group, _standings!, _progress!]),
+      listenable: Listenable.merge([group, _live!.standings, _live!.progress]),
       builder: (context, _) {
         final summary = ProfileSummary.from(
-          standings: _standings!.value,
-          progress: _progress!.value,
+          standings: _live!.standings.value,
+          progress: _live!.progress.value,
         );
         return TabPage(
           title: group.groupName.isEmpty

@@ -1,5 +1,5 @@
 import 'package:commandvibe/core/realtime/live_loader.dart';
-import 'package:commandvibe/core/services_scope.dart';
+import 'package:commandvibe/core/realtime/group_live.dart';
 import 'package:commandvibe/core/ui/tab_page.dart';
 import 'package:commandvibe/features/standings/data/standings_models.dart';
 import 'package:commandvibe/features/standings/ui/rank_trend.dart';
@@ -28,20 +28,10 @@ class _StandingsViewState extends State<StandingsView> {
     if (_loader != null) {
       return;
     }
-    final services = ServicesScope.of(context);
-    _loader =
-        LiveLoader<Standings>(
-            services.realtime,
-            topic: 'group:${widget.groupId}',
-            reloadOn: const {
-              ...submissionEvents,
-              ...membershipEvents,
-              'game.finished',
-            },
-            load: () => services.standings.standings(widget.groupId),
-          )
-          ..addListener(_onLoaded)
-          ..start();
+    final loader = _loader = GroupLive.of(context).standings;
+    loader.addListener(_onLoaded);
+    // Show what the group already has, without waiting for the next change.
+    _shown = loader.value;
   }
 
   void _onLoaded() {
@@ -61,7 +51,7 @@ class _StandingsViewState extends State<StandingsView> {
 
   @override
   void dispose() {
-    _loader?.dispose();
+    _loader?.removeListener(_onLoaded);
     super.dispose();
   }
 

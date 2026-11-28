@@ -1,10 +1,11 @@
+import 'package:commandvibe/core/realtime/group_live.dart';
 import 'package:commandvibe/core/realtime/live_loader.dart';
+import 'package:commandvibe/core/server_clock.dart';
 import 'package:commandvibe/core/services_scope.dart';
 import 'package:commandvibe/core/ui/tab_page.dart';
 import 'package:commandvibe/features/calendar/data/calendar_models.dart';
 import 'package:commandvibe/features/calendar/ui/day_sheet.dart';
 import 'package:commandvibe/features/calendar/ui/doors_grid.dart';
-import 'package:commandvibe/features/progress/data/progress_models.dart';
 import 'package:commandvibe/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +21,7 @@ class DaysView extends StatefulWidget {
 
 class _DaysViewState extends State<DaysView> {
   LiveLoader<Calendar>? _calendar;
-  LiveLoader<GameProgress>? _progress;
+  ServerClock _clock = const ServerClock.device();
 
   @override
   void didChangeDependencies() {
@@ -29,35 +30,34 @@ class _DaysViewState extends State<DaysView> {
       return;
     }
     final services = ServicesScope.of(context);
-    final topic = 'group:${widget.groupId}';
-    _calendar = LiveLoader<Calendar>(
-      services.realtime,
-      topic: topic,
-      reloadOn: const {
-        'day.opened',
-        'roulette.spin',
-        'roulette.waiting',
-        'game.finished',
-      },
-      load: () => services.calendar.calendar(widget.groupId),
-    )..start();
-    _progress = LiveLoader<GameProgress>(
-      services.realtime,
-      topic: topic,
-      reloadOn: const {
-        ...submissionEvents,
-        ...membershipEvents,
-        'day.opened',
-        'game.finished',
-      },
-      load: () => services.progress.progress(widget.groupId),
-    )..start();
+    _calendar =
+        LiveLoader<Calendar>(
+            services.realtime,
+            topic: 'group:${widget.groupId}',
+            reloadOn: const {
+              'day.opened',
+              'photos.revealed',
+              'roulette.spin',
+              'roulette.waiting',
+              'game.finished',
+            },
+            load: () => services.calendar.calendar(widget.groupId),
+          )
+          ..addListener(_syncClock)
+          ..start();
+  }
+
+  /// The device clock may be off; the server's time anchors the reveal marks, and keeps running.
+  void _syncClock() {
+    final loaded = _calendar?.value;
+    if (loaded != null) {
+      _clock = ServerClock.sync(serverTime: loaded.serverTime);
+    }
   }
 
   @override
   void dispose() {
     _calendar?.dispose();
-    _progress?.dispose();
     super.dispose();
   }
 
@@ -65,7 +65,7 @@ class _DaysViewState extends State<DaysView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final calendar = _calendar!;
-    final progress = _progress!;
+    final progress = GroupLive.of(context).progress;
     return TabPage(
       title: l10n.tabDays,
       children: [
@@ -81,12 +81,10 @@ class _DaysViewState extends State<DaysView> {
             if (loaded.game == null || loaded.days.isEmpty) {
               return Text(l10n.daysNoGame);
             }
-            // The device clock may be off; the server's time anchors the reveal marks.
-            final skew = loaded.serverTime.difference(DateTime.now());
             return DoorsGrid(
               days: loaded.days,
               progress: progress.value,
-              now: DateTime.now().add(skew),
+              now: _clock.now(),
               onOpen: (day) =>
                   showDaySheet(context, groupId: widget.groupId, day: day),
             );

@@ -139,7 +139,7 @@ class _FeedViewState extends State<FeedView> {
         return FeedCard(
           key: ValueKey(item.key),
           item: item,
-          onImageFailed: viewModel.refresh,
+          onImageFailed: viewModel.imageFailed,
           onOpen: () => context.push(
             '/g/${widget.groupId}/photo/${item.dayIndex}/${item.photo.memberId}',
           ),

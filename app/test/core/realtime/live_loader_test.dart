@@ -82,6 +82,41 @@ void main() {
       expect(loader.value, 2);
     });
 
+    test(
+      'should flag a refused session as revoked, but not an offline device',
+      () async {
+        failWith = NetworkException('offline');
+        await loader.reload();
+        expect(loader.revoked, isFalse);
+
+        for (final status in [401, 403, 404]) {
+          failWith = ApiException(status);
+          await loader.reload();
+          expect(loader.revoked, isTrue, reason: '$status');
+          failWith = null;
+          await loader.reload();
+          expect(loader.revoked, isFalse);
+        }
+      },
+    );
+
+    test('should not treat a server error as revoked', () async {
+      failWith = ApiException(500);
+      await loader.reload();
+
+      expect(loader.revoked, isFalse);
+      expect(loader.loadFailed, isTrue);
+    });
+
+    test('should keep loading after an unexpected error', () async {
+      failWith = StateError('boom');
+      await expectLater(loader.reload(), throwsStateError);
+
+      failWith = null;
+      await loader.reload();
+      expect(loader.value, 1);
+    });
+
     test('should survive a malformed answer', () async {
       failWith = TypeError();
       await loader.reload();

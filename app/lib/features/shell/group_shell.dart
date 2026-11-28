@@ -1,3 +1,4 @@
+import 'package:commandvibe/core/realtime/group_live.dart';
 import 'package:commandvibe/core/services_scope.dart';
 import 'package:commandvibe/core/ui/adaptive_shell.dart';
 import 'package:commandvibe/features/shell/access_watcher.dart';
@@ -40,13 +41,25 @@ class GroupShell extends StatefulWidget {
 
 class _GroupShellState extends State<GroupShell> {
   AccessWatcher? _watcher;
+  GroupLive? _live;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _watcher ??= AccessWatcher(
-      ServicesScope.of(context).realtime,
+    if (_watcher != null) {
+      return;
+    }
+    final services = ServicesScope.of(context);
+    _watcher = AccessWatcher(
+      services.realtime,
       groupId: widget.groupId,
+      onRevoked: _leave,
+    )..start();
+    _live = GroupLive(
+      services.realtime,
+      groupId: widget.groupId,
+      loadProgress: () => services.progress.progress(widget.groupId),
+      loadStandings: () => services.standings.standings(widget.groupId),
       onRevoked: _leave,
     )..start();
   }
@@ -63,17 +76,21 @@ class _GroupShellState extends State<GroupShell> {
   @override
   void dispose() {
     _watcher?.dispose();
+    _live?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return AdaptiveShell(
-      currentIndex: widget.currentIndex,
-      onSelected: widget.onSelected,
-      tabs: groupTabs(l10n, isOwner: widget.isOwner),
-      child: widget.child,
+    return GroupLiveScope(
+      live: _live!,
+      child: AdaptiveShell(
+        currentIndex: widget.currentIndex,
+        onSelected: widget.onSelected,
+        tabs: groupTabs(l10n, isOwner: widget.isOwner),
+        child: widget.child,
+      ),
     );
   }
 }

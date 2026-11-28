@@ -42,8 +42,13 @@ class _FakeFeed implements FeedRepository {
     int limit = 20,
   }) async {
     requests.add((filter: filter, before: before, limit: limit));
+    final answer = _answer(filter, before, limit);
     if (gate != null) await gate!.future;
     if (error != null) throw error!;
+    return answer;
+  }
+
+  FeedPage _answer(FeedFilter filter, String? before, int limit) {
     final matching = all
         .where((i) => filter.day == null || i.dayIndex == filter.day)
         .where(
@@ -70,15 +75,18 @@ void main() {
     late _FakeFeed repository;
     late FakeRealtimeClient realtime;
     late FeedViewModel viewModel;
+    late DateTime now;
 
     setUp(() {
       repository = _FakeFeed();
       realtime = FakeRealtimeClient();
+      now = DateTime.utc(2026, 12, 1, 10);
       viewModel = FeedViewModel(
         repository,
         realtime,
         groupId: 'g1',
         pageSize: 2,
+        clock: () => now,
       );
     });
 
@@ -174,6 +182,60 @@ void main() {
         expect(viewModel.items.length, greaterThanOrEqualTo(4));
       },
     );
+
+    test(
+      'should not lose an item when a refresh overlaps a page load',
+      () async {
+        viewModel.start();
+        await pumpEventQueue();
+        final gate = Completer<void>();
+        repository.gate = gate;
+        final more = viewModel.loadMore();
+        repository.gate = null;
+        repository.all = [_item(6, 'm6'), ...repository.all];
+        await viewModel.refresh();
+        gate.complete();
+        await more;
+
+        final keys = viewModel.items.map((i) => i.key).toList();
+        expect(
+          keys,
+          repository.all.take(keys.length).map((i) => i.key).toList(),
+        );
+      },
+    );
+
+    test('should keep the newest answer when refreshes overlap', () async {
+      viewModel.start();
+      await pumpEventQueue();
+      final gate = Completer<void>();
+      repository.gate = gate;
+      final first = viewModel.refresh();
+      repository.gate = null;
+      repository.all = [_item(6, 'm6'), ...repository.all];
+      final second = viewModel.refresh();
+      gate.complete();
+      await Future.wait([first, second]);
+
+      expect(viewModel.items.first.key, '6/m6');
+    });
+
+    test('should not refresh again at once for every failing image', () async {
+      viewModel.start();
+      await pumpEventQueue();
+      final before = repository.requests.length;
+
+      viewModel.imageFailed();
+      viewModel.imageFailed();
+      await pumpEventQueue();
+      expect(repository.requests.length, before);
+
+      now = now.add(const Duration(seconds: 31));
+      viewModel.imageFailed();
+      viewModel.imageFailed();
+      await pumpEventQueue();
+      expect(repository.requests.length, before + 1);
+    });
 
     test('should ignore events about other things', () async {
       viewModel.start();
