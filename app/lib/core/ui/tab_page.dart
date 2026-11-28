@@ -1,3 +1,4 @@
+import 'package:commandvibe/features/notifications/ui/group_bell.dart';
 import 'package:flutter/material.dart';
 
 /// A tab's scrollable page: centred, width-limited, under a transparent app bar.
@@ -9,7 +10,11 @@ class TabPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(title), backgroundColor: Colors.transparent),
+    appBar: AppBar(
+      title: Text(title),
+      backgroundColor: Colors.transparent,
+      actions: const [GroupBell()],
+    ),
     body: SafeArea(
       child: Center(
         child: ConstrainedBox(

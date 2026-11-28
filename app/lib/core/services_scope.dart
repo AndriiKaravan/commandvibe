@@ -10,6 +10,7 @@ import 'package:commandvibe/features/feed/data/feed_repository.dart';
 import 'package:commandvibe/features/groups/data/groups_repository.dart';
 import 'package:commandvibe/features/join/data/join_repository.dart';
 import 'package:commandvibe/features/likes/data/likes_repository.dart';
+import 'package:commandvibe/features/notifications/data/notifications_repository.dart';
 import 'package:commandvibe/features/photos/data/photos_repository.dart';
 import 'package:commandvibe/features/points/data/points_repository.dart';
 import 'package:commandvibe/features/progress/data/progress_repository.dart';
@@ -47,6 +48,9 @@ class AppServices {
   late final FeedRepository feed = ApiFeedRepository(api);
   late final LikesRepository likes = ApiLikesRepository(api);
   late final CommentsRepository comments = ApiCommentsRepository(api);
+  late final NotificationsRepository notifications = ApiNotificationsRepository(
+    api,
+  );
   late final PointsRepository points = ApiPointsRepository(api);
   late final ProgressRepository progress = ApiProgressRepository(api);
   late final StandingsRepository standings = ApiStandingsRepository(api);

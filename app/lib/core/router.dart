@@ -11,6 +11,7 @@ import 'package:commandvibe/features/join/ui/join_view.dart';
 import 'package:commandvibe/features/join/ui/pending_view.dart';
 import 'package:commandvibe/features/join/ui/pin_setup_view.dart';
 import 'package:commandvibe/features/join/ui/returning_view.dart';
+import 'package:commandvibe/features/notifications/ui/notifications_view.dart';
 import 'package:commandvibe/features/organizer_auth/ui/organizer_login_view.dart';
 import 'package:commandvibe/features/photos/ui/complaints_view.dart';
 import 'package:commandvibe/features/photos/ui/photo_viewer_view.dart';
@@ -174,6 +175,12 @@ GoRouter createRouter({
               dayIndex: int.tryParse(state.pathParameters['day']!) ?? 0,
               memberId: state.pathParameters['memberId']!,
             ),
+          ),
+          GoRoute(
+            path: 'notifications',
+            redirect: (context, state) => requireSession(state),
+            builder: (context, state) =>
+                NotificationsView(groupId: state.pathParameters['groupId']!),
           ),
           GoRoute(
             path: 'points',

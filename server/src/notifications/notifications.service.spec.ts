@@ -114,4 +114,10 @@ describe('NotificationsService', () => {
     expect(page.items).toHaveLength(1);
     expect(page.items[0]).toMatchObject({ count: 2, read: false });
   });
+
+  it('should tell the group topic, and the owner topic for service keys, when entries are read', async () => {
+    await service.markRead('g1', ['a', 'org:u1'], undefined);
+    expect(events.group).toEqual([{ event: 'notification.read', payload: { recipients: ['a', 'org:u1'] } }]);
+    expect(events.owner).toEqual([{ event: 'notification.read', payload: { recipients: ['org:u1'] } }]);
+  });
 });

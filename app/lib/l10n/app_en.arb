@@ -432,5 +432,52 @@
   "profilePointsJournal": "Points journal",
   "groupLikesCountOnly": "Show only the number of likes",
   "groupLikesCountOnlyHint": "Nobody sees who liked",
-  "likeFailed": "Couldn't — try again"
+  "likeFailed": "Couldn't — try again",
+  "notificationsTitle": "Notifications",
+  "notificationsEmpty": "All quiet for now",
+  "notificationsMarkAllRead": "Mark all as read",
+  "notificationsBellTooltip": "Notifications",
+  "notificationDayOpened": "Today's task is open",
+  "notificationPhotosRevealed": "The day's photos are revealed",
+  "notificationMyTurn": "It's your turn to pick the task",
+  "notificationReminder": "Today's task is still waiting",
+  "notificationComment": "{name} commented on your photo",
+  "@notificationComment": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationCommentAnonymous": "New comment on your photo",
+  "notificationLikes": "Your photo was liked by {count}",
+  "@notificationLikes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationPendingMember": "{name} is waiting for approval",
+  "@notificationPendingMember": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationPendingMemberAnonymous": "A new member is waiting for approval",
+  "notificationComplaint": "Complaint about a photo: {name}",
+  "@notificationComplaint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationComplaintAnonymous": "There is a complaint about a photo",
+  "notificationUnknown": "New activity",
+  "liveToastDayOpened": "Today's task is open",
+  "liveToastMyTurn": "It's your turn to pick",
+  "liveToastComment": "New comment on your photo"
 }

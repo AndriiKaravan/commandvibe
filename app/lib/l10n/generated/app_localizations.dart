@@ -1471,6 +1471,120 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Не вдалося — спробуй ще раз'**
   String get likeFailed;
+
+  /// No description provided for @notificationsTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Сповіщення'**
+  String get notificationsTitle;
+
+  /// No description provided for @notificationsEmpty.
+  ///
+  /// In uk, this message translates to:
+  /// **'Поки що тихо'**
+  String get notificationsEmpty;
+
+  /// No description provided for @notificationsMarkAllRead.
+  ///
+  /// In uk, this message translates to:
+  /// **'Позначити прочитаними'**
+  String get notificationsMarkAllRead;
+
+  /// No description provided for @notificationsBellTooltip.
+  ///
+  /// In uk, this message translates to:
+  /// **'Сповіщення'**
+  String get notificationsBellTooltip;
+
+  /// No description provided for @notificationDayOpened.
+  ///
+  /// In uk, this message translates to:
+  /// **'Відкрито нове завдання дня'**
+  String get notificationDayOpened;
+
+  /// No description provided for @notificationPhotosRevealed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Фото дня відкрились'**
+  String get notificationPhotosRevealed;
+
+  /// No description provided for @notificationMyTurn.
+  ///
+  /// In uk, this message translates to:
+  /// **'Твоя черга обирати завдання'**
+  String get notificationMyTurn;
+
+  /// No description provided for @notificationReminder.
+  ///
+  /// In uk, this message translates to:
+  /// **'Сьогодні ще чекає завдання'**
+  String get notificationReminder;
+
+  /// No description provided for @notificationComment.
+  ///
+  /// In uk, this message translates to:
+  /// **'{name} прокоментував(-ла) твоє фото'**
+  String notificationComment(String name);
+
+  /// No description provided for @notificationCommentAnonymous.
+  ///
+  /// In uk, this message translates to:
+  /// **'Новий коментар до твого фото'**
+  String get notificationCommentAnonymous;
+
+  /// No description provided for @notificationLikes.
+  ///
+  /// In uk, this message translates to:
+  /// **'Твоє фото вподобали: {count}'**
+  String notificationLikes(int count);
+
+  /// No description provided for @notificationPendingMember.
+  ///
+  /// In uk, this message translates to:
+  /// **'{name} чекає підтвердження'**
+  String notificationPendingMember(String name);
+
+  /// No description provided for @notificationPendingMemberAnonymous.
+  ///
+  /// In uk, this message translates to:
+  /// **'Новий учасник чекає підтвердження'**
+  String get notificationPendingMemberAnonymous;
+
+  /// No description provided for @notificationComplaint.
+  ///
+  /// In uk, this message translates to:
+  /// **'Скарга на фото: {name}'**
+  String notificationComplaint(String name);
+
+  /// No description provided for @notificationComplaintAnonymous.
+  ///
+  /// In uk, this message translates to:
+  /// **'Є скарга на фото'**
+  String get notificationComplaintAnonymous;
+
+  /// No description provided for @notificationUnknown.
+  ///
+  /// In uk, this message translates to:
+  /// **'Нова подія'**
+  String get notificationUnknown;
+
+  /// No description provided for @liveToastDayOpened.
+  ///
+  /// In uk, this message translates to:
+  /// **'Відкрито нове завдання дня'**
+  String get liveToastDayOpened;
+
+  /// No description provided for @liveToastMyTurn.
+  ///
+  /// In uk, this message translates to:
+  /// **'Тобі обирати завдання'**
+  String get liveToastMyTurn;
+
+  /// No description provided for @liveToastComment.
+  ///
+  /// In uk, this message translates to:
+  /// **'Новий коментар до твого фото'**
+  String get liveToastComment;
 }
 
 class _AppLocalizationsDelegate

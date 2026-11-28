@@ -774,4 +774,71 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get likeFailed => 'Couldn\'t — try again';
+
+  @override
+  String get notificationsTitle => 'Notifications';
+
+  @override
+  String get notificationsEmpty => 'All quiet for now';
+
+  @override
+  String get notificationsMarkAllRead => 'Mark all as read';
+
+  @override
+  String get notificationsBellTooltip => 'Notifications';
+
+  @override
+  String get notificationDayOpened => 'Today\'s task is open';
+
+  @override
+  String get notificationPhotosRevealed => 'The day\'s photos are revealed';
+
+  @override
+  String get notificationMyTurn => 'It\'s your turn to pick the task';
+
+  @override
+  String get notificationReminder => 'Today\'s task is still waiting';
+
+  @override
+  String notificationComment(String name) {
+    return '$name commented on your photo';
+  }
+
+  @override
+  String get notificationCommentAnonymous => 'New comment on your photo';
+
+  @override
+  String notificationLikes(int count) {
+    return 'Your photo was liked by $count';
+  }
+
+  @override
+  String notificationPendingMember(String name) {
+    return '$name is waiting for approval';
+  }
+
+  @override
+  String get notificationPendingMemberAnonymous =>
+      'A new member is waiting for approval';
+
+  @override
+  String notificationComplaint(String name) {
+    return 'Complaint about a photo: $name';
+  }
+
+  @override
+  String get notificationComplaintAnonymous =>
+      'There is a complaint about a photo';
+
+  @override
+  String get notificationUnknown => 'New activity';
+
+  @override
+  String get liveToastDayOpened => 'Today\'s task is open';
+
+  @override
+  String get liveToastMyTurn => 'It\'s your turn to pick';
+
+  @override
+  String get liveToastComment => 'New comment on your photo';
 }

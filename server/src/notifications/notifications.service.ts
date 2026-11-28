@@ -102,5 +102,11 @@ export class NotificationsService {
   async markRead(groupId: string, keys: string[], ids: string[] | undefined): Promise<void> {
     const at = this.clock();
     await Promise.all(keys.map((key) => this.notifications.markRead(groupId, key, ids, at)));
+    // Other devices of the same person refresh their bell.
+    this.events.toGroup(groupId, 'notification.read', { recipients: keys });
+    const service = keys.filter((key) => key.startsWith('org:'));
+    if (service.length > 0) {
+      this.events.toOwner(groupId, 'notification.read', { recipients: service });
+    }
   }
 }

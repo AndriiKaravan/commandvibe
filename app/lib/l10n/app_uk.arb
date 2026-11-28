@@ -460,5 +460,52 @@
   "profilePointsJournal": "Журнал балів",
   "groupLikesCountOnly": "Лише кількість лайків",
   "groupLikesCountOnlyHint": "Імен тих, хто лайкнув, не бачить ніхто",
-  "likeFailed": "Не вдалося — спробуй ще раз"
+  "likeFailed": "Не вдалося — спробуй ще раз",
+  "notificationsTitle": "Сповіщення",
+  "notificationsEmpty": "Поки що тихо",
+  "notificationsMarkAllRead": "Позначити прочитаними",
+  "notificationsBellTooltip": "Сповіщення",
+  "notificationDayOpened": "Відкрито нове завдання дня",
+  "notificationPhotosRevealed": "Фото дня відкрились",
+  "notificationMyTurn": "Твоя черга обирати завдання",
+  "notificationReminder": "Сьогодні ще чекає завдання",
+  "notificationComment": "{name} прокоментував(-ла) твоє фото",
+  "@notificationComment": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationCommentAnonymous": "Новий коментар до твого фото",
+  "notificationLikes": "Твоє фото вподобали: {count}",
+  "@notificationLikes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationPendingMember": "{name} чекає підтвердження",
+  "@notificationPendingMember": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationPendingMemberAnonymous": "Новий учасник чекає підтвердження",
+  "notificationComplaint": "Скарга на фото: {name}",
+  "@notificationComplaint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationComplaintAnonymous": "Є скарга на фото",
+  "notificationUnknown": "Нова подія",
+  "liveToastDayOpened": "Відкрито нове завдання дня",
+  "liveToastMyTurn": "Тобі обирати завдання",
+  "liveToastComment": "Новий коментар до твого фото"
 }

@@ -771,4 +771,70 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get likeFailed => 'Не вдалося — спробуй ще раз';
+
+  @override
+  String get notificationsTitle => 'Сповіщення';
+
+  @override
+  String get notificationsEmpty => 'Поки що тихо';
+
+  @override
+  String get notificationsMarkAllRead => 'Позначити прочитаними';
+
+  @override
+  String get notificationsBellTooltip => 'Сповіщення';
+
+  @override
+  String get notificationDayOpened => 'Відкрито нове завдання дня';
+
+  @override
+  String get notificationPhotosRevealed => 'Фото дня відкрились';
+
+  @override
+  String get notificationMyTurn => 'Твоя черга обирати завдання';
+
+  @override
+  String get notificationReminder => 'Сьогодні ще чекає завдання';
+
+  @override
+  String notificationComment(String name) {
+    return '$name прокоментував(-ла) твоє фото';
+  }
+
+  @override
+  String get notificationCommentAnonymous => 'Новий коментар до твого фото';
+
+  @override
+  String notificationLikes(int count) {
+    return 'Твоє фото вподобали: $count';
+  }
+
+  @override
+  String notificationPendingMember(String name) {
+    return '$name чекає підтвердження';
+  }
+
+  @override
+  String get notificationPendingMemberAnonymous =>
+      'Новий учасник чекає підтвердження';
+
+  @override
+  String notificationComplaint(String name) {
+    return 'Скарга на фото: $name';
+  }
+
+  @override
+  String get notificationComplaintAnonymous => 'Є скарга на фото';
+
+  @override
+  String get notificationUnknown => 'Нова подія';
+
+  @override
+  String get liveToastDayOpened => 'Відкрито нове завдання дня';
+
+  @override
+  String get liveToastMyTurn => 'Тобі обирати завдання';
+
+  @override
+  String get liveToastComment => 'Новий коментар до твого фото';
 }

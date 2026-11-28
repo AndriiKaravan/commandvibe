@@ -21,6 +21,9 @@ const commentEvents = {'comment.created', 'comment.deleted'};
 /// Everything that can change what a list of photos shows.
 const photoListEvents = {...submissionEvents, ...likeEvents, ...commentEvents};
 
+/// A new entry in the bell list, or one read (here or on another device).
+const notificationEvents = {'notification.created', 'notification.read'};
+
 /// Event types that change who is in the game.
 const membershipEvents = {'member.joined', 'member.approved', 'member.removed'};
 

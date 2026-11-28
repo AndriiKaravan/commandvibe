@@ -1,5 +1,6 @@
 import 'package:commandvibe/core/api/api_exception.dart';
 import 'package:commandvibe/core/realtime/group_live.dart';
+import 'package:commandvibe/features/notifications/data/notifications_models.dart';
 import 'package:commandvibe/features/progress/data/progress_models.dart';
 import 'package:commandvibe/features/standings/data/standings_models.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +13,7 @@ void main() {
     late int revoked;
     late int progressLoads;
     late int standingsLoads;
+    late int notificationLoads;
     Object? failProgress;
     Object? failStandings;
     late GroupLive live;
@@ -21,6 +23,7 @@ void main() {
       revoked = 0;
       progressLoads = 0;
       standingsLoads = 0;
+      notificationLoads = 0;
       failProgress = null;
       failStandings = null;
       live = GroupLive(
@@ -39,6 +42,10 @@ void main() {
           standingsLoads++;
           if (failStandings != null) throw failStandings!;
           return const Standings(items: [], me: null);
+        },
+        loadNotifications: () async {
+          notificationLoads++;
+          return const NotificationsPage(items: [], unread: 0);
         },
         onRevoked: () => revoked++,
       );
@@ -120,6 +127,29 @@ void main() {
       await pumpEventQueue();
 
       expect(revoked, 1);
+    });
+
+    test(
+      'should reload only the notifications when one is created or read',
+      () async {
+        live.start();
+        await pumpEventQueue();
+        final progressBefore = progressLoads;
+        final notificationsBefore = notificationLoads;
+        realtime.emit(event('notification.created'));
+        realtime.emit(event('notification.read'));
+        await pumpEventQueue();
+
+        expect(notificationLoads, greaterThan(notificationsBefore));
+        expect(progressLoads, progressBefore);
+      },
+    );
+
+    test('should load notifications together with the rest', () async {
+      live.start();
+      await pumpEventQueue();
+
+      expect(live.notifications.value?.unread, 0);
     });
   });
 }

@@ -60,6 +60,7 @@ class _GroupShellState extends State<GroupShell> {
       groupId: widget.groupId,
       loadProgress: () => services.progress.progress(widget.groupId),
       loadStandings: () => services.standings.standings(widget.groupId),
+      loadNotifications: () => services.notifications.list(widget.groupId),
       onRevoked: _leave,
     )..start();
   }
