@@ -1297,6 +1297,12 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'День {day} · {task}'**
   String feedDayTask(int day, String task);
+
+  /// No description provided for @ratingEmpty.
+  ///
+  /// In uk, this message translates to:
+  /// **'Поки немає балів'**
+  String get ratingEmpty;
 }
 
 class _AppLocalizationsDelegate

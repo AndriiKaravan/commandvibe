@@ -671,4 +671,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String feedDayTask(int day, String task) {
     return 'День $day · $task';
   }
+
+  @override
+  String get ratingEmpty => 'Поки немає балів';
 }

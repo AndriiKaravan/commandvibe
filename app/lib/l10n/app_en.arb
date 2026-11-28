@@ -358,5 +358,6 @@
         "type": "String"
       }
     }
-  }
+  },
+  "ratingEmpty": "No points yet"
 }

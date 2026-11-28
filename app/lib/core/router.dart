@@ -16,6 +16,7 @@ import 'package:commandvibe/features/organizer_auth/ui/organizer_login_view.dart
 import 'package:commandvibe/features/photos/ui/complaints_view.dart';
 import 'package:commandvibe/features/photos/ui/photo_viewer_view.dart';
 import 'package:commandvibe/features/shell/group_shell.dart';
+import 'package:commandvibe/features/standings/ui/standings_view.dart';
 import 'package:commandvibe/features/today/ui/today_tab.dart';
 import 'package:commandvibe/features/welcome/welcome_view.dart';
 import 'package:flutter/material.dart';
@@ -133,7 +134,7 @@ GoRouter createRouter({
           _tab(
             'rating',
             requireSession,
-            (state) => const _TabPlaceholder(Icons.emoji_events),
+            (state) => StandingsView(groupId: state.pathParameters['groupId']!),
           ),
           _tab(
             'me',
@@ -240,16 +241,6 @@ class _GroupTabs extends StatelessWidget {
       );
     },
   );
-}
-
-/// Stands in for a tab until its screen lands.
-class _TabPlaceholder extends StatelessWidget {
-  const _TabPlaceholder(this.icon);
-
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) => Center(child: Icon(icon, size: 48));
 }
 
 /// Reads the session once to know whether the viewer owns the group.

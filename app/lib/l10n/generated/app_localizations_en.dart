@@ -675,4 +675,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String feedDayTask(int day, String task) {
     return 'Day $day · $task';
   }
+
+  @override
+  String get ratingEmpty => 'No points yet';
 }
