@@ -175,6 +175,57 @@ void main() {
       expect(asked, 0);
       expect(find.text('2'), findsOneWidget);
     });
+
+    testWidgets(
+      'should show how many comments a revealed photo has and open it from there',
+      (tester) async {
+        var opened = 0;
+        final item = FeedItem(
+          photo: SubmissionItem(
+            memberId: 'm1',
+            displayName: 'Олена',
+            submittedAt: DateTime.utc(2026, 12, 2),
+            access: PhotoAccess.full,
+            photoUrl: Uri.parse('https://api.test/p/m1'),
+            blurUrl: Uri.parse('https://api.test/p/m1-blur'),
+            width: 800,
+            height: 600,
+            mine: false,
+            commentCount: 3,
+          ),
+          dayIndex: 1,
+          taskTitle: const TaskText(uk: 'Ялинка'),
+          revealAt: DateTime.utc(2026, 12, 4, 7),
+        );
+        await tester.pumpWidget(
+          _app(
+            FeedCard(item: item, onOpen: () => opened++, onImageFailed: () {}),
+          ),
+        );
+
+        expect(find.text('3'), findsOneWidget);
+        await tester.ensureVisible(find.byKey(const Key('comment-count')));
+        await tester.tap(find.byKey(const Key('comment-count')));
+
+        expect(opened, 1);
+      },
+    );
+
+    testWidgets('should show no comment count on a blurred photo', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          FeedCard(
+            item: _item('Олена', full: false),
+            onOpen: () {},
+            onImageFailed: () {},
+          ),
+        ),
+      );
+
+      expect(find.byKey(const Key('comment-count')), findsNothing);
+    });
   });
 
   group('PhotoPager', () {

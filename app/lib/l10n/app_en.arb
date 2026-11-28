@@ -375,5 +375,13 @@
   "profileChangePin": "Change PIN",
   "likeTooltip": "Like",
   "unlikeTooltip": "Remove your like",
-  "likersTitle": "Liked by"
+  "likersTitle": "Liked by",
+  "commentsTitle": "Comments",
+  "commentsEmpty": "No comments yet",
+  "commentHint": "Write a comment…",
+  "commentSend": "Send",
+  "commentDelete": "Delete comment",
+  "commentTooLong": "At most 500 characters",
+  "commentEmpty": "Write at least a word",
+  "commentFailed": "Couldn't — try again"
 }

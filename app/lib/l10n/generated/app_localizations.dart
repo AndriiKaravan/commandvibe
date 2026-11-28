@@ -1339,6 +1339,54 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Вподобали'**
   String get likersTitle;
+
+  /// No description provided for @commentsTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Коментарі'**
+  String get commentsTitle;
+
+  /// No description provided for @commentsEmpty.
+  ///
+  /// In uk, this message translates to:
+  /// **'Поки без коментарів'**
+  String get commentsEmpty;
+
+  /// No description provided for @commentHint.
+  ///
+  /// In uk, this message translates to:
+  /// **'Напиши коментар…'**
+  String get commentHint;
+
+  /// No description provided for @commentSend.
+  ///
+  /// In uk, this message translates to:
+  /// **'Надіслати'**
+  String get commentSend;
+
+  /// No description provided for @commentDelete.
+  ///
+  /// In uk, this message translates to:
+  /// **'Видалити коментар'**
+  String get commentDelete;
+
+  /// No description provided for @commentTooLong.
+  ///
+  /// In uk, this message translates to:
+  /// **'Не більше 500 символів'**
+  String get commentTooLong;
+
+  /// No description provided for @commentEmpty.
+  ///
+  /// In uk, this message translates to:
+  /// **'Напиши хоч слово'**
+  String get commentEmpty;
+
+  /// No description provided for @commentFailed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Не вдалося — спробуй ще раз'**
+  String get commentFailed;
 }
 
 class _AppLocalizationsDelegate

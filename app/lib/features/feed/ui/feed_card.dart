@@ -89,18 +89,35 @@ class FeedCard extends StatelessWidget {
               width: double.infinity,
               height: 260,
             ),
-          if (photo.photoUrl != null && onLike != null)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: LikeButton(
-                key: ValueKey('like-${item.key}'),
-                likes: photo.likes,
-                enabled: !photo.mine,
-                onToggle: onLike!,
-                onShowLikers: photo.likes.by == null
-                    ? null
-                    : () => LikersSheet.show(context, photo.likes.by!),
-              ),
+          if (photo.photoUrl != null)
+            Row(
+              spacing: 12,
+              children: [
+                if (onLike != null)
+                  LikeButton(
+                    key: ValueKey('like-${item.key}'),
+                    likes: photo.likes,
+                    enabled: !photo.mine,
+                    onToggle: onLike!,
+                    onShowLikers: photo.likes.by == null
+                        ? null
+                        : () => LikersSheet.show(context, photo.likes.by!),
+                  ),
+                InkWell(
+                  key: const Key('comment-count'),
+                  onTap: onOpen,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      spacing: 4,
+                      children: [
+                        const Icon(Icons.chat_bubble_outline, size: 20),
+                        Text('${photo.commentCount}'),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
         ],
       ),

@@ -694,4 +694,28 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get likersTitle => 'Вподобали';
+
+  @override
+  String get commentsTitle => 'Коментарі';
+
+  @override
+  String get commentsEmpty => 'Поки без коментарів';
+
+  @override
+  String get commentHint => 'Напиши коментар…';
+
+  @override
+  String get commentSend => 'Надіслати';
+
+  @override
+  String get commentDelete => 'Видалити коментар';
+
+  @override
+  String get commentTooLong => 'Не більше 500 символів';
+
+  @override
+  String get commentEmpty => 'Напиши хоч слово';
+
+  @override
+  String get commentFailed => 'Не вдалося — спробуй ще раз';
 }

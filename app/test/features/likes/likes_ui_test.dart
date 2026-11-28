@@ -261,6 +261,28 @@ void main() {
       expect(asked, [true]);
     });
 
+    testWidgets('should show the comments slot under a revealed photo', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          SizedBox(
+            height: 900,
+            child: PhotoViewerBody(
+              item: photo(full: true),
+              onReport: (_) async {},
+              onHide: (_) async {},
+              onDismiss: () async {},
+              onImageFailed: () {},
+              comments: const Text('comments-slot'),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('comments-slot'), findsOneWidget);
+    });
+
     testWidgets('should not offer a like on a photo seen blurred', (
       tester,
     ) async {

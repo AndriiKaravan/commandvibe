@@ -403,5 +403,13 @@
   "profileChangePin": "Змінити PIN",
   "likeTooltip": "Вподобати",
   "unlikeTooltip": "Прибрати вподобання",
-  "likersTitle": "Вподобали"
+  "likersTitle": "Вподобали",
+  "commentsTitle": "Коментарі",
+  "commentsEmpty": "Поки без коментарів",
+  "commentHint": "Напиши коментар…",
+  "commentSend": "Надіслати",
+  "commentDelete": "Видалити коментар",
+  "commentTooLong": "Не більше 500 символів",
+  "commentEmpty": "Напиши хоч слово",
+  "commentFailed": "Не вдалося — спробуй ще раз"
 }

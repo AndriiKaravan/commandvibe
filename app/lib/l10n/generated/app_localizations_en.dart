@@ -698,4 +698,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get likersTitle => 'Liked by';
+
+  @override
+  String get commentsTitle => 'Comments';
+
+  @override
+  String get commentsEmpty => 'No comments yet';
+
+  @override
+  String get commentHint => 'Write a comment…';
+
+  @override
+  String get commentSend => 'Send';
+
+  @override
+  String get commentDelete => 'Delete comment';
+
+  @override
+  String get commentTooLong => 'At most 500 characters';
+
+  @override
+  String get commentEmpty => 'Write at least a word';
+
+  @override
+  String get commentFailed => 'Couldn\'t — try again';
 }

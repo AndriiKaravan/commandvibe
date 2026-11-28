@@ -1,6 +1,7 @@
 import 'package:commandvibe/core/api/api_exception.dart';
 import 'package:commandvibe/core/services_scope.dart';
 import 'package:commandvibe/core/ui/glass_page.dart';
+import 'package:commandvibe/features/comments/ui/comments_section.dart';
 import 'package:commandvibe/features/likes/data/likes_repository.dart';
 import 'package:commandvibe/features/likes/ui/like_button.dart';
 import 'package:commandvibe/features/likes/ui/likers_sheet.dart';
@@ -94,6 +95,16 @@ class _PhotoViewerViewState extends State<PhotoViewerView> {
                 pageBuilder: (context, item) => PhotoViewerBody(
                   item: item,
                   onImageFailed: _load,
+                  comments: item.photoUrl == null
+                      ? null
+                      : CommentsSection(
+                          key: ValueKey(
+                            'comments-${widget.dayIndex}-${item.memberId}',
+                          ),
+                          groupId: widget.groupId,
+                          dayIndex: widget.dayIndex,
+                          authorMemberId: item.memberId,
+                        ),
                   onLike: (liked) => _repositoryLikes!.setLiked(
                     widget.groupId,
                     widget.dayIndex,
@@ -147,7 +158,11 @@ class PhotoViewerBody extends StatelessWidget {
     required this.onDismiss,
     required this.onImageFailed,
     this.onLike,
+    this.comments,
   });
+
+  /// Comments under the photo; null where they are not offered.
+  final Widget? comments;
 
   /// Gives or takes back my like; null where likes are not offered.
   final Future<void> Function(bool liked)? onLike;
@@ -201,6 +216,10 @@ class PhotoViewerBody extends StatelessWidget {
             ),
           ),
         if (item.isHidden) FormMessage(l10n.photoHiddenBadge),
+        if (item.photoUrl != null && comments != null) ...[
+          const SizedBox(height: 12),
+          comments!,
+        ],
         if (moderation != null) ..._moderation(context, l10n, moderation),
         if (moderation == null && !item.mine)
           Align(
