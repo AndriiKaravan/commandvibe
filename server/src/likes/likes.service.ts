@@ -1,8 +1,9 @@
-import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { CLOCK } from '../auth/session.service';
 import { SessionSubject } from '../data/models';
 import { CELLS, CellRepository, LIKES, LikeRepository, SUBMISSIONS, SubmissionRepository } from '../data/repositories';
 import { GroupsService } from '../groups/groups.service';
+import { NOTIFICATION_SINK, NotificationSink } from '../notifications/notification-sink';
 import { PHOTO_EVENTS, PhotoEvents } from '../photos/photo-events';
 import { PhotosService } from '../photos/photos.service';
 
@@ -16,6 +17,7 @@ export class LikesService {
     @Inject(LIKES) private readonly likes: LikeRepository,
     @Inject(PHOTO_EVENTS) private readonly events: PhotoEvents,
     @Inject(CLOCK) private readonly clock: () => Date = () => new Date(),
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   /** Gives or takes back the viewer's like; both are idempotent and only a real change is announced. */
@@ -54,6 +56,9 @@ export class LikesService {
       : await this.likes.remove(groupId, dayIndex, authorMemberId, viewer.memberId);
     if (changed) {
       this.events.toGroup(groupId, 'like.changed', { dayIndex, memberId: authorMemberId });
+      if (liked) {
+        await this.notifications?.likes(groupId, dayIndex, authorMemberId);
+      }
     }
   }
 }

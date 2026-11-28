@@ -8,6 +8,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  Optional,
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import { CLOCK, IssuedTokens, SessionService } from '../auth/session.service';
 import { hashToken } from '../common/tokens';
 import { Group, Member, SessionSubject, nameKeyOf } from '../data/models';
 import { GROUPS, GroupRepository, MEMBERS, MemberRepository, NameTakenError } from '../data/repositories';
+import { NOTIFICATION_SINK, NotificationSink } from '../notifications/notification-sink';
 import { GroupsService } from '../groups/groups.service';
 import { isAvatarId } from './avatars';
 import { PinService } from './pin.service';
@@ -67,6 +69,7 @@ export class MembersService {
     @Inject(MEMBER_EVENTS) private readonly events: MemberEvents,
     @Inject(CLOCK) private readonly now: () => Date,
     @Inject(MEMBER_DATA_CLEANUP) private readonly cleanup: MemberDataCleanup,
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   async preview(token: string): Promise<InvitePreview> {
@@ -105,6 +108,9 @@ export class MembersService {
       createdAt: this.now(),
     });
     this.events.joined(group.id, member.id, member.status === 'pending');
+    if (member.status === 'pending') {
+      await this.notifications?.pendingMember(group.id, member.id);
+    }
     return { ...(await this.issue(member, deviceInfo)), member: memberView(member) };
   }
 

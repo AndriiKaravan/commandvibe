@@ -1,6 +1,7 @@
-import { ConflictException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Inject, Injectable, Optional } from '@nestjs/common';
 import { Cell, CellState, Group, GameSettings, RouletteSpin, SessionSubject } from '../data/models';
 import { CELLS, CellRepository, GROUPS, GroupRepository, MEMBERS, MemberRepository } from '../data/repositories';
+import { NOTIFICATION_SINK, NotificationSink } from '../notifications/notification-sink';
 import { GroupsService } from '../groups/groups.service';
 import { GameEvents } from './game-events';
 import { GAME_EVENTS, RANDOM } from './game.tokens';
@@ -28,6 +29,7 @@ export class GameEngine {
     @Inject(MEMBERS) private readonly members: MemberRepository,
     @Inject(GAME_EVENTS) private readonly events: GameEvents,
     @Inject(RANDOM) private readonly random: Random,
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   /** Idempotent: brings the cells of one group up to [now]. */
@@ -116,6 +118,7 @@ export class GameEngine {
     if (await this.cells.transition(group.id, cell.dayIndex, 'closed', { state: 'open', openedAt: now })) {
       await this.activate(group.id);
       this.events.publish(group.id, 'day.opened', { dayIndex: cell.dayIndex });
+      await this.notifications?.dayOpened(group.id, cell.dayIndex);
     }
   }
 
@@ -143,6 +146,7 @@ export class GameEngine {
         pickerMemberId,
         deadlineAt: pickDeadlineAt.toISOString(),
       });
+      await this.notifications?.myTurn(group.id, cell.dayIndex, pickerMemberId);
     }
   }
 
@@ -193,6 +197,7 @@ export class GameEngine {
         by,
       });
       this.events.publish(group.id, 'day.opened', { dayIndex: cell.dayIndex });
+      await this.notifications?.dayOpened(group.id, cell.dayIndex);
       return true;
     }
     return false;
@@ -214,6 +219,7 @@ export class GameEngine {
       }
       if (await this.cells.markRevealed(group.id, cell.dayIndex, now)) {
         this.events.publish(group.id, 'photos.revealed', { dayIndex: cell.dayIndex });
+        await this.notifications?.photosRevealed(group.id, cell.dayIndex);
       }
     }
   }

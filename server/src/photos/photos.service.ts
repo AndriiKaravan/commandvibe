@@ -5,6 +5,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  Optional,
   UnprocessableEntityException,
   UnsupportedMediaTypeException,
 } from '@nestjs/common';
@@ -17,6 +18,8 @@ import {
   COMMENTS,
   COMPLAINTS,
   CommentRepository,
+  NOTIFICATIONS,
+  NotificationRepository,
   ComplaintRepository,
   LIKES,
   LikeRepository,
@@ -79,6 +82,7 @@ export class PhotosService {
     @Inject(PHOTO_EVENTS) private readonly events: PhotoEvents,
     @Inject(PHOTO_URL_SIGNER) private readonly signer: PhotoUrlSigner,
     @Inject(CLOCK) private readonly clock: () => Date,
+    @Optional() @Inject(NOTIFICATIONS) private readonly notificationList?: NotificationRepository,
   ) {}
 
   /** The day's photos as this viewer may see them. */
@@ -366,6 +370,7 @@ export class PhotosService {
     await this.complaints.deleteInvolving(groupId, memberId);
     await this.likes.deleteInvolving(groupId, memberId);
     await this.comments.deleteInvolving(groupId, memberId);
+    await this.notificationList?.deleteInvolving(groupId, memberId);
   }
 
   private async process(bytes: Buffer) {

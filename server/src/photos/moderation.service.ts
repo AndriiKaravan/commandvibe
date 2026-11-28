@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  Optional,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { CLOCK } from '../auth/session.service';
@@ -17,6 +18,7 @@ import {
   SUBMISSIONS,
   SubmissionRepository,
 } from '../data/repositories';
+import { NOTIFICATION_SINK, NotificationSink } from '../notifications/notification-sink';
 import { GroupsService } from '../groups/groups.service';
 import { PHOTO_EVENTS, PhotoEvents } from './photo-events';
 import { PhotosService } from './photos.service';
@@ -45,6 +47,7 @@ export class ModerationService {
     @Inject(COMPLAINTS) private readonly complaints: ComplaintRepository,
     @Inject(PHOTO_EVENTS) private readonly events: PhotoEvents,
     @Inject(CLOCK) private readonly clock: () => Date,
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   /** A member complains about a photo they can see in full; a repeat is accepted and ignored. */
@@ -87,6 +90,7 @@ export class ModerationService {
     };
     if (await this.complaints.add(complaint)) {
       this.events.toOwner(groupId, 'complaint.created', { dayIndex: day, memberId: authorId });
+      await this.notifications?.complaint(groupId, day, authorId);
     }
   }
 

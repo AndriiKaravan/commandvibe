@@ -88,4 +88,73 @@ describe('Notifications', () => {
     });
     expect((await list(game.groupId, ira.auth)).body.items).toEqual([]);
   });
+  describe('where events come from', () => {
+    const kinds = async (groupId: string, auth: string) =>
+      (await list(groupId, auth)).body.items.map((i: { kind: string }) => i.kind).sort();
+
+    it('should not give a late joiner the announcements that came before they joined', async () => {
+      const game = await fixture.startedGame();
+      const ira = await fixture.join(game.token, 'Ira');
+      await fixture.api().get(`/groups/${game.groupId}/today`).set('authorization', ira.auth);
+      expect(await kinds(game.groupId, ira.auth)).toEqual([]);
+    });
+
+    it('should tell a photo’s author about a comment and a like, but not the commenter', async () => {
+      const game = await fixture.startedGame();
+      const ira = await fixture.join(game.token, 'Ira');
+      const taras = await fixture.join(game.token, 'Taras');
+      await fixture.submit(game.groupId, ira);
+      await fixture.submit(game.groupId, taras);
+      await fixture
+        .api()
+        .post(`/groups/${game.groupId}/days/0/submissions/${ira.memberId}/comments`)
+        .set('authorization', taras.auth)
+        .send({ text: 'Nice' })
+        .expect(201);
+      await fixture
+        .api()
+        .put(`/groups/${game.groupId}/days/0/submissions/${ira.memberId}/like`)
+        .set('authorization', taras.auth)
+        .expect(204);
+      const mine = await list(game.groupId, ira.auth);
+      expect(await kinds(game.groupId, ira.auth)).toEqual(expect.arrayContaining(['comment', 'likes']));
+      const likes = mine.body.items.find((i: { kind: string }) => i.kind === 'likes');
+      expect(likes).toMatchObject({ count: 1 });
+      expect(JSON.stringify(mine.body)).not.toContain('Nice');
+      expect(await kinds(game.groupId, taras.auth)).not.toContain('comment');
+    });
+
+    it('should tell the organizer about a complaint and a member awaiting approval', async () => {
+      const uid = `org-${Math.random().toString(36).slice(2)}`;
+      firebase.users.set(uid, { uid, email: `${uid}@example.com`, name: 'Owner', provider: 'google.com' });
+      const signIn = await fixture.api().post('/auth/organizer').send({ idToken: uid });
+      const owner = `Bearer ${signIn.body.accessToken}`;
+      const created = await fixture
+        .api()
+        .post('/groups')
+        .set('authorization', owner)
+        .send({ name: 'Office', timezone: 'Europe/Kyiv', playsToo: false, approveNew: true });
+      const token = (created.body.inviteUrl as string).split('/j/')[1];
+      await fixture.join(token, 'Ira');
+      expect(await kinds(created.body.group.id, owner)).toEqual(['pending_member']);
+    });
+
+    it('should tell the organizer about a complaint, once per photo', async () => {
+      const game = await fixture.startedGame();
+      const ira = await fixture.join(game.token, 'Ira');
+      const taras = await fixture.join(game.token, 'Taras');
+      await fixture.submit(game.groupId, ira);
+      await fixture.submit(game.groupId, taras);
+      const complain = () =>
+        fixture
+          .api()
+          .post(`/groups/${game.groupId}/days/0/submissions/${ira.memberId}/complaints`)
+          .set('authorization', taras.auth)
+          .send({});
+      await complain();
+      await complain();
+      expect(await kinds(game.groupId, game.owner)).toEqual(['complaint']);
+      expect(await kinds(game.groupId, ira.auth)).not.toContain('complaint');
+    });
+  });
 });

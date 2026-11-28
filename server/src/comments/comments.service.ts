@@ -1,4 +1,11 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { CLOCK } from '../auth/session.service';
 import { Comment, Group, Submission, SessionSubject } from '../data/models';
@@ -13,6 +20,7 @@ import {
   SubmissionRepository,
 } from '../data/repositories';
 import { GroupsService } from '../groups/groups.service';
+import { NOTIFICATION_SINK, NotificationSink } from '../notifications/notification-sink';
 import { PHOTO_EVENTS, PhotoEvents } from '../photos/photo-events';
 import { PhotosService } from '../photos/photos.service';
 
@@ -49,6 +57,7 @@ export class CommentsService {
     @Inject(COMMENTS) private readonly comments: CommentRepository,
     @Inject(PHOTO_EVENTS) private readonly events: PhotoEvents,
     @Inject(CLOCK) private readonly clock: () => Date = () => new Date(),
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   /** Comments under a photo the viewer sees in full, oldest first. */
@@ -80,6 +89,7 @@ export class CommentsService {
     };
     await this.comments.add(comment);
     this.events.toGroup(groupId, 'comment.created', { dayIndex, memberId: authorId });
+    await this.notifications?.comment(groupId, dayIndex, authorId, viewer.memberId, comment.id);
     return (await this.items(group, viewer, [comment]))[0];
   }
 
