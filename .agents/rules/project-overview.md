@@ -1,7 +1,7 @@
 # CommandVibe — Project Overview
 
 **Дата оновлення:** 2026-11-27
-**Версія документа:** 2.9 (вхід організатора через модуль `auth` з ks_core 0.7.0)
+**Версія документа:** 2.10 (P4: п'ять вкладок — Сьогодні, Календар, Стрічка, Рейтинг, Я/Група; аватари; прогрес, стрічка й рейтинг на сервері)
 
 > **Статус:** хвиля 1, частина P1 реалізована (у `main`) і **перевірена власником на проді 27.11** (вхід Google, створення групи, приєднання з іменем і PIN, живий список). P2 (календар і рулетка) розгорнуто на API (ревізія `00004`). P3 (фото) реалізовано в гілці `worktree-p3-photos`; на прод ще не розгорнуто. API розгорнуто 27.11: Cloud Run `commandvibe-api` (ревізія `00002`, `https://commandvibe-api-889388170734.europe-central2.run.app`); веб — на живому сайті `commandvibe.karavanstudio.dev` (27.11). Дизайн: `docs/specs/2026-11-19-photo-challenge-design.md` (розділ 2а має пріоритет). План: `docs/superpowers/plans/2026-11-26-wave1-roadmap.md`, `…-wave1-p1-foundation.md`.
 
@@ -24,6 +24,7 @@
   - `members/` — приєднання за посиланням, підтвердження нових, PIN, дії організатора, сторінка запрошення `/j/:token`.
   - `game/` — гра: `game-time.ts` (час у поясі групи з урахуванням DST), `task-picker.ts` (авто-підбір без повторів з урахуванням категорій і сезону, «Інше»), `roulette.ts` (кому крутити — хто крутив найменше; колесо з номерів днів), `calendar.service.ts` (налаштування гри, конструктор календаря), `game-engine.ts` (`advance` — ідемпотентне відкриття днів і рулетка; `spin`; `today`), `tick.controller.ts` + `tick.guard.ts` (`POST /internal/tick` для Cloud Scheduler з власною перевіркою OIDC), `game-events.ts` (події в тему `group:<id>`).
   - `photos/` — фото дня: `image-type.ts` (тип за магічними байтами), `image-pipeline.ts` (sharp: поворот за EXIF, 1600 px, JPEG без метаданих, розмите прев'ю з 32 px), `exif-time.ts` (час зйомки), `photo-access.ts` (`decidePhotoAccess` — єдине джерело правди про доступ), `photo-url.ts` (підписані посилання `/p/<token>`, ключ з HKDF від `SESSION_SIGNING_KEY`), `photo-store.ts` + `gcs-photo-store.ts` (пам'ять і GCS), `upload-gate.ts` (ліміти одночасних завантажень і обробок), `read-body.ts` (читання тіла з ліміту 20 МіБ), `photos.service.ts`, `moderation.service.ts` (скарги, приховування), контролери.
+  - `progress/` — `GET /groups/:id/progress`: по днях скільки виконали й чи виконав глядач, `currentDay`. `feed/` — `GET /groups/:id/feed`: стрічка фото всіх днів новіші згори, курсор, фільтри, доступ — той самий `decidePhotoAccess` через `PhotosService.feed`. `standings/` — `GET /groups/:id/standings`: бали (у P4 лише 10 за кожне видиме фото), спільні місця, «моє місце» з відставанням. Вибір аватара — `PUT /groups/:id/me/avatar` (`members/avatars.ts`, 24 id).
   - `realtime/` — підключення ks_server realtime: доступ до тем `group:<id>` і `org:<id>`, події учасників.
   - `content/` — каталог завдань дня v2 (171 завдання UA + EN; дані — `task-catalog.data.ts`, модель — `task-catalog.model.ts`). Категорії: `home` вдома, `street` вулиця, `office`, `cheap` дешево, `kids` з дітьми, `winter`, `summer`, `team` командне, `pair` парне — 1–4 на завдання, ≥30 у кожній (тест). Аудиторії v1 (офіс/студенти/друзі/сім’я) лишилися полем «для кого»; теми v1 «креатив» і «вихідні» прибрано. `isOfferedInMonth`: літо — травень–вересень, зима — листопад–березень. Таблиця для правки власником — `docs/content/task-catalog-v2.md` (генерує `src/content/render-catalog.ts`; тест звіряє її з даними; v1 — історична). У Firestore — лише після «каталог погоджено».
   - `shared/realtime`, `shared/app_check` — копії бібліотек (sync із чистих клонів тегів ks_server v0.3.0, ks_core v0.6.2), не редагуються.
@@ -33,6 +34,8 @@
   - `core/api/` — `ApiClient` (токен, `x-realtime-session`, один спільний refresh на `401`).
   - `core/theme/` — «Скло»: `GlassTokens` (макети E/E2), `GlassPanel` з запасним варіантом без розмиття.
   - `features/` — `welcome`, `organizer_auth`, `groups` (створення, поширення запрошення, головна групи з живим списком), `calendar` (налаштування гри, редактор календаря: «Інше», з каталогу, своє завдання, переставити дні), `photos` (дані й надсилання, «Виконати», смуга фото дня, розмиті плитки, перегляд на весь екран, скарги й приховування), `today` (картка «Сьогодні»: завдання дня або рулетка з синхронною анімацією), `join` (приєднання, очікування підтвердження, PIN, повернення; організатор, що відкрив своє посилання, не перезаписує сесію).
+  - Вкладки групи (`features/shell`, `core/ui/adaptive_shell.dart`): нижня панель до 840 px, бічна від; маршрути `/g/:id/today|days|feed|rating|me`, п'ята — «Я» (учасник) або «Група» (організатор: інструменти, запрошення, скарги). `AccessWatcher` у оболонці виводить з групи, коли доступ відкликано. `core/realtime/live_loader.dart` — значення з API, що оновлюється подіями групи.
+  - `features/progress`, `standings`, `feed`, `avatars`, `profile` — клієнтські частини P4; `features/calendar/ui/days_view.dart` — сітка дверцят і шторка дня.
   - `l10n/` — UA (основна) і EN.
 - **`tool/`** — `deploy_api.sh` (ревізія `candidate`), `deploy_web_preview.sh`, `e2e_web.mjs` (сценарій у headless Chrome). Порядок деплою — `docs/deploy.md`.
 - **Спільні бібліотеки (змінювати звідси заборонено):** ks_core (клієнт; веб-прогалини — задача ks_core/2026-11-26-web-support), ks_server (сервер).
@@ -71,6 +74,10 @@
 | GET | `/auth/me` | сесія | суб'єкт сесії |
 | POST | `/groups` | організатор | `{name, timezone, playsToo=true, approveNew=false}` → `{group, inviteUrl}` |
 | GET | `/groups` | організатор | `{items:[{id,name,status,activeMembers,createdAt}]}` — лише власні, нові спершу |
+| GET | `/groups/:id/progress` | власник / учасник | `{days:[{dayIndex, done, total, mine}], currentDay?, serverTime}`; приховані фото й неактивні не рахуються; `mine: null` — організатор не грає |
+| GET | `/groups/:id/feed?day&memberId&mine&limit&before` | власник / учасник | `{items:[фото дня + dayIndex, taskTitle, revealAt, avatar], next?}`; розмите без `photoUrl`; приховані й вилучених немає; погане `before` → `400 invalid_cursor` |
+| GET | `/groups/:id/standings` | власник / учасник | `{items:[{memberId, displayName, avatar?, points, rank, mine}], me?:{rank, points, toNext?}}` |
+| PUT | `/groups/:id/me/avatar` | учасник / організатор-гравець | `{avatar: 'av01'..'av24' \| null}` → `204`; невідомий id → `400 invalid_avatar`; організатор не грає → `403 not_playing` |
 | GET | `/groups/:id` | власник / активний учасник | група (без хешу запрошення) |
 | POST | `/groups/:id/invite/rotate` · `/invite/close` | власник | нове посилання · закрити |
 | GET | `/groups/:id/members` | власник (з `pending`) / учасник | список |
@@ -110,6 +117,7 @@ Firestore (за репозиторіями): `organizers/{uid}` {email, displayN
 
 ## Історія версій
 
+- 2.10 (2026-11-28) — P4: п'ять вкладок із реальними даними (Сьогодні: хід дня, моє місце, події з realtime; Календар: сітка дверцят і шторка дня; Стрічка: фільтри, пагінація, гортання на весь екран; Рейтинг: живі місця зі стрілками; Я/Група: аватар, бали, PIN, інструменти організатора), колекція з 24 аватарів, сервер: progress, feed, standings, avatar; підпис iOS командою 8RTTR2Y32B.
 - 2.9 (2026-11-27) — залежність `ks_core` v0.7.0: вхід Google організатора через `AuthService`/`FirebaseAuthService` (`KsOrganizerSignIn`), на Android/iOS — рідний вибір акаунта Google (`google_sign_in` 7; web client ID і iOS client ID — у `ks_organizer_sign_in.dart`, URL-схема в `Info.plist`), на вебі — popup із переходом на redirect; прямий `firebase_auth` прибрано. Токен Firebase лише обмінюється на сесію API, тому `AuthHttpClient` не потрібен. Контракт-тест імен: `ALREADY_EXISTS` → `NameTakenError`.
 - 2.8 (2026-11-27) — «Мої групи»: `GET /groups`; після входу організатор потрапляє на `/org/groups` (немає груп → створення, одна → одразу в неї, кілька → список; з групи — іконка «Мої групи» → `/org/groups?all=1`); екран `/g/:id/invite` видає нове посилання через `invite/rotate` (старе перестає діяти; посилання не відновлюється, бо зберігається лише хеш).
 - 2.7 (2026-11-27) — P3: фото (обробка sharp, EXIF, розмиття), доступ `decidePhotoAccess`, підписані посилання `/p/`, розкриття о 9:00, скарги й приховування, видалення даних при вилученні учасника; гра завершується після розкриття останнього дня.

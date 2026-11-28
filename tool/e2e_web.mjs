@@ -27,12 +27,18 @@ async function post(path, body) {
 }
 
 async function waitText(page, text, timeout = 20000) {
-  await page.waitForFunction(
-    (t) => [...document.querySelectorAll('[aria-label], flt-semantics')].some((e) =>
-      (e.getAttribute('aria-label') ?? e.textContent ?? '').includes(t)),
-    { timeout },
-    text,
-  );
+  try {
+    await page.waitForFunction(
+      (t) => [...document.querySelectorAll('[aria-label], flt-semantics')].some((e) =>
+        (e.getAttribute('aria-label') ?? e.textContent ?? '').includes(t)),
+      { timeout },
+      text,
+    );
+  } catch (error) {
+    const labels = await page.evaluate(() =>
+      [...document.querySelectorAll('flt-semantics')].map((e) => e.getAttribute('aria-label') ?? e.textContent ?? '').filter(Boolean));
+    throw new Error(`no "${text}" on screen; labels: ${JSON.stringify(labels)}`, { cause: error });
+  }
 }
 
 // Each step of the flow has one text field; locale-independent.
@@ -134,6 +140,36 @@ try {
     { timeout: 20000 },
   );
   console.log('after her own photo, Bella sees the other one in full');
+
+  // The tabs: Today blocks, Feed, Rating, Calendar.
+  await tap(second, 'Сьогодні');
+  await waitText(second, 'уже виконали');
+  await waitText(second, 'Лідери');
+  console.log('Today shows the day progress and the leaders');
+  await tap(second, 'Стрічка');
+  await waitText(second, 'Webby');
+  await waitText(second, 'День 1');
+  console.log('Feed lists the photos with their day');
+  await tap(second, 'Рейтинг');
+  await waitText(second, '10 б.');
+  await waitText(second, 'Bella');
+  console.log('Rating shows the points');
+  await tap(second, 'Календар');
+  await waitText(second, 'День 1, Виконано');
+  console.log('Calendar marks day 1 as done');
+
+  // An avatar chosen through the API shows up for the others without a reload of the page.
+  const cara = await post('/join', { token, displayName: 'Cara' });
+  const groupId = cara.member.groupId;
+  const avatarResponse = await fetch(`${api}/groups/${groupId}/me/avatar`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${cara.accessToken}` },
+    body: JSON.stringify({ avatar: 'av05' }),
+  });
+  if (avatarResponse.status !== 204) throw new Error(`avatar → ${avatarResponse.status}`);
+  await tap(second, 'Я');
+  await waitText(second, 'Cara');
+  console.log('a member with a chosen avatar is listed on the Me tab');
 } finally {
   await browser.close();
   server.close();
