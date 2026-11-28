@@ -112,6 +112,17 @@ export class GroupsService {
     );
   }
 
+  /** Changes the one group setting the app lets the organizer switch: whether likes show only their count. */
+  async updateSettings(ownerUid: string, groupId: string, patch: unknown): Promise<void> {
+    const keys = patch !== null && typeof patch === 'object' ? Object.keys(patch) : [];
+    const likesCountOnly = (patch as { likesCountOnly?: unknown } | null)?.likesCountOnly;
+    if (keys.length !== 1 || keys[0] !== 'likesCountOnly' || typeof likesCountOnly !== 'boolean') {
+      throw new BadRequestException('invalid_settings');
+    }
+    const group = await this.owned(ownerUid, groupId);
+    await this.groups.update(groupId, { settings: { ...group.settings, likesCountOnly } });
+  }
+
   /** The group for its owner or one of its active members. */
   async getFor(subject: SessionSubject, groupId: string): Promise<Group> {
     const group = await this.groups.get(groupId);

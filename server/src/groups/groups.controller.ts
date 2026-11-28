@@ -1,5 +1,5 @@
 import { IdPipe } from '../common/id.pipe';
-import { Body, Controller, ForbiddenException, Get, HttpCode, Param, Post } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
 import { CurrentAuth } from '../auth/current-subject.decorator';
 import { VerifiedAccess } from '../auth/session.service';
 import { Group } from '../data/models';
@@ -42,6 +42,16 @@ export class GroupsController {
   @Get(':id')
   async get(@CurrentAuth() auth: VerifiedAccess, @Param('id', IdPipe) id: string): Promise<GroupView> {
     return groupView(await this.groups.getFor(auth.subject, id));
+  }
+
+  @Patch(':id/settings')
+  @HttpCode(204)
+  async updateSettings(
+    @CurrentAuth() auth: VerifiedAccess,
+    @Param('id', IdPipe) id: string,
+    @Body() body: unknown,
+  ): Promise<void> {
+    await this.groups.updateSettings(organizerUid(auth), id, body);
   }
 
   @Post(':id/invite/rotate')

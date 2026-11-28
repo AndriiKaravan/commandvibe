@@ -1,4 +1,4 @@
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { createMemoryRepositories } from '../data/memory/memory-repositories';
 import { hashToken } from '../common/tokens';
 import { GroupsService } from './groups.service';
@@ -68,6 +68,41 @@ describe('GroupsService', () => {
     expect(list.map((item) => item.activeMembers)).toEqual([0, 1]);
     expect(list[0]).toMatchObject({ name: 'Second', status: 'draft' });
     expect(JSON.stringify(list)).not.toContain('inviteTokenHash');
+  });
+
+  it('should let the owner switch likes-count-only on and off', async () => {
+    const { group } = await service.create('org-1', { name: 'Office', timezone: 'Europe/Kyiv' });
+    await service.updateSettings('org-1', group.id, { likesCountOnly: true });
+    expect((await repos.groups.get(group.id))?.settings.likesCountOnly).toBe(true);
+    await service.updateSettings('org-1', group.id, { likesCountOnly: false });
+    expect((await repos.groups.get(group.id))?.settings.likesCountOnly).toBe(false);
+  });
+
+  it('should keep the other settings when one changes', async () => {
+    const { group } = await service.create('org-1', { name: 'Office', timezone: 'Europe/Kyiv', approveNew: true });
+    await service.updateSettings('org-1', group.id, { likesCountOnly: true });
+    expect((await repos.groups.get(group.id))?.settings).toMatchObject({ approveNew: true, likesCountOnly: true });
+  });
+
+  it.each([
+    { likesCountOnly: 'yes' },
+    { likesCountOnly: 1 },
+    { likesCountOnly: null },
+    {},
+    { approveNew: true },
+    { likesCountOnly: true, memberLimit: 1 },
+    null,
+    'text',
+  ])('should refuse the settings %p', async (patch) => {
+    const { group } = await service.create('org-1', { name: 'Office', timezone: 'Europe/Kyiv' });
+    await expect(service.updateSettings('org-1', group.id, patch)).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('should refuse settings changes from a non-owner', async () => {
+    const { group } = await service.create('org-1', { name: 'Office', timezone: 'Europe/Kyiv' });
+    await expect(service.updateSettings('org-2', group.id, { likesCountOnly: true })).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
   });
 
   it('should forbid group settings to a non-owner', async () => {
