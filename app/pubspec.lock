@@ -680,11 +680,20 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "v0.8.0"
-      resolved-ref: "87f86a6950709569766df50828ac4f05f2d53794"
+      ref: "513b6f9612d87a36f5d0081fa05fdfe396f8a134"
+      resolved-ref: "513b6f9612d87a36f5d0081fa05fdfe396f8a134"
       url: "git@github.com:AndriiKaravan/ks_core.git"
     source: git
-    version: "0.8.0"
+    version: "0.9.0"
+  ks_push:
+    dependency: "direct main"
+    description:
+      path: "packages/ks_push"
+      ref: "513b6f9612d87a36f5d0081fa05fdfe396f8a134"
+      resolved-ref: "513b6f9612d87a36f5d0081fa05fdfe396f8a134"
+      url: "git@github.com:AndriiKaravan/ks_core.git"
+    source: git
+    version: "0.1.0"
   leak_tracker:
     dependency: transitive
     description:

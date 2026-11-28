@@ -17,13 +17,13 @@ dependencies:
   ks_core:
     git:
       url: git@github.com:AndriiKaravan/ks_core.git
-      ref: v0.9.0
-  # Same ref as ks_core: ks_push depends on it by a path inside the checkout.
+      ref: 513b6f9612d87a36f5d0081fa05fdfe396f8a134
+  # Commit of tag v0.9.0 (the annotated tag object confuses version solving); same ref for both: ks_push depends on it by a path inside the checkout.
   ks_push:
     git:
       url: git@github.com:AndriiKaravan/ks_core.git
       path: packages/ks_push
-      ref: v0.9.0
+      ref: 513b6f9612d87a36f5d0081fa05fdfe396f8a134
   app_links: ^7.0.0
   firebase_core: ^4.15.2
   flutter_secure_storage: ">=9.0.0 <12.0.0"
