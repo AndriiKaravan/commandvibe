@@ -47,6 +47,19 @@ describe('Likes', () => {
     expect(after.body.items.find((i: { memberId: string }) => i.memberId === ira.memberId).likes.count).toBe(0);
   });
 
+  it('should tell each viewer whether they may like a photo', async () => {
+    const { owner, groupId, ira, taras } = await twoPlayers();
+    const asTaras = await feedOf(groupId, taras.auth);
+    const irasPhoto = asTaras.body.items.find((i: { memberId: string }) => i.memberId === ira.memberId);
+    const tarasPhoto = asTaras.body.items.find((i: { memberId: string }) => i.memberId === taras.memberId);
+    expect(irasPhoto.likes.canLike).toBe(true);
+    expect(tarasPhoto.likes.canLike).toBe(false);
+    const asOwner = await feedOf(groupId, owner);
+    for (const item of asOwner.body.items) {
+      expect(item.likes.canLike).toBe(false);
+    }
+  });
+
   it('should hide the names from everyone, the author included, when only the count is shown', async () => {
     const { owner, groupId, ira, taras } = await twoPlayers();
     const groups = app.get(GROUPS, { strict: false });
@@ -64,7 +77,7 @@ describe('Likes', () => {
     const forOwner = (await feedOf(groupId, owner)).body.items.find(
       (i: { memberId: string }) => i.memberId === ira.memberId,
     );
-    expect(forOwner.likes).toEqual({ count: 0, mine: false });
+    expect(forOwner.likes).toEqual({ count: 0, mine: false, canLike: false });
   });
 
   it('should refuse liking your own photo and a photo you only see blurred', async () => {

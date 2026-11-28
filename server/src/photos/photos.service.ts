@@ -93,7 +93,7 @@ export class PhotosService {
       this.submissions.listDay(groupId, day),
       this.members.list(groupId),
       this.complaints.listOpen(groupId),
-      this.likes.listByGroup(groupId),
+      this.likes.listByDay(groupId, day),
       this.comments.countsByGroup(groupId),
     ]);
     const names = new Map(members.map((member) => [member.id, member]));
@@ -300,7 +300,7 @@ export class PhotosService {
       submission,
       author,
       access,
-      { likes: { count: 0, mine: false }, commentCount: 0 },
+      { likes: { count: 0, mine: false, canLike: false }, commentCount: 0 },
       subject,
       viewer,
       0,
@@ -461,13 +461,17 @@ export class PhotosService {
     countOnly: boolean,
   ): LikeInfo {
     if (!visibleInFull) {
-      return { count: 0, mine: false };
+      return { count: 0, mine: false, canLike: false };
     }
     const likers = all
       .filter((l) => l.dayIndex === sub.dayIndex && l.authorMemberId === sub.memberId)
       .filter((l) => members.get(l.likerMemberId)?.status === 'active')
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-    const info: LikeInfo = { count: likers.length, mine: likers.some((l) => l.likerMemberId === viewerMemberId) };
+    const info: LikeInfo = {
+      count: likers.length,
+      mine: likers.some((l) => l.likerMemberId === viewerMemberId),
+      canLike: viewerMemberId !== undefined && viewerMemberId !== sub.memberId && sub.status === 'visible',
+    };
     if (!countOnly) {
       info.by = likers.map((l) => {
         const member = members.get(l.likerMemberId)!;

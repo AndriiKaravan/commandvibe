@@ -12,6 +12,7 @@ class LikersSheet extends StatelessWidget {
   static Future<void> show(BuildContext context, List<Liker> likers) =>
       showModalBottomSheet<void>(
         context: context,
+        isScrollControlled: true,
         showDragHandle: true,
         builder: (_) => LikersSheet(likers: likers),
       );
@@ -20,28 +21,33 @@ class LikersSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: 8,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.7,
+        ),
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           children: [
             Text(
               l10n.likersTitle,
               style: Theme.of(context).textTheme.titleMedium,
             ),
+            const SizedBox(height: 8),
             for (final liker in likers)
-              Row(
-                spacing: 12,
-                children: [
-                  MemberAvatar(
-                    displayName: liker.displayName,
-                    avatar: liker.avatar,
-                    size: 32,
-                  ),
-                  Expanded(child: Text(liker.displayName)),
-                ],
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  spacing: 12,
+                  children: [
+                    MemberAvatar(
+                      displayName: liker.displayName,
+                      avatar: liker.avatar,
+                      size: 32,
+                    ),
+                    Expanded(child: Text(liker.displayName)),
+                  ],
+                ),
               ),
           ],
         ),

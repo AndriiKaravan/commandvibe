@@ -88,7 +88,10 @@ void main() {
           CommentInput(
             sending: false,
             error: null,
-            onSend: (text) async => sent.add(text),
+            onSend: (text) async {
+              sent.add(text);
+              return true;
+            },
           ),
         ),
       );
@@ -104,6 +107,33 @@ void main() {
       );
     });
 
+    testWidgets(
+      'should keep the typed text when the comment was not accepted',
+      (tester) async {
+        await tester.pumpWidget(
+          _app(
+            CommentInput(
+              sending: false,
+              error: null,
+              onSend: (text) async => false,
+            ),
+          ),
+        );
+
+        await tester.enterText(
+          find.byType(TextField),
+          'довгий текст, який шкода втратити',
+        );
+        await tester.tap(find.byKey(const Key('send-comment')));
+        await tester.pump();
+
+        expect(
+          tester.widget<TextField>(find.byType(TextField)).controller!.text,
+          'довгий текст, який шкода втратити',
+        );
+      },
+    );
+
     testWidgets('should not send while a send is on its way', (tester) async {
       final sent = <String>[];
       await tester.pumpWidget(
@@ -111,7 +141,10 @@ void main() {
           CommentInput(
             sending: true,
             error: null,
-            onSend: (text) async => sent.add(text),
+            onSend: (text) async {
+              sent.add(text);
+              return true;
+            },
           ),
         ),
       );
@@ -134,7 +167,7 @@ void main() {
           CommentInput(
             sending: false,
             error: CommentError.tooLong,
-            onSend: (_) async {},
+            onSend: (_) async => false,
           ),
         ),
       );

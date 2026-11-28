@@ -40,6 +40,7 @@ class LikeViewModel extends ChangeNotifier {
           ? before.count + 1
           : (before.count - 1).clamp(0, before.count),
       mine: liked,
+      canLike: before.canLike,
       by: before.by,
     );
     notifyListeners();

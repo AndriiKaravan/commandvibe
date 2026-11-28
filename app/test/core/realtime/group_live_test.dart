@@ -3,6 +3,7 @@ import 'package:commandvibe/core/realtime/group_live.dart';
 import 'package:commandvibe/features/progress/data/progress_models.dart';
 import 'package:commandvibe/features/standings/data/standings_models.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ks_core/ks_core.dart';
 import 'package:ks_core/testing.dart';
 
 void main() {
@@ -69,6 +70,41 @@ void main() {
         expect(revoked, 1);
       },
     );
+
+    RealtimeEvent event(String type) => RealtimeEvent(
+      topic: 'group:g1',
+      type: type,
+      data: const {'dayIndex': 0, 'memberId': 'a'},
+      id: 'e-$type',
+      serverTime: DateTime.utc(2026, 12),
+    );
+
+    test(
+      'should reload the rating but not the progress when a like arrives',
+      () async {
+        live.start();
+        await pumpEventQueue();
+        final progressBefore = progressLoads;
+        final standingsBefore = standingsLoads;
+        realtime.emit(event('like.changed'));
+        await pumpEventQueue();
+
+        expect(progressLoads, progressBefore);
+        expect(standingsLoads, standingsBefore + 1);
+      },
+    );
+
+    test('should reload neither when a comment arrives', () async {
+      live.start();
+      await pumpEventQueue();
+      final progressBefore = progressLoads;
+      final standingsBefore = standingsLoads;
+      realtime.emit(event('comment.created'));
+      await pumpEventQueue();
+
+      expect(progressLoads, progressBefore);
+      expect(standingsLoads, standingsBefore);
+    });
 
     test('should not report a plain offline failure', () async {
       failProgress = NetworkException('offline');

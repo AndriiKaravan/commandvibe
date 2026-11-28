@@ -768,4 +768,7 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get groupLikesCountOnlyHint =>
       'Імен тих, хто лайкнув, не бачить ніхто';
+
+  @override
+  String get likeFailed => 'Не вдалося — спробуй ще раз';
 }

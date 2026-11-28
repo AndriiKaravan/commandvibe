@@ -771,4 +771,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupLikesCountOnlyHint => 'Nobody sees who liked';
+
+  @override
+  String get likeFailed => 'Couldn\'t — try again';
 }

@@ -11,10 +11,15 @@ const submissionEvents = {
   'submission.hidden',
   'submission.restored',
   'photos.revealed',
-  'like.changed',
-  'comment.created',
-  'comment.deleted',
 };
+
+/// Likes change points and what a photo list shows, but not who did what.
+const likeEvents = {'like.changed'};
+
+const commentEvents = {'comment.created', 'comment.deleted'};
+
+/// Everything that can change what a list of photos shows.
+const photoListEvents = {...submissionEvents, ...likeEvents, ...commentEvents};
 
 /// Event types that change who is in the game.
 const membershipEvents = {'member.joined', 'member.approved', 'member.removed'};

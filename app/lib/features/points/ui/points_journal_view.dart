@@ -29,6 +29,7 @@ class _PointsJournalViewState extends State<PointsJournalView> {
         topic: 'group:${widget.groupId}',
         reloadOn: const {
           ...submissionEvents,
+          ...likeEvents,
           ...membershipEvents,
           'day.opened',
           'game.finished',

@@ -63,9 +63,14 @@ class Liker {
 /// Likes of one photo as the server shows them to this viewer.
 @immutable
 class LikeInfo {
-  const LikeInfo({required this.count, required this.mine, this.by});
+  const LikeInfo({
+    required this.count,
+    required this.mine,
+    this.by,
+    this.canLike = false,
+  });
 
-  const LikeInfo.none() : count = 0, mine = false, by = null;
+  const LikeInfo.none() : count = 0, mine = false, by = null, canLike = false;
 
   factory LikeInfo.fromJson(Object? json) {
     if (json is! Map<String, dynamic>) {
@@ -74,6 +79,7 @@ class LikeInfo {
     return LikeInfo(
       count: json['count'] as int,
       mine: json['mine'] as bool,
+      canLike: json['canLike'] as bool? ?? false,
       by: json['by'] == null
           ? null
           : [
@@ -85,6 +91,9 @@ class LikeInfo {
 
   final int count;
   final bool mine;
+
+  /// Whether the viewer may like this photo, as the server decides.
+  final bool canLike;
 
   /// Who liked it; null when the group shows only the count.
   final List<Liker>? by;

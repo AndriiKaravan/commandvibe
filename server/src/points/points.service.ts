@@ -47,7 +47,8 @@ export class PointsService {
     const entries = computePoints({
       players,
       submissions: stored,
-      opensAt: new Map(cells.map((cell) => [cell.dayIndex, cell.opensAt])),
+      // From when the door really opened: a roulette day waits up to hours for its pick.
+      opensAt: new Map(cells.map((cell) => [cell.dayIndex, cell.openedAt ?? cell.opensAt])),
       likes,
     });
     const activeIds = new Set(players.map((player) => player.id));

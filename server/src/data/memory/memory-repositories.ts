@@ -415,6 +415,10 @@ class MemoryLikes implements LikeRepository {
     return [...this.items.values()].filter((l) => l.groupId === groupId).map(copy);
   }
 
+  async listByDay(groupId: string, dayIndex: number): Promise<Like[]> {
+    return [...this.items.values()].filter((l) => l.groupId === groupId && l.dayIndex === dayIndex).map(copy);
+  }
+
   async deleteForPhoto(groupId: string, dayIndex: number, authorMemberId: string): Promise<void> {
     for (const [key, l] of this.items) {
       if (l.groupId === groupId && l.dayIndex === dayIndex && l.authorMemberId === authorMemberId) {

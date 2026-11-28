@@ -1,4 +1,15 @@
-import { Cell, Comment, Complaint, Group, Like, Member, Session, Submission, defaultGroupSettings, nameKeyOf } from './models';
+import {
+  Cell,
+  Comment,
+  Complaint,
+  Group,
+  Like,
+  Member,
+  Session,
+  Submission,
+  defaultGroupSettings,
+  nameKeyOf,
+} from './models';
 import {
   CellRepository,
   CommentRepository,
@@ -409,6 +420,17 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
         expect([...counts.keys()].sort()).toEqual(['1/x', '2/a']);
       });
 
+      it('should delete more than 500 comments of a member in one call', async () => {
+        const group = aGroup();
+        for (let i = 0; i < 520; i++) {
+          await repos.comments.add(aComment(group.id, i % 31, 'busy', `w${i % 17}`));
+        }
+        await repos.comments.add(aComment(group.id, 0, 'other', 'w1'));
+        await repos.comments.deleteInvolving(group.id, 'busy');
+        const counts = await repos.comments.countsByGroup(group.id);
+        expect([...counts.keys()]).toEqual(['0/other']);
+      });
+
       it('should delete the comments a member wrote and received', async () => {
         const group = aGroup();
         await repos.comments.add(aComment(group.id, 1, 'a', 'b'));
@@ -458,6 +480,29 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
           '1:x:b',
           '2:a:b',
         ]);
+      });
+
+      it('should list the likes of one day only', async () => {
+        const group = aGroup();
+        await repos.likes.add(aLike(group.id, 1, 'a', 'b'));
+        await repos.likes.add(aLike(group.id, 1, 'x', 'b'));
+        await repos.likes.add(aLike(group.id, 2, 'a', 'b'));
+        await repos.likes.add(aLike(aGroup().id, 1, 'a', 'b'));
+        const day = await repos.likes.listByDay(group.id, 1);
+        expect(day.map((l) => `${l.dayIndex}:${l.authorMemberId}`).sort()).toEqual(['1:a', '1:x']);
+      });
+
+      it('should delete more than 500 likes of a member in one call', async () => {
+        const group = aGroup();
+        for (let day = 0; day < 31; day++) {
+          for (let liker = 0; liker < 17; liker++) {
+            await repos.likes.add(aLike(group.id, day, 'busy', `l${liker}`));
+          }
+        }
+        await repos.likes.add(aLike(group.id, 0, 'other', 'l1'));
+        await repos.likes.deleteInvolving(group.id, 'busy');
+        const left = await repos.likes.listByGroup(group.id);
+        expect(left.map((l) => l.authorMemberId)).toEqual(['other']);
       });
 
       it('should delete the likes a member gave and received', async () => {

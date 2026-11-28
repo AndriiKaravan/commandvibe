@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import http from 'node:http';
 import request from 'supertest';
+import { LIKES } from '../src/data/repositories';
 import { PHOTO_STORE, MemoryPhotoStore } from '../src/photos/photo-store';
 import { halvesJpeg, heicHeader, jpeg, padTo } from '../src/photos/testing/fixture-images';
 import { FakeFirebase, createTestApp } from './test-app';
@@ -78,6 +79,19 @@ describe('Photos', () => {
 
   const list = (groupId: string, auth: string) =>
     api().get(`/groups/${groupId}/days/0/submissions`).set('authorization', auth);
+
+  it('should read only the likes of the asked day for the day list', async () => {
+    const { groupId, token } = await startedGame();
+    const ira = await join(token, 'Ira');
+    const likes = app.get(LIKES, { strict: false });
+    const byDay = jest.spyOn(likes, 'listByDay');
+    const byGroup = jest.spyOn(likes, 'listByGroup');
+    await list(groupId, ira.auth);
+    expect(byDay).toHaveBeenCalledWith(groupId, 0);
+    expect(byGroup).not.toHaveBeenCalled();
+    byDay.mockRestore();
+    byGroup.mockRestore();
+  });
 
   it('should accept a 19.9 MB photo and keep only metadata-free derived files', async () => {
     const { groupId, token } = await startedGame();

@@ -46,6 +46,25 @@ void main() {
       },
     );
 
+    test('should read whether the viewer may like the photo', () {
+      final yes = SubmissionItem.fromJson(
+        _json(likes: {'count': 0, 'mine': false, 'canLike': true}),
+        _base,
+      );
+      final no = SubmissionItem.fromJson(
+        _json(likes: {'count': 0, 'mine': false, 'canLike': false}),
+        _base,
+      );
+      final unknown = SubmissionItem.fromJson(
+        _json(likes: {'count': 0, 'mine': false}),
+        _base,
+      );
+
+      expect(yes.likes.canLike, isTrue);
+      expect(no.likes.canLike, isFalse);
+      expect(unknown.likes.canLike, isFalse);
+    });
+
     test('should know only the count when the group hides the names', () {
       final item = SubmissionItem.fromJson(
         _json(likes: {'count': 3, 'mine': false}, commentCount: 0),

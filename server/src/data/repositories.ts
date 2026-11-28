@@ -128,6 +128,7 @@ export interface LikeRepository {
   /** False when there was no such like. */
   remove(groupId: string, dayIndex: number, authorMemberId: string, likerMemberId: string): Promise<boolean>;
   listByGroup(groupId: string): Promise<Like[]>;
+  listByDay(groupId: string, dayIndex: number): Promise<Like[]>;
   deleteForPhoto(groupId: string, dayIndex: number, authorMemberId: string): Promise<void>;
   /** Removes likes given by and received by the member. */
   deleteInvolving(groupId: string, memberId: string): Promise<void>;

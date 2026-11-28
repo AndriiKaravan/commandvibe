@@ -97,7 +97,7 @@ class FeedCard extends StatelessWidget {
                   LikeButton(
                     key: ValueKey('like-${item.key}'),
                     likes: photo.likes,
-                    enabled: !photo.mine,
+                    enabled: photo.likes.canLike,
                     onToggle: onLike!,
                     onShowLikers: photo.likes.by == null
                         ? null

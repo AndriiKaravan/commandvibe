@@ -208,7 +208,7 @@ class PhotoViewerBody extends StatelessWidget {
             child: LikeButton(
               key: ValueKey('like-${item.memberId}'),
               likes: item.likes,
-              enabled: !item.mine && !item.isHidden,
+              enabled: item.likes.canLike,
               onToggle: onLike!,
               onShowLikers: item.likes.by == null
                   ? null

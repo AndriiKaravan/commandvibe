@@ -44,18 +44,19 @@ class CommentsViewModel extends ChangeNotifier {
 
   void start() => _loader.start();
 
-  Future<void> send(String raw) async {
+  /// True when the server accepted the comment; the field keeps the text otherwise.
+  Future<bool> send(String raw) async {
     if (_sending) {
-      return;
+      return false;
     }
     final text = raw.trim();
     if (text.isEmpty) {
       _fail(CommentError.empty);
-      return;
+      return false;
     }
     if (text.runes.length > maxCommentLength) {
       _fail(CommentError.tooLong);
-      return;
+      return false;
     }
     _sending = true;
     _error = null;
@@ -72,6 +73,7 @@ class CommentsViewModel extends ChangeNotifier {
     }
     _sending = false;
     notifyListeners();
+    return _error == null;
   }
 
   Future<void> delete(String commentId) async {

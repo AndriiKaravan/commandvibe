@@ -116,7 +116,7 @@ void main() {
       await tester.pumpWidget(
         _app(
           LikeButton(
-            likes: const LikeInfo(count: 3, mine: false, by: []),
+            likes: const LikeInfo(count: 3, mine: false, by: [], canLike: true),
             enabled: true,
             onToggle: (liked) async => asked.add(liked),
           ),
@@ -133,6 +133,27 @@ void main() {
       expect(find.text('4'), findsOneWidget);
     });
 
+    testWidgets('should tell the person when the like could not be saved', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          LikeButton(
+            likes: const LikeInfo(count: 1, mine: false, by: [], canLike: true),
+            enabled: true,
+            onToggle: (liked) async => throw Exception('offline'),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byKey(const Key('like-button')));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Не вдалося — спробуй ще раз'), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
+    });
+
     testWidgets('should take the like back when it is already mine', (
       tester,
     ) async {
@@ -140,7 +161,7 @@ void main() {
       await tester.pumpWidget(
         _app(
           LikeButton(
-            likes: const LikeInfo(count: 1, mine: true, by: []),
+            likes: const LikeInfo(count: 1, mine: true, by: [], canLike: true),
             enabled: true,
             onToggle: (liked) async => asked.add(liked),
           ),
@@ -225,7 +246,12 @@ void main() {
           width: 800,
           height: 600,
           mine: mine,
-          likes: const LikeInfo(count: 1, mine: false, by: []),
+          likes: LikeInfo(
+            count: 1,
+            mine: false,
+            by: const [],
+            canLike: full && !mine,
+          ),
         );
 
     Future<void> pump(
@@ -293,6 +319,29 @@ void main() {
   });
 
   group('LikersSheet', () {
+    testWidgets('should let a long list of names scroll to the last one', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          LikersSheet(
+            likers: [
+              for (var i = 1; i <= 40; i++)
+                Liker(memberId: 'm$i', displayName: 'Гравець $i'),
+            ],
+          ),
+        ),
+      );
+
+      await tester.scrollUntilVisible(
+        find.text('Гравець 40'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+
+      expect(find.text('Гравець 40'), findsOneWidget);
+    });
+
     testWidgets('should list who liked the photo', (tester) async {
       await tester.pumpWidget(
         _app(

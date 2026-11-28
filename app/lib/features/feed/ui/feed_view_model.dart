@@ -57,7 +57,7 @@ class FeedViewModel extends ChangeNotifier {
 
   void start() {
     final subscription = _subscription = _realtime.subscribe('group:$groupId');
-    final reloadOn = {...submissionEvents, ...membershipEvents};
+    final reloadOn = {...photoListEvents, ...membershipEvents};
     _listeners
       ..add(subscription.resyncs.listen((_) => refresh()))
       ..add(

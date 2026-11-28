@@ -11,6 +11,8 @@ export interface LikeInfo {
   count: number;
   /** Whether the viewer likes the photo. */
   mine: boolean;
+  /** Whether the viewer may like it: a player, another person's visible photo, seen in full. */
+  canLike: boolean;
   /** Who liked it; absent when the group shows only the count. */
   by?: { memberId: string; displayName: string; avatar?: string }[];
 }

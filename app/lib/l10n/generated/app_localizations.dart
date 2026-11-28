@@ -1465,6 +1465,12 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Імен тих, хто лайкнув, не бачить ніхто'**
   String get groupLikesCountOnlyHint;
+
+  /// No description provided for @likeFailed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Не вдалося — спробуй ще раз'**
+  String get likeFailed;
 }
 
 class _AppLocalizationsDelegate

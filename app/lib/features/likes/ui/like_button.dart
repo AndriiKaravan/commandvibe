@@ -30,6 +30,15 @@ class _LikeButtonState extends State<LikeButton> {
     send: widget.onToggle,
   );
 
+  Future<void> _toggle(AppLocalizations l10n) async {
+    await _viewModel.toggle();
+    if (_viewModel.failed && mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.likeFailed)));
+    }
+  }
+
   @override
   void didUpdateWidget(LikeButton oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -57,7 +66,7 @@ class _LikeButtonState extends State<LikeButton> {
             IconButton(
               key: const Key('like-button'),
               tooltip: info.mine ? l10n.unlikeTooltip : l10n.likeTooltip,
-              onPressed: widget.enabled ? _viewModel.toggle : null,
+              onPressed: widget.enabled ? () => _toggle(l10n) : null,
               icon: Icon(
                 info.mine ? Icons.favorite : Icons.favorite_border,
                 color: info.mine ? Colors.red : null,

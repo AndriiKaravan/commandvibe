@@ -18,7 +18,7 @@ class DayPhotosViewModel extends ChangeNotifier {
     this.linkRefreshGap = const Duration(seconds: 30),
   }) : _clock = clock ?? DateTime.now;
 
-  static const _photoEvents = submissionEvents;
+  static const _photoEvents = photoListEvents;
 
   final PhotosRepository _repository;
   final RealtimeClient _realtime;

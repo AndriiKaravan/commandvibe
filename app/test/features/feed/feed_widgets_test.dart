@@ -15,6 +15,7 @@ SubmissionItem _photo(String member, {required bool full, String? avatar}) =>
       avatar: avatar,
       submittedAt: DateTime.utc(2026, 12, 2),
       access: full ? PhotoAccess.full : PhotoAccess.blur,
+      likes: LikeInfo(count: 0, mine: false, canLike: full),
       photoUrl: full ? Uri.parse('https://api.test/p/$member') : null,
       blurUrl: Uri.parse('https://api.test/p/$member-blur'),
       width: 800,

@@ -95,6 +95,28 @@ describe('PointsService', () => {
     });
   });
 
+  describe('lateness base', () => {
+    it('should measure the day from when the door really opened, not from its schedule', async () => {
+      await player('a');
+      await repos.cells.replaceAll('g1', [
+        aCell('g1', 0, { state: 'open', openedAt: new Date(opens(0).getTime() + 3 * 3_600_000) }),
+      ]);
+      await photo('a', 0, 26 * 60);
+      const { entries } = await service.snapshot('g1');
+
+      expect(entries.filter((e) => e.kind === 'late')).toEqual([]);
+    });
+
+    it('should fall back to the scheduled time for a day with no recorded opening', async () => {
+      await player('a');
+      await repos.cells.replaceAll('g1', [aCell('g1', 0, { state: 'open' })]);
+      await photo('a', 0, 26 * 60);
+      const { entries } = await service.snapshot('g1');
+
+      expect(entries.filter((e) => e.kind === 'late')).toHaveLength(1);
+    });
+  });
+
   describe('journalFor', () => {
     it('should list only the viewer entries by day with a total', async () => {
       await player('a');

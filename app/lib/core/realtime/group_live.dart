@@ -17,25 +17,29 @@ class GroupLive {
   }) : progress = LiveLoader<GameProgress>(
          realtime,
          topic: 'group:$groupId',
-         reloadOn: _reloadOn,
+         reloadOn: _progressEvents,
          load: loadProgress,
        ),
        standings = LiveLoader<Standings>(
          realtime,
          topic: 'group:$groupId',
-         reloadOn: _reloadOn,
+         reloadOn: _standingsEvents,
          load: loadStandings,
        ) {
     progress.addListener(_checkRevoked);
     standings.addListener(_checkRevoked);
   }
 
-  static const _reloadOn = {
+  /// Progress counts who did the day; likes and comments do not change it.
+  static const _progressEvents = {
     ...submissionEvents,
     ...membershipEvents,
     'day.opened',
     'game.finished',
   };
+
+  /// Points also depend on likes.
+  static const _standingsEvents = {..._progressEvents, ...likeEvents};
 
   final LiveLoader<GameProgress> progress;
   final LiveLoader<Standings> standings;

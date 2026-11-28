@@ -459,5 +459,6 @@
   },
   "profilePointsJournal": "Журнал балів",
   "groupLikesCountOnly": "Лише кількість лайків",
-  "groupLikesCountOnlyHint": "Імен тих, хто лайкнув, не бачить ніхто"
+  "groupLikesCountOnlyHint": "Імен тих, хто лайкнув, не бачить ніхто",
+  "likeFailed": "Не вдалося — спробуй ще раз"
 }

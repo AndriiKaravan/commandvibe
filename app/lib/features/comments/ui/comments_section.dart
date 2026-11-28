@@ -144,7 +144,7 @@ class CommentInput extends StatefulWidget {
 
   final bool sending;
   final CommentError? error;
-  final Future<void> Function(String text) onSend;
+  final Future<bool> Function(String text) onSend;
 
   @override
   State<CommentInput> createState() => _CommentInputState();
@@ -164,8 +164,9 @@ class _CommentInputState extends State<CommentInput> {
       return;
     }
     final text = _controller.text;
-    _controller.clear();
-    await widget.onSend(text);
+    if (await widget.onSend(text)) {
+      _controller.clear();
+    }
   }
 
   String? _errorText(AppLocalizations l10n) => switch (widget.error) {

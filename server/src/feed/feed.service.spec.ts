@@ -15,7 +15,7 @@ function entry(at: string, dayIndex: number, memberId: string, extra: Partial<Su
       displayName: memberId,
       submittedAt: at,
       access: 'full',
-      likes: { count: 0, mine: false },
+      likes: { count: 0, mine: false, canLike: true },
       commentCount: 0,
       photoUrl: `/p/${memberId}-${dayIndex}`,
       blurUrl: `/p/${memberId}-${dayIndex}-blur`,

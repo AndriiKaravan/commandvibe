@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { FieldValue, Firestore, Timestamp } from 'firebase-admin/firestore';
+import { FieldValue, Firestore, Timestamp, DocumentReference } from 'firebase-admin/firestore';
 import {
   Cell,
   CellState,
@@ -431,6 +431,18 @@ class FirestoreSubmissions implements SubmissionRepository {
   }
 }
 
+/** Firestore refuses a batch of more than 500 writes, so big deletions go in chunks. */
+const deleteBatchSize = 450;
+
+async function deleteAll(db: Firestore, docs: { ref: DocumentReference }[]): Promise<void> {
+  const refs = [...new Map(docs.map((doc) => [doc.ref.path, doc.ref])).values()];
+  for (let start = 0; start < refs.length; start += deleteBatchSize) {
+    const batch = db.batch();
+    refs.slice(start, start + deleteBatchSize).forEach((ref) => batch.delete(ref));
+    await batch.commit();
+  }
+}
+
 class FirestoreComments implements CommentRepository {
   constructor(private readonly db: Firestore) {}
 
@@ -458,7 +470,8 @@ class FirestoreComments implements CommentRepository {
 
   async countsByGroup(groupId: string): Promise<Map<string, number>> {
     const counts = new Map<string, number>();
-    const found = await this.collection(groupId).get();
+    // Only the two keys are needed; the texts stay on the server.
+    const found = await this.collection(groupId).select('dayIndex', 'authorMemberId').get();
     for (const doc of found.docs) {
       const key = `${doc.get('dayIndex')}/${doc.get('authorMemberId')}`;
       counts.set(key, (counts.get(key) ?? 0) + 1);
@@ -475,9 +488,7 @@ class FirestoreComments implements CommentRepository {
       .where('dayIndex', '==', dayIndex)
       .where('authorMemberId', '==', authorMemberId)
       .get();
-    const batch = this.db.batch();
-    found.docs.forEach((doc) => batch.delete(doc.ref));
-    await batch.commit();
+    await deleteAll(this.db, found.docs);
   }
 
   async deleteInvolving(groupId: string, memberId: string): Promise<void> {
@@ -485,9 +496,7 @@ class FirestoreComments implements CommentRepository {
       this.collection(groupId).where('authorMemberId', '==', memberId).get(),
       this.collection(groupId).where('memberId', '==', memberId).get(),
     ]);
-    const batch = this.db.batch();
-    [...under.docs, ...written.docs].forEach((doc) => batch.delete(doc.ref));
-    await batch.commit();
+    await deleteAll(this.db, [...under.docs, ...written.docs]);
   }
 }
 
@@ -527,14 +536,17 @@ class FirestoreLikes implements LikeRepository {
     return found.docs.map((doc) => fromStore<Like>(doc.data()) as Like);
   }
 
+  async listByDay(groupId: string, dayIndex: number): Promise<Like[]> {
+    const found = await this.collection(groupId).where('dayIndex', '==', dayIndex).get();
+    return found.docs.map((doc) => fromStore<Like>(doc.data()) as Like);
+  }
+
   async deleteForPhoto(groupId: string, dayIndex: number, authorMemberId: string): Promise<void> {
     const found = await this.collection(groupId)
       .where('dayIndex', '==', dayIndex)
       .where('authorMemberId', '==', authorMemberId)
       .get();
-    const batch = this.db.batch();
-    found.docs.forEach((doc) => batch.delete(doc.ref));
-    await batch.commit();
+    await deleteAll(this.db, found.docs);
   }
 
   async deleteInvolving(groupId: string, memberId: string): Promise<void> {
@@ -542,9 +554,7 @@ class FirestoreLikes implements LikeRepository {
       this.collection(groupId).where('authorMemberId', '==', memberId).get(),
       this.collection(groupId).where('likerMemberId', '==', memberId).get(),
     ]);
-    const batch = this.db.batch();
-    [...received.docs, ...given.docs].forEach((doc) => batch.delete(doc.ref));
-    await batch.commit();
+    await deleteAll(this.db, [...received.docs, ...given.docs]);
   }
 }
 
@@ -595,9 +605,7 @@ class FirestoreComplaints implements ComplaintRepository {
       this.collection(groupId).where('authorMemberId', '==', memberId).get(),
       this.collection(groupId).where('complainerMemberId', '==', memberId).get(),
     ]);
-    const batch = this.db.batch();
-    [...against.docs, ...by.docs].forEach((doc) => batch.delete(doc.ref));
-    await batch.commit();
+    await deleteAll(this.db, [...against.docs, ...by.docs]);
   }
 }
 

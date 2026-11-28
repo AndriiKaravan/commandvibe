@@ -102,7 +102,7 @@ void main() {
 
     test('should send a trimmed comment and show it', () async {
       await pumpEventQueue();
-      await viewModel.send('  Гарно!  ');
+      expect(await viewModel.send('  Гарно!  '), isTrue);
 
       expect(repository.added, ['Гарно!']);
       expect(viewModel.items.map((c) => c.text), ['Гарно!']);
@@ -111,8 +111,8 @@ void main() {
 
     test('should not send an empty or blank comment', () async {
       await pumpEventQueue();
-      await viewModel.send('');
-      await viewModel.send('   \n ');
+      expect(await viewModel.send(''), isFalse);
+      expect(await viewModel.send('   \n '), isFalse);
 
       expect(repository.added, isEmpty);
       expect(viewModel.error, CommentError.empty);
@@ -146,7 +146,7 @@ void main() {
       realtime.emitTopicResync('group:g1');
       await pumpEventQueue();
       repository.error = NetworkException('offline');
-      await viewModel.send('нове');
+      expect(await viewModel.send('нове'), isFalse);
 
       expect(viewModel.error, CommentError.failed);
       expect(viewModel.items.map((c) => c.text), ['старе']);

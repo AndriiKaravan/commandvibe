@@ -431,5 +431,6 @@
   },
   "profilePointsJournal": "Points journal",
   "groupLikesCountOnly": "Show only the number of likes",
-  "groupLikesCountOnlyHint": "Nobody sees who liked"
+  "groupLikesCountOnlyHint": "Nobody sees who liked",
+  "likeFailed": "Couldn't — try again"
 }
