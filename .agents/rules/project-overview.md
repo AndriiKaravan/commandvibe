@@ -1,7 +1,7 @@
 # CommandVibe — Project Overview
 
-**Дата оновлення:** 2026-11-27
-**Версія документа:** 2.12 (P5: лайки як голоси, коментарі, журнал балів за таблицею розділу 9, «лише кількість лайків», живий рейтинг)
+**Дата оновлення:** 2026-11-28
+**Версія документа:** 2.13 (P6a: сповіщення в застосунку, пуші iOS/Android/веб, тихі години й ліміт, вечірнє нагадування)
 
 > **Статус:** хвиля 1, частина P1 реалізована (у `main`) і **перевірена власником на проді 27.11** (вхід Google, створення групи, приєднання з іменем і PIN, живий список). P2 (календар і рулетка) розгорнуто на API (ревізія `00004`). P3 (фото) реалізовано в гілці `worktree-p3-photos`; на прод ще не розгорнуто. API розгорнуто 27.11: Cloud Run `commandvibe-api` (ревізія `00002`, `https://commandvibe-api-889388170734.europe-central2.run.app`); веб — на живому сайті `commandvibe.karavanstudio.dev` (27.11). Дизайн: `docs/specs/2026-11-19-photo-challenge-design.md` (розділ 2а має пріоритет). План: `docs/superpowers/plans/2026-11-26-wave1-roadmap.md`, `…-wave1-p1-foundation.md`.
 
@@ -62,6 +62,16 @@
 - Гра: день відкривається о `openTime` у поясі групи (DST враховано). `GameEngine.advance` викликають і `/internal/tick` (щохвилини), і читання `calendar`/`today`, тож гра йде й без Scheduler. Рулетка: гра обирає учасника, що крутив найменше; на це 3 год від початку вибору, далі крутить гра; колесо — номери закритих днів (не назви), завдання за обраними дверцятами міняється місцями з сьогоднішнім; пропущені дні відкриває гра. Анімація однакова в усіх: клієнти рахують її від часу сервера.
 - Деплой бекенду: ревізія `candidate` без трафіку → перевірки → трафік (з дозволу).
 
+## Сповіщення (P6a)
+
+- **Сервер:** модуль `shared/push` (копія з ks_server v0.4.0, `npm run sync:push`, перевірка в `check.sh`) дає токени й відправку; `notifications/`: список по учасниках (`groups/{g}/notifications`, ключ `${memberId}_${key}` робить подію ідемпотентною, до 200 на людину), `NotificationSources` (події гри → записи), `PushNotifier` (рішення про пуш), `RemindersService` (виклик у `/internal/tick`).
+- **Хто що отримує:** день відкрито → усі активні гравці (пізніше приєднаним старе не віддаємо); розкриття фото — лише в застосунку; «твоя черга» → обраному; коментар → автору фото (не собі); лайки → один запис на фото, лічильник росте, знову непрочитаний, без пуша; новий учасник на підтвердженні й скарга → лише власнику (ключ `org:<uid>`); вечірнє нагадування о 19:00–22:00 за часом групи лише тим, хто не виконав день, раз на день.
+- **Правила пуша:** лише види з таблиці (день, черга, нагадування, коментар, новий учасник, скарга); категорії «завдання» і «лайки й коментарі» вмикає учасник, службові — ні; тихі години 22:00–08:00 — пуш пропускається, запис у застосунку лишається; не більше 3 неособистих пушів на людину за місцеву добу (черга, скарга, новий учасник — поза лімітом); у тексті й `data` лише `route` і `kind`, жодних імен чи текстів; помилка відправки не ламає дію.
+- **Токени:** акаунт пуша — `o:<uid>` для сесії організатора (також коли він грає), `m:<memberId>` для решти.
+- **Застосунок:** `core/push/push_gateway.dart` — єдине місце, що називає бібліотеку пушів (перехід на ks_push — зміна залежності й цього файла); `AppPush` (сервіс + реєстрація токена через `SessionHttpClient`, видалення токена перед вибраним виходом), `PushNavigation` (лише `/g/<id>/<сторінка>`, для учасника — лише його група), дзвіночок у `TabPage` (`GroupBell`), екран `/g/:id/notifications`, спливні повідомлення й крапки на вкладках (`GroupEffects`), картка налаштувань на вкладці «Я/Група». У передньому плані системні пуші не показуємо.
+- **Платформа:** iOS — `aps-environment` у `Runner.entitlements`, `UIBackgroundModes: remote-notification`, `registerForRemoteNotifications` в `AppDelegate`; Android — `POST_NOTIFICATIONS`, core library desugaring; веб — `web/firebase-messaging-sw.js` і ключ `--dart-define=VAPID_KEY`. Тест на файли: `test/core/platform/push_platform_config_test.dart`.
+- Не в P6a: Telegram-бот і Mini App (P6b, потрібен токен бота від власника), «тебе обігнали», спільна ціль, джокер, штурхнути, підсумки.
+
 ## API
 
 Усі маршрути, крім `@Public()`, вимагають `Authorization: Bearer <access>`; помилки — JSON із `code`.
@@ -78,6 +88,10 @@
 | PUT / DELETE | `/groups/:id/days/:day/submissions/:memberId/like` | гравець | `204`, ідемпотентно; лише фото, видиме повністю; своє — `403 own_photo`; розмите/приховане — `403 not_visible`; не грає — `403 not_playing`; подія `like.changed` `{dayIndex, memberId}` |
 | GET / POST | `/groups/:id/days/:day/submissions/:memberId/comments` | гравець/організатор (читання), гравець (запис) | `{items:[{id, memberId, displayName, avatar?, text, createdAt, mine, canDelete}]}`; `POST {text}` → `201`; порожній або > 500 символів → `400 invalid_text`; події `comment.created` |
 | DELETE | `/groups/:id/days/:day/submissions/:memberId/comments/:commentId` | автор коментаря або власник | `204`; чужий → `403 not_yours`; подія `comment.deleted` |
+| GET | `/groups/:id/notifications` | власник / учасник | `{items:[{id, kind, dayIndex?, actorName?, actorAvatar?, count?, createdAt, read}], unread}` — лише власні записи (гравець: за `memberId`; власник: ще службові `org:<uid>`); вилучений актор — без імені |
+| POST | `/groups/:id/notifications/read` | власник / учасник | `{ids?}` → `204`; без `ids` — усі свої; подія `notification.read` |
+| GET / PUT | `/groups/:id/me/notification-settings` | гравець | `{tasks, social, playing}` · `PUT {tasks?, social?}` → `204`; порожнє або не boolean → `400 invalid_settings`; організатор, що не грає → `403 not_playing` |
+| PUT / DELETE | `/me/push-token` | сесія | `{token, platform: android, ios або web}` / `{token}` → `204`; акаунт береться із сесії (`o:<uid>` / `m:<memberId>`), токен переходить до акаунта, що зареєстрував його останнім |
 | GET | `/groups/:id/points` | гравець | `{total, entries:[{dayIndex, kind: done|speed|late|sympathy|goal, amount, detail?}]}` — лише власні записи; організатор не грає → `403 not_playing` |
 | PATCH | `/groups/:id/settings` | власник | `{likesCountOnly: boolean}` → `204`; інше → `400 invalid_settings` |
 | GET | `/groups/:id/progress` | власник / учасник | `{days:[{dayIndex, done, total, mine}], currentDay?, serverTime}`; приховані фото й неактивні не рахуються; `mine: null` — організатор не грає |
@@ -111,7 +125,7 @@
 | GET | `/groups/:id/complaints` | власник | відкриті скарги зі скаржниками |
 | PUT | `/groups/:id/days/:day/submissions/:mid/hidden` | власник | `{hidden}` → `204`; приховування закриває скарги |
 | POST | `/groups/:id/days/:day/submissions/:mid/complaints/dismiss` | власник | `204` |
-| WS | `/ws` | сесія | протокол ks_server v1; теми `group:`, `org:`, `member:`; події фото `submission.created|replaced|hidden|restored`, `photos.revealed` (у `group:`) і `complaint.created` (у `org:`), без посилань і вмісту; події гри `day.opened`, `roulette.waiting`, `roulette.spin`, `game.finished` (у `group:`; без вмісту завдань); події `member.joined`, `member.removed`, `member.pending` (`org:`), `member.approved` (`member:`) |
+| WS | `/ws` | сесія | протокол ks_server v1; теми `group:`, `org:`, `member:`; події фото `submission.created|replaced|hidden|restored`, `photos.revealed` (у `group:`) і `complaint.created` (у `org:`), без посилань і вмісту; події гри `day.opened`, `roulette.waiting`, `roulette.spin`, `game.finished` (у `group:`; без вмісту завдань); події `member.joined`, `member.removed`, `member.pending` (`org:`), `member.approved` (`member:`); `notification.created|read` `{recipients:[ключ]}` (у `group:`, службові — у `org:`); `comment.created` несе ще `by` (хто написав) |
 | POST | `/test/seed-group` | лише `NODE_ENV=test` | тестова група; `{game:{mode}}` — гра, що почалась сьогодні |
 
 ## Моделі даних
@@ -119,10 +133,12 @@
 Firestore (за репозиторіями): `organizers/{uid}` {email, displayName?}; `sessions/{id}` {subject{kind,id,groupId?}, refreshTokenHash, deviceInfo, createdAt, revokedAt?}; `groups/{id}` {ownerUid, name, timezone, status, settings{approveNew, memberLimit=50, likesCountOnly, departments[]}, inviteTokenHash, inviteClosed}; `groups/{id}/members/{mid}` {displayName, nameKey, status pending|active|removed, isOrganizer, organizerUid?, department?}; `…/members/{mid}/private/secrets` {pinHash?, pinFailures, lockedUntil?}; `groups/{id}/nameIndex/{nameKey}` {memberId} — унікальність імені в транзакції.
 `groups/{id}.game` {startDate, days, openTime, mode auto|roulette, categories[]}; `groups/{id}/cells/{dayIndex 2 цифри}` {task (catalog taskId або custom title/description), opensAt, state closed|picking|open, openedAt?, pickerMemberId?, pickDeadlineAt?, spin? {startAt, durationMs, doors[], winnerIndex, by}} — усі переходи через `transition` (порівняти й замінити); відкриття рулеткою — `openBySpin` (одна транзакція: день відкривається, завдання з обраних дверцят і сьогоднішнє міняються місцями); статус групи міняє `setStatus` (теж порівняти й замінити).
 `groups/{g}/cells/{dd}.revealedAt` — лише прибирає дубль події. `groups/{g}/cells/{dd}/submissions/{memberId}` {version, photoPath, blurPath, width, height, submittedAt (перше надсилання), updatedAt, takenAt?, source camera|gallery|unknown, flags{takenBefore}, status visible|hidden, hiddenAt?}; `groups/{g}/complaints/{dd_author_complainer}` {dayIndex, authorMemberId, complainerMemberId, reason, status open|resolved, createdAt, resolvedAt?}. Нових складених індексів немає.
-Наступні частини (P4–P7): `likes`, `comments`, `points`, `standings` — за розділом 12 дизайну.
+`groups/{g}/notifications/{memberId_key}` {memberId (адресат; `org:<uid>` — службові), kind, dayIndex?, actorMemberId?, count?, createdAt, readAt?, pushedAt?}; `members/{mid}.notify` {tasks, social}; `push_tokens/{sha256(token)}` (модуль `shared/push`).
+Наступні частини (P7): фінал, HR-звіти — за розділом 12 дизайну.
 
 ## Історія версій
 
+- 2.13 (2026-11-28) — P6a: список сповіщень на сервері й дзвіночок, пуші (FCM) для iOS/Android/веб, налаштування «завдання»/«лайки й коментарі», тихі години 22–08, ліміт 3 на добу, вечірнє нагадування, `aps-environment`; залежності ks_core v0.8.0, ks_server v0.4.0 (push).
 - 2.12 (2026-11-28) — P5: лайки (голоси) і коментарі під відкритими фото, журнал балів `computePoints` за таблицею розділу 9 (не в P5: джокери, «раптова клітинка», фінальний приз), рейтинг і «прихильники» з журналу, `likesCountOnly`, екран «Журнал балів», нові події `like.changed`, `comment.created|deleted`; заміна фото й вилучення учасника чистять лайки й коментарі.
 - 2.11 (2026-11-28) — каталог завдань: власник погодив 28.11, прибрано 7 завдань (Рукавиці, Руки команди, Чашки команди, Командна гра, Ланцюжок шарфів, Дзеркальна поза, Літера на двох), тексти 14 завдань і «для кого» 4 завдань — дослівно зі знімка власника; мінімум на категорію в тесті 29 (у «командне» 29); прибрані завдання лишаються в `retiredCatalog` лише для показу в раніше створених календарях.
 - 2.10 (2026-11-28) — P4: п'ять вкладок із реальними даними (Сьогодні: хід дня, моє місце, події з realtime; Календар: сітка дверцят і шторка дня; Стрічка: фільтри, пагінація, гортання на весь екран; Рейтинг: живі місця зі стрілками; Я/Група: аватар, бали, PIN, інструменти організатора), колекція з 24 аватарів, сервер: progress, feed, standings, avatar; підпис iOS командою 8RTTR2Y32B.

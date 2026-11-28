@@ -180,6 +180,17 @@ try {
   await waitText(second, 'Швидкість · 2-й');
   await waitText(second, 'Разом: 13 б.');
   console.log('the points journal says where Bella points come from');
+
+  // Notifications: Bella's like reached Webby's bell, and the settings sit under "Me".
+  await tap(page, 'Я');
+  await waitText(page, 'Завдання: новий день');
+  console.log('Me shows the notification settings');
+  await tap(page, 'Сповіщення\n2');
+  await waitText(page, 'Твоє фото вподобали: 1');
+  console.log('the bell lists the like on Webby photo');
+  await tap(page, 'Твоє фото вподобали: 1');
+  await waitText(page, 'Стрічка');
+  console.log('opening the entry leads to the feed');
 } finally {
   await browser.close();
   server.close();

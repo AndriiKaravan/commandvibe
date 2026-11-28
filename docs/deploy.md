@@ -58,6 +58,15 @@ gcloud storage buckets add-iam-policy-binding gs://commandvibe-ks-photos \
 
 Контрактні тести Storage йдуть разом із Firestore (`tool/firestore_contract.sh` або workflow `server-firestore-contract`).
 
+## Пуші (кроки власника в консолях, один раз)
+
+Без цих кроків застосунок працює, але пуші не доходять (сповіщення в дзвіночку працюють завжди).
+
+1. **iOS — APNs-ключ.** Apple Developer → Keys → новий ключ з Apple Push Notifications service (`.p8`); у Firebase `commandvibe-ks` → Project settings → Cloud Messaging → iOS app → завантажити `.p8` із Key ID і Team ID `8RTTR2Y32B`. У Identifiers → App ID `com.karavanstudio.commandvibe` увімкнути Push Notifications.
+2. **Веб — VAPID.** Firebase → Cloud Messaging → Web Push certificates → згенерувати пару; публічну частину передати для збірки: `flutter build web --release --dart-define=API=… --dart-define=VAPID_KEY=<публічний ключ>`. Без ключа веб-картка налаштувань пише «Пуші для вебу ще не налаштовано».
+3. **Сервер.** У проєкті `commandvibe-ks` має бути ввімкнено Firebase Cloud Messaging API (v1); сервісний акаунт Cloud Run має право надсилати (роль Firebase Cloud Messaging API Admin або Editor).
+4. **Перевірка (ручна, кінець хвилі):** увійти на пристрої → дозволити сповіщення в «Я» → токен іде в `PUT /me/push-token` → другий учасник коментує фото → на закритому застосунку приходить пуш → тап відкриває стрічку. На iPhone веб — лише для гри, доданої на головний екран.
+
 ## Звичайний цикл
 
 1. `tool/deploy_api.sh` → ревізія `candidate` без трафіку; друкує її URL.
