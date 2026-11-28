@@ -837,4 +837,41 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get liveToastComment => 'Новий коментар до твого фото';
+
+  @override
+  String get notifSettingsTitle => 'Сповіщення';
+
+  @override
+  String get notifSettingsTasks =>
+      'Завдання: новий день, нагадування, моя черга';
+
+  @override
+  String get notifSettingsSocial => 'Лайки й коментарі до моїх фото';
+
+  @override
+  String get notifPushOn => 'Пуші на цьому пристрої увімкнено';
+
+  @override
+  String get notifPushOff => 'Отримувати пуші, коли застосунок закритий';
+
+  @override
+  String get notifPushEnable => 'Увімкнути';
+
+  @override
+  String get notifPushDenied =>
+      'Сповіщення заблоковано — дозволь їх у налаштуваннях пристрою або браузера';
+
+  @override
+  String get notifPushUnsupported =>
+      'Цей пристрій чи браузер не підтримує пуші';
+
+  @override
+  String get notifPushHomeScreen =>
+      'На iPhone пуші працюють, якщо додати гру на головний екран';
+
+  @override
+  String get notifPushNotConfigured => 'Пуші для вебу ще не налаштовано';
+
+  @override
+  String get notifSettingsFailed => 'Не вдалося зберегти — спробуй ще раз';
 }

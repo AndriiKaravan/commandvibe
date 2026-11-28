@@ -841,4 +841,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get liveToastComment => 'New comment on your photo';
+
+  @override
+  String get notifSettingsTitle => 'Notifications';
+
+  @override
+  String get notifSettingsTasks => 'Tasks: new day, reminder, my turn';
+
+  @override
+  String get notifSettingsSocial => 'Likes and comments on my photos';
+
+  @override
+  String get notifPushOn => 'Push is on for this device';
+
+  @override
+  String get notifPushOff => 'Get push when the app is closed';
+
+  @override
+  String get notifPushEnable => 'Turn on';
+
+  @override
+  String get notifPushDenied =>
+      'Notifications are blocked — allow them in your device or browser settings';
+
+  @override
+  String get notifPushUnsupported =>
+      'This device or browser cannot receive push';
+
+  @override
+  String get notifPushHomeScreen =>
+      'On iPhone, push works once the game is added to the home screen';
+
+  @override
+  String get notifPushNotConfigured => 'Web push is not set up yet';
+
+  @override
+  String get notifSettingsFailed => 'Could not save — try again';
 }

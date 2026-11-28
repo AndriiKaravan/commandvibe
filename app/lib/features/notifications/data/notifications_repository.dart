@@ -6,6 +6,11 @@ abstract interface class NotificationsRepository {
 
   /// Marks the given entries read, or all of them when [ids] is null.
   Future<void> markRead(String groupId, {List<String>? ids});
+
+  Future<NotificationSettings> loadSettings(String groupId);
+
+  /// Changes only the switches that are given.
+  Future<void> saveSettings(String groupId, {bool? tasks, bool? social});
 }
 
 class ApiNotificationsRepository implements NotificationsRepository {
@@ -23,5 +28,20 @@ class ApiNotificationsRepository implements NotificationsRepository {
   @override
   Future<void> markRead(String groupId, {List<String>? ids}) async {
     await _api.post('/groups/$groupId/notifications/read', body: {'ids': ?ids});
+  }
+
+  @override
+  Future<NotificationSettings> loadSettings(String groupId) async =>
+      NotificationSettings.fromJson(
+        await _api.get('/groups/$groupId/me/notification-settings')
+            as Map<String, dynamic>,
+      );
+
+  @override
+  Future<void> saveSettings(String groupId, {bool? tasks, bool? social}) async {
+    await _api.put(
+      '/groups/$groupId/me/notification-settings',
+      body: {'tasks': ?tasks, 'social': ?social},
+    );
   }
 }

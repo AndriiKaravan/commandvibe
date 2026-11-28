@@ -7,6 +7,8 @@ import 'package:commandvibe/features/avatars/member_avatar.dart';
 import 'package:commandvibe/features/groups/data/groups_repository.dart';
 import 'package:commandvibe/features/groups/ui/group_home_view_model.dart';
 import 'package:commandvibe/features/photos/ui/complaints_view.dart';
+import 'package:commandvibe/features/profile/notification_settings_card.dart';
+import 'package:commandvibe/features/profile/notification_settings_view_model.dart';
 import 'package:commandvibe/features/profile/profile_card.dart';
 import 'package:commandvibe/features/profile/profile_summary.dart';
 import 'package:commandvibe/l10n/generated/app_localizations.dart';
@@ -27,6 +29,7 @@ class ProfileView extends StatefulWidget {
 class _ProfileViewState extends State<ProfileView> {
   GroupHomeViewModel? _group;
   GroupLive? _live;
+  NotificationSettingsViewModel? _notifications;
   bool _leaving = false;
 
   @override
@@ -46,11 +49,18 @@ class _ProfileViewState extends State<ProfileView> {
           ..addListener(_onGroupChanged)
           ..start();
     _live = GroupLive.of(context);
+    _notifications = NotificationSettingsViewModel(
+      services.notifications,
+      services.push.service,
+      groupId: widget.groupId,
+      syncToken: services.push.sync,
+    )..load();
   }
 
   @override
   void dispose() {
     _group?.dispose();
+    _notifications?.dispose();
     super.dispose();
   }
 
@@ -124,6 +134,10 @@ class _ProfileViewState extends State<ProfileView> {
                   label: Text(l10n.profilePointsJournal),
                 ),
               ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: NotificationSettingsCard(model: _notifications!),
+            ),
             if (!widget.isOwner)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),

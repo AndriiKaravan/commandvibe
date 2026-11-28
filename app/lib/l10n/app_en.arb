@@ -479,5 +479,16 @@
   "notificationUnknown": "New activity",
   "liveToastDayOpened": "Today's task is open",
   "liveToastMyTurn": "It's your turn to pick",
-  "liveToastComment": "New comment on your photo"
+  "liveToastComment": "New comment on your photo",
+  "notifSettingsTitle": "Notifications",
+  "notifSettingsTasks": "Tasks: new day, reminder, my turn",
+  "notifSettingsSocial": "Likes and comments on my photos",
+  "notifPushOn": "Push is on for this device",
+  "notifPushOff": "Get push when the app is closed",
+  "notifPushEnable": "Turn on",
+  "notifPushDenied": "Notifications are blocked — allow them in your device or browser settings",
+  "notifPushUnsupported": "This device or browser cannot receive push",
+  "notifPushHomeScreen": "On iPhone, push works once the game is added to the home screen",
+  "notifPushNotConfigured": "Web push is not set up yet",
+  "notifSettingsFailed": "Could not save — try again"
 }

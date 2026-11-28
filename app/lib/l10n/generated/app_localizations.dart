@@ -1585,6 +1585,72 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Новий коментар до твого фото'**
   String get liveToastComment;
+
+  /// No description provided for @notifSettingsTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Сповіщення'**
+  String get notifSettingsTitle;
+
+  /// No description provided for @notifSettingsTasks.
+  ///
+  /// In uk, this message translates to:
+  /// **'Завдання: новий день, нагадування, моя черга'**
+  String get notifSettingsTasks;
+
+  /// No description provided for @notifSettingsSocial.
+  ///
+  /// In uk, this message translates to:
+  /// **'Лайки й коментарі до моїх фото'**
+  String get notifSettingsSocial;
+
+  /// No description provided for @notifPushOn.
+  ///
+  /// In uk, this message translates to:
+  /// **'Пуші на цьому пристрої увімкнено'**
+  String get notifPushOn;
+
+  /// No description provided for @notifPushOff.
+  ///
+  /// In uk, this message translates to:
+  /// **'Отримувати пуші, коли застосунок закритий'**
+  String get notifPushOff;
+
+  /// No description provided for @notifPushEnable.
+  ///
+  /// In uk, this message translates to:
+  /// **'Увімкнути'**
+  String get notifPushEnable;
+
+  /// No description provided for @notifPushDenied.
+  ///
+  /// In uk, this message translates to:
+  /// **'Сповіщення заблоковано — дозволь їх у налаштуваннях пристрою або браузера'**
+  String get notifPushDenied;
+
+  /// No description provided for @notifPushUnsupported.
+  ///
+  /// In uk, this message translates to:
+  /// **'Цей пристрій чи браузер не підтримує пуші'**
+  String get notifPushUnsupported;
+
+  /// No description provided for @notifPushHomeScreen.
+  ///
+  /// In uk, this message translates to:
+  /// **'На iPhone пуші працюють, якщо додати гру на головний екран'**
+  String get notifPushHomeScreen;
+
+  /// No description provided for @notifPushNotConfigured.
+  ///
+  /// In uk, this message translates to:
+  /// **'Пуші для вебу ще не налаштовано'**
+  String get notifPushNotConfigured;
+
+  /// No description provided for @notifSettingsFailed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Не вдалося зберегти — спробуй ще раз'**
+  String get notifSettingsFailed;
 }
 
 class _AppLocalizationsDelegate

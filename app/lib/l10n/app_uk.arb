@@ -507,5 +507,16 @@
   "notificationUnknown": "Нова подія",
   "liveToastDayOpened": "Відкрито нове завдання дня",
   "liveToastMyTurn": "Тобі обирати завдання",
-  "liveToastComment": "Новий коментар до твого фото"
+  "liveToastComment": "Новий коментар до твого фото",
+  "notifSettingsTitle": "Сповіщення",
+  "notifSettingsTasks": "Завдання: новий день, нагадування, моя черга",
+  "notifSettingsSocial": "Лайки й коментарі до моїх фото",
+  "notifPushOn": "Пуші на цьому пристрої увімкнено",
+  "notifPushOff": "Отримувати пуші, коли застосунок закритий",
+  "notifPushEnable": "Увімкнути",
+  "notifPushDenied": "Сповіщення заблоковано — дозволь їх у налаштуваннях пристрою або браузера",
+  "notifPushUnsupported": "Цей пристрій чи браузер не підтримує пуші",
+  "notifPushHomeScreen": "На iPhone пуші працюють, якщо додати гру на головний екран",
+  "notifPushNotConfigured": "Пуші для вебу ще не налаштовано",
+  "notifSettingsFailed": "Не вдалося зберегти — спробуй ще раз"
 }

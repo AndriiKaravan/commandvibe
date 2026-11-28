@@ -70,3 +70,24 @@ class NotificationsPage {
   final List<AppNotification> items;
   final int unread;
 }
+
+/// What a member wants to be told about; an organizer who does not play has nothing to switch.
+@immutable
+class NotificationSettings {
+  const NotificationSettings({
+    required this.tasks,
+    required this.social,
+    required this.playing,
+  });
+
+  factory NotificationSettings.fromJson(Map<String, dynamic> json) =>
+      NotificationSettings(
+        tasks: json['tasks'] as bool,
+        social: json['social'] as bool,
+        playing: json['playing'] as bool,
+      );
+
+  final bool tasks;
+  final bool social;
+  final bool playing;
+}
