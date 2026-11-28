@@ -7,7 +7,18 @@ import { MemoryPhotoStore, PHOTO_STORE, PhotoStore } from '../photos/photo-store
 import { firestoreDatabaseId } from './firestore-database';
 import { createFirestoreRepositories } from './firestore/firestore-repositories';
 import { createMemoryRepositories } from './memory/memory-repositories';
-import { CELLS, COMMENTS, COMPLAINTS, GROUPS, LIKES, MEMBERS, ORGANIZERS, SESSIONS, SUBMISSIONS } from './repositories';
+import {
+  CELLS,
+  COMMENTS,
+  COMPLAINTS,
+  GROUPS,
+  LIKES,
+  MEMBERS,
+  NOTIFICATIONS,
+  ORGANIZERS,
+  SESSIONS,
+  SUBMISSIONS,
+} from './repositories';
 
 function photoStoreFor(storage: 'memory' | 'firestore'): PhotoStore {
   if (storage === 'memory') {
@@ -38,6 +49,7 @@ export class DataModule {
       { provide: COMPLAINTS, useValue: repos.complaints },
       { provide: LIKES, useValue: repos.likes },
       { provide: COMMENTS, useValue: repos.comments },
+      { provide: NOTIFICATIONS, useValue: repos.notifications },
       { provide: PHOTO_STORE, useValue: photoStoreFor(storage) },
     ];
     return { module: DataModule, global: true, providers, exports: providers };

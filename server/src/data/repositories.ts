@@ -2,6 +2,7 @@ import {
   Cell,
   CellState,
   Comment,
+  Notification,
   Complaint,
   Like,
   Group,
@@ -122,6 +123,22 @@ export interface CommentRepository {
   deleteInvolving(groupId: string, memberId: string): Promise<void>;
 }
 
+export interface NotificationRepository {
+  /** False when an entry with this id already exists. */
+  addOnce(notification: Notification): Promise<boolean>;
+  /** Creates or replaces the entry. */
+  put(notification: Notification): Promise<void>;
+  get(groupId: string, id: string): Promise<Notification | undefined>;
+  /** Newest first. */
+  list(groupId: string, memberId: string, limit: number): Promise<Notification[]>;
+  /** Marks the given entries (all when [ids] is omitted) as read; returns how many changed. */
+  markRead(groupId: string, memberId: string, ids: string[] | undefined, at: Date): Promise<number>;
+  /** Keeps the [keep] newest entries of the member. */
+  trim(groupId: string, memberId: string, keep: number): Promise<void>;
+  /** Removes entries addressed to or caused by the member. */
+  deleteInvolving(groupId: string, memberId: string): Promise<void>;
+}
+
 export interface LikeRepository {
   /** False when this person already likes the photo. */
   add(like: Like): Promise<boolean>;
@@ -176,3 +193,4 @@ export const SUBMISSIONS = Symbol('SubmissionRepository');
 export const COMPLAINTS = Symbol('ComplaintRepository');
 export const LIKES = Symbol('LikeRepository');
 export const COMMENTS = Symbol('CommentRepository');
+export const NOTIFICATIONS = Symbol('NotificationRepository');

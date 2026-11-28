@@ -4,6 +4,7 @@ import {
   Cell,
   CellState,
   Comment,
+  Notification,
   Complaint,
   Like,
   Group,
@@ -18,6 +19,7 @@ import { nextPinAttempt } from '../pin-attempts';
 import {
   CellRepository,
   CommentRepository,
+  NotificationRepository,
   ComplaintRepository,
   LikeRepository,
   GroupRepository,
@@ -500,6 +502,74 @@ class FirestoreComments implements CommentRepository {
   }
 }
 
+class FirestoreNotifications implements NotificationRepository {
+  constructor(private readonly db: Firestore) {}
+
+  private collection(groupId: string) {
+    return this.db.collection(`groups/${groupId}/notifications`);
+  }
+
+  async addOnce(notification: Notification): Promise<boolean> {
+    try {
+      await this.collection(notification.groupId).doc(notification.id).create(toStore(notification));
+      return true;
+    } catch (error) {
+      if ((error as { code?: number }).code === 6) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  async put(notification: Notification): Promise<void> {
+    await this.collection(notification.groupId).doc(notification.id).set(toStore(notification));
+  }
+
+  async get(groupId: string, id: string): Promise<Notification | undefined> {
+    return fromStore<Notification>((await this.collection(groupId).doc(id).get()).data());
+  }
+
+  async list(groupId: string, memberId: string, limit: number): Promise<Notification[]> {
+    return (await this.all(groupId, memberId)).slice(0, limit);
+  }
+
+  async markRead(groupId: string, memberId: string, ids: string[] | undefined, at: Date): Promise<number> {
+    const unread = (await this.all(groupId, memberId)).filter((n) => !n.readAt && (!ids || ids.includes(n.id)));
+    for (let start = 0; start < unread.length; start += deleteBatchSize) {
+      const batch = this.db.batch();
+      for (const n of unread.slice(start, start + deleteBatchSize)) {
+        batch.update(this.collection(groupId).doc(n.id), { readAt: Timestamp.fromDate(at) });
+      }
+      await batch.commit();
+    }
+    return unread.length;
+  }
+
+  async trim(groupId: string, memberId: string, keep: number): Promise<void> {
+    const extra = (await this.all(groupId, memberId)).slice(keep);
+    await deleteAll(
+      this.db,
+      extra.map((n) => ({ ref: this.collection(groupId).doc(n.id) })),
+    );
+  }
+
+  async deleteInvolving(groupId: string, memberId: string): Promise<void> {
+    const [to, by] = await Promise.all([
+      this.collection(groupId).where('memberId', '==', memberId).get(),
+      this.collection(groupId).where('actorMemberId', '==', memberId).get(),
+    ]);
+    await deleteAll(this.db, [...to.docs, ...by.docs]);
+  }
+
+  // The list is capped per member, so it is sorted here instead of needing a composite index.
+  private async all(groupId: string, memberId: string): Promise<Notification[]> {
+    const found = await this.collection(groupId).where('memberId', '==', memberId).get();
+    return found.docs
+      .map((doc) => fromStore<Notification>(doc.data()) as Notification)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime() || (a.id < b.id ? 1 : -1));
+  }
+}
+
 class FirestoreLikes implements LikeRepository {
   constructor(private readonly db: Firestore) {}
 
@@ -619,9 +689,11 @@ export function createFirestoreRepositories(db: Firestore): {
   complaints: ComplaintRepository;
   likes: LikeRepository;
   comments: CommentRepository;
+  notifications: NotificationRepository;
 } {
   return {
     comments: new FirestoreComments(db),
+    notifications: new FirestoreNotifications(db),
     likes: new FirestoreLikes(db),
     submissions: new FirestoreSubmissions(db),
     complaints: new FirestoreComplaints(db),

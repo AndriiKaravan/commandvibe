@@ -12,6 +12,7 @@ import { HealthController } from './health/health.controller';
 import { AuthenticatedRequest } from './auth/auth.guard';
 import { accountIdOf } from './notifications/push-account';
 import { PUSH_MESSAGING, PUSH_TOKEN_STORE, PushProvidersModule } from './notifications/push-messaging';
+import { NotificationsModule } from './notifications/notifications.module';
 import { PhotosModule } from './photos/photos.module';
 import { PointsModule } from './points/points.module';
 import { ProgressModule } from './progress/progress.module';
@@ -47,6 +48,7 @@ export class AppModule {
         PointsModule,
         ProgressModule,
         StandingsModule,
+        NotificationsModule,
         PushModule.forRootAsync({
           imports: [PushProvidersModule.forRoot(options.storage)],
           inject: [PUSH_TOKEN_STORE, PUSH_MESSAGING],

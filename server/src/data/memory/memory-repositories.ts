@@ -2,6 +2,7 @@ import {
   Cell,
   CellState,
   Comment,
+  Notification,
   Complaint,
   Like,
   Group,
@@ -16,6 +17,7 @@ import { nextPinAttempt } from '../pin-attempts';
 import {
   CellRepository,
   CommentRepository,
+  NotificationRepository,
   ComplaintRepository,
   LikeRepository,
   GroupRepository,
@@ -392,6 +394,66 @@ class MemoryComments implements CommentRepository {
   }
 }
 
+class MemoryNotifications implements NotificationRepository {
+  private readonly items = new Map<string, Notification>();
+
+  private key = (groupId: string, id: string): string => `${groupId}/${id}`;
+
+  async addOnce(notification: Notification): Promise<boolean> {
+    const key = this.key(notification.groupId, notification.id);
+    if (this.items.has(key)) {
+      return false;
+    }
+    this.items.set(key, copy(notification));
+    return true;
+  }
+
+  async put(notification: Notification): Promise<void> {
+    this.items.set(this.key(notification.groupId, notification.id), copy(notification));
+  }
+
+  async get(groupId: string, id: string): Promise<Notification | undefined> {
+    const found = this.items.get(this.key(groupId, id));
+    return found && copy(found);
+  }
+
+  async list(groupId: string, memberId: string, limit: number): Promise<Notification[]> {
+    return this.of(groupId, memberId).slice(0, limit).map(copy);
+  }
+
+  async markRead(groupId: string, memberId: string, ids: string[] | undefined, at: Date): Promise<number> {
+    let changed = 0;
+    for (const n of this.of(groupId, memberId)) {
+      if (!n.readAt && (!ids || ids.includes(n.id))) {
+        n.readAt = new Date(at);
+        changed++;
+      }
+    }
+    return changed;
+  }
+
+  async trim(groupId: string, memberId: string, keep: number): Promise<void> {
+    for (const n of this.of(groupId, memberId).slice(keep)) {
+      this.items.delete(this.key(groupId, n.id));
+    }
+  }
+
+  async deleteInvolving(groupId: string, memberId: string): Promise<void> {
+    for (const [key, n] of this.items) {
+      if (n.groupId === groupId && (n.memberId === memberId || n.actorMemberId === memberId)) {
+        this.items.delete(key);
+      }
+    }
+  }
+
+  /** Live references, newest first. */
+  private of(groupId: string, memberId: string): Notification[] {
+    return [...this.items.values()]
+      .filter((n) => n.groupId === groupId && n.memberId === memberId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime() || (a.id < b.id ? 1 : -1));
+  }
+}
+
 class MemoryLikes implements LikeRepository {
   private readonly items = new Map<string, Like>();
 
@@ -497,9 +559,11 @@ export function createMemoryRepositories(): {
   complaints: ComplaintRepository;
   likes: LikeRepository;
   comments: CommentRepository;
+  notifications: NotificationRepository;
 } {
   return {
     comments: new MemoryComments(),
+    notifications: new MemoryNotifications(),
     likes: new MemoryLikes(),
     submissions: new MemorySubmissions(),
     complaints: new MemoryComplaints(),

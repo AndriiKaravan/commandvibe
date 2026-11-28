@@ -188,3 +188,23 @@ export interface Complaint {
   createdAt: Date;
   resolvedAt?: Date;
 }
+
+export type NotificationKind =
+  'day_opened' | 'photos_revealed' | 'my_turn' | 'reminder' | 'comment' | 'likes' | 'pending_member' | 'complaint';
+
+/** One entry of a member's bell list; `memberId` is the addressee (`org:<uid>` for a non-playing organizer). */
+export interface Notification {
+  /** `${memberId}_${key}`; the key makes an event idempotent. */
+  id: string;
+  groupId: string;
+  memberId: string;
+  kind: NotificationKind;
+  dayIndex?: number;
+  actorMemberId?: string;
+  /** Number of likes, for `likes`. */
+  count?: number;
+  createdAt: Date;
+  readAt?: Date;
+  /** Set when a push was sent for it; the daily cap counts these. */
+  pushedAt?: Date;
+}

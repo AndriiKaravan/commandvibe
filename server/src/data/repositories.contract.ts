@@ -5,6 +5,7 @@ import {
   Group,
   Like,
   Member,
+  Notification,
   Session,
   Submission,
   defaultGroupSettings,
@@ -18,6 +19,7 @@ import {
   LikeRepository,
   MemberRepository,
   NameTakenError,
+  NotificationRepository,
   SessionRepository,
   SubmissionRepository,
 } from './repositories';
@@ -31,6 +33,7 @@ export interface RepositorySet {
   complaints: ComplaintRepository;
   likes: LikeRepository;
   comments: CommentRepository;
+  notifications: NotificationRepository;
 }
 
 let counter = 0;
@@ -126,6 +129,23 @@ export function aComment(
     authorMemberId: author,
     memberId: commenter,
     text: 'Nice!',
+    createdAt: new Date('2026-12-02T09:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function aNotification(
+  groupId: string,
+  memberId: string,
+  key: string,
+  overrides: Partial<Notification> = {},
+): Notification {
+  return {
+    id: `${memberId}_${key}`,
+    groupId,
+    memberId,
+    kind: 'day_opened',
+    dayIndex: 0,
     createdAt: new Date('2026-12-02T09:00:00Z'),
     ...overrides,
   };
@@ -439,6 +459,72 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
         await repos.comments.deleteInvolving(group.id, 'b');
         const counts = await repos.comments.countsByGroup(group.id);
         expect([...counts.keys()]).toEqual(['1/c']);
+      });
+    });
+
+    describe('notifications', () => {
+      it('should add an entry once and refuse the same id again', async () => {
+        const group = aGroup();
+        expect(await repos.notifications.addOnce(aNotification(group.id, 'a', 'k1'))).toBe(true);
+        expect(await repos.notifications.addOnce(aNotification(group.id, 'a', 'k1', { kind: 'reminder' }))).toBe(false);
+        expect((await repos.notifications.get(group.id, 'a_k1'))?.kind).toBe('day_opened');
+      });
+
+      it('should replace an entry with put', async () => {
+        const group = aGroup();
+        await repos.notifications.put(aNotification(group.id, 'a', 'k1', { kind: 'likes', count: 1 }));
+        await repos.notifications.put(aNotification(group.id, 'a', 'k1', { kind: 'likes', count: 3 }));
+        expect((await repos.notifications.get(group.id, 'a_k1'))?.count).toBe(3);
+      });
+
+      it('should list only the addressee’s entries, newest first, up to the limit', async () => {
+        const group = aGroup();
+        const at = (minute: number) => new Date(Date.UTC(2026, 11, 2, 9, minute));
+        await repos.notifications.put(aNotification(group.id, 'a', 'old', { createdAt: at(1) }));
+        await repos.notifications.put(aNotification(group.id, 'a', 'new', { createdAt: at(3) }));
+        await repos.notifications.put(aNotification(group.id, 'a', 'mid', { createdAt: at(2) }));
+        await repos.notifications.put(aNotification(group.id, 'b', 'other', { createdAt: at(4) }));
+        await repos.notifications.put(aNotification(aGroup().id, 'a', 'elsewhere', { createdAt: at(5) }));
+        expect((await repos.notifications.list(group.id, 'a', 10)).map((n) => n.id)).toEqual([
+          'a_new',
+          'a_mid',
+          'a_old',
+        ]);
+        expect((await repos.notifications.list(group.id, 'a', 2)).map((n) => n.id)).toEqual(['a_new', 'a_mid']);
+      });
+
+      it('should mark given entries or all of them read and count the changes', async () => {
+        const group = aGroup();
+        await repos.notifications.put(aNotification(group.id, 'a', 'k1'));
+        await repos.notifications.put(aNotification(group.id, 'a', 'k2'));
+        await repos.notifications.put(aNotification(group.id, 'b', 'k1'));
+        const at = new Date('2026-12-03T00:00:00Z');
+        expect(await repos.notifications.markRead(group.id, 'a', ['a_k1', 'b_k1'], at)).toBe(1);
+        expect(await repos.notifications.markRead(group.id, 'a', undefined, at)).toBe(1);
+        expect((await repos.notifications.get(group.id, 'a_k2'))?.readAt).toEqual(at);
+        expect((await repos.notifications.get(group.id, 'b_k1'))?.readAt).toBeUndefined();
+      });
+
+      it('should keep only the newest entries when trimmed', async () => {
+        const group = aGroup();
+        for (let i = 0; i < 5; i++) {
+          await repos.notifications.put(
+            aNotification(group.id, 'a', `k${i}`, { createdAt: new Date(Date.UTC(2026, 11, 2, 9, i)) }),
+          );
+        }
+        await repos.notifications.trim(group.id, 'a', 3);
+        expect((await repos.notifications.list(group.id, 'a', 10)).map((n) => n.id)).toEqual(['a_k4', 'a_k3', 'a_k2']);
+      });
+
+      it('should delete entries addressed to or caused by a member', async () => {
+        const group = aGroup();
+        await repos.notifications.put(aNotification(group.id, 'a', 'k1'));
+        await repos.notifications.put(aNotification(group.id, 'b', 'k1', { actorMemberId: 'a' }));
+        await repos.notifications.put(aNotification(group.id, 'c', 'k1', { actorMemberId: 'd' }));
+        await repos.notifications.deleteInvolving(group.id, 'a');
+        expect(await repos.notifications.list(group.id, 'a', 10)).toEqual([]);
+        expect(await repos.notifications.list(group.id, 'b', 10)).toEqual([]);
+        expect(await repos.notifications.list(group.id, 'c', 10)).toHaveLength(1);
       });
     });
 
