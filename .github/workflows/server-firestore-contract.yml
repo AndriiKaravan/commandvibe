@@ -38,7 +38,7 @@ jobs:
           --only firestore,storage
           --project demo-commandvibe
           --config ../firebase.json
-          "npx jest src/data src/photos/photo-store"
+          "npx jest --runInBand src/data src/photos/photo-store"
 
       - name: Unit and e2e tests (memory storage)
         run: npx jest && npx jest --config ./test/jest-e2e.json

@@ -15,4 +15,4 @@ npx --yes firebase-tools@14 emulators:exec \
   --only firestore,storage \
   --project demo-commandvibe \
   --config ../firebase.json \
-  "npx jest src/data src/photos/photo-store"
+  "npx jest --runInBand src/data src/photos/photo-store"
