@@ -287,5 +287,73 @@
   "tabGroup": "Група",
   "avatarPickerTitle": "Обери аватар",
   "avatarUseInitials": "Лише ініціали",
-  "avatarSaveFailed": "Не вдалося зберегти — спробуй ще раз"
+  "avatarSaveFailed": "Не вдалося зберегти — спробуй ще раз",
+  "progressTitle": "Хід дня",
+  "progressCount": "{done} з {total} уже виконали",
+  "@progressCount": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "progressGoalHint": "Спільна ціль — 80% групи",
+  "progressGoalReached": "Спільна ціль досягнута!",
+  "myPlaceTitle": "Ти {rank}-й",
+  "@myPlaceTitle": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+  "myPlaceGap": "до {rank}-го — {points} б.",
+  "@myPlaceGap": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      },
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "myPlaceLeader": "Ти попереду всіх",
+  "myPlaceLeaders": "Лідери",
+  "pointsShort": "{points} б.",
+  "@pointsShort": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsTitle": "Події",
+  "eventPhotoSent": "Нове фото: {name}",
+  "@eventPhotoSent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "eventDayOpened": "Відкрилось завдання дня {day}",
+  "@eventDayOpened": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "eventPhotosRevealed": "Фото дня {day} відкрились",
+  "@eventPhotosRevealed": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  }
 }

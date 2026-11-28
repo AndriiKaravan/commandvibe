@@ -14,9 +14,12 @@ import 'package:intl/intl.dart';
 
 /// The "Today" card of the group home: wires the view model to the services.
 class TodayCard extends StatefulWidget {
-  const TodayCard({super.key, required this.groupId});
+  const TodayCard({super.key, required this.groupId, this.between});
 
   final String groupId;
+
+  /// Shown between the task and the day's photos (the day's progress).
+  final Widget? between;
 
   @override
   State<TodayCard> createState() => _TodayCardState();
@@ -52,6 +55,7 @@ class _TodayCardState extends State<TodayCard> {
       spacing: 16,
       children: [
         TodayCardBody(viewModel: viewModel),
+        ?widget.between,
         ListenableBuilder(
           listenable: viewModel,
           builder: (context, _) {

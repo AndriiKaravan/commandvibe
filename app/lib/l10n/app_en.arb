@@ -259,5 +259,73 @@
   "tabGroup": "Group",
   "avatarPickerTitle": "Choose an avatar",
   "avatarUseInitials": "Initials only",
-  "avatarSaveFailed": "Couldn't save — try again"
+  "avatarSaveFailed": "Couldn't save — try again",
+  "progressTitle": "Day progress",
+  "progressCount": "{done} of {total} have done it",
+  "@progressCount": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "progressGoalHint": "Shared goal: 80% of the group",
+  "progressGoalReached": "Shared goal reached!",
+  "myPlaceTitle": "You're #{rank}",
+  "@myPlaceTitle": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+  "myPlaceGap": "{points} pts to #{rank}",
+  "@myPlaceGap": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      },
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "myPlaceLeader": "You're in front",
+  "myPlaceLeaders": "Leaders",
+  "pointsShort": "{points} pts",
+  "@pointsShort": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsTitle": "Events",
+  "eventPhotoSent": "New photo from {name}",
+  "@eventPhotoSent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "eventDayOpened": "The task of day {day} opened",
+  "@eventDayOpened": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "eventPhotosRevealed": "Photos of day {day} are revealed",
+  "@eventPhotosRevealed": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  }
 }

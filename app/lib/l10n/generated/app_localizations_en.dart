@@ -576,4 +576,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get avatarSaveFailed => 'Couldn\'t save — try again';
+
+  @override
+  String get progressTitle => 'Day progress';
+
+  @override
+  String progressCount(int done, int total) {
+    return '$done of $total have done it';
+  }
+
+  @override
+  String get progressGoalHint => 'Shared goal: 80% of the group';
+
+  @override
+  String get progressGoalReached => 'Shared goal reached!';
+
+  @override
+  String myPlaceTitle(int rank) {
+    return 'You\'re #$rank';
+  }
+
+  @override
+  String myPlaceGap(int rank, int points) {
+    return '$points pts to #$rank';
+  }
+
+  @override
+  String get myPlaceLeader => 'You\'re in front';
+
+  @override
+  String get myPlaceLeaders => 'Leaders';
+
+  @override
+  String pointsShort(int points) {
+    return '$points pts';
+  }
+
+  @override
+  String get eventsTitle => 'Events';
+
+  @override
+  String eventPhotoSent(String name) {
+    return 'New photo from $name';
+  }
+
+  @override
+  String eventDayOpened(int day) {
+    return 'The task of day $day opened';
+  }
+
+  @override
+  String eventPhotosRevealed(int day) {
+    return 'Photos of day $day are revealed';
+  }
 }

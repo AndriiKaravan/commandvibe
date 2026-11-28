@@ -572,4 +572,57 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get avatarSaveFailed => 'Не вдалося зберегти — спробуй ще раз';
+
+  @override
+  String get progressTitle => 'Хід дня';
+
+  @override
+  String progressCount(int done, int total) {
+    return '$done з $total уже виконали';
+  }
+
+  @override
+  String get progressGoalHint => 'Спільна ціль — 80% групи';
+
+  @override
+  String get progressGoalReached => 'Спільна ціль досягнута!';
+
+  @override
+  String myPlaceTitle(int rank) {
+    return 'Ти $rank-й';
+  }
+
+  @override
+  String myPlaceGap(int rank, int points) {
+    return 'до $rank-го — $points б.';
+  }
+
+  @override
+  String get myPlaceLeader => 'Ти попереду всіх';
+
+  @override
+  String get myPlaceLeaders => 'Лідери';
+
+  @override
+  String pointsShort(int points) {
+    return '$points б.';
+  }
+
+  @override
+  String get eventsTitle => 'Події';
+
+  @override
+  String eventPhotoSent(String name) {
+    return 'Нове фото: $name';
+  }
+
+  @override
+  String eventDayOpened(int day) {
+    return 'Відкрилось завдання дня $day';
+  }
+
+  @override
+  String eventPhotosRevealed(int day) {
+    return 'Фото дня $day відкрились';
+  }
 }

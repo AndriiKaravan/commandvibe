@@ -1135,6 +1135,84 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Не вдалося зберегти — спробуй ще раз'**
   String get avatarSaveFailed;
+
+  /// No description provided for @progressTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Хід дня'**
+  String get progressTitle;
+
+  /// No description provided for @progressCount.
+  ///
+  /// In uk, this message translates to:
+  /// **'{done} з {total} уже виконали'**
+  String progressCount(int done, int total);
+
+  /// No description provided for @progressGoalHint.
+  ///
+  /// In uk, this message translates to:
+  /// **'Спільна ціль — 80% групи'**
+  String get progressGoalHint;
+
+  /// No description provided for @progressGoalReached.
+  ///
+  /// In uk, this message translates to:
+  /// **'Спільна ціль досягнута!'**
+  String get progressGoalReached;
+
+  /// No description provided for @myPlaceTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Ти {rank}-й'**
+  String myPlaceTitle(int rank);
+
+  /// No description provided for @myPlaceGap.
+  ///
+  /// In uk, this message translates to:
+  /// **'до {rank}-го — {points} б.'**
+  String myPlaceGap(int rank, int points);
+
+  /// No description provided for @myPlaceLeader.
+  ///
+  /// In uk, this message translates to:
+  /// **'Ти попереду всіх'**
+  String get myPlaceLeader;
+
+  /// No description provided for @myPlaceLeaders.
+  ///
+  /// In uk, this message translates to:
+  /// **'Лідери'**
+  String get myPlaceLeaders;
+
+  /// No description provided for @pointsShort.
+  ///
+  /// In uk, this message translates to:
+  /// **'{points} б.'**
+  String pointsShort(int points);
+
+  /// No description provided for @eventsTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Події'**
+  String get eventsTitle;
+
+  /// No description provided for @eventPhotoSent.
+  ///
+  /// In uk, this message translates to:
+  /// **'Нове фото: {name}'**
+  String eventPhotoSent(String name);
+
+  /// No description provided for @eventDayOpened.
+  ///
+  /// In uk, this message translates to:
+  /// **'Відкрилось завдання дня {day}'**
+  String eventDayOpened(int day);
+
+  /// No description provided for @eventPhotosRevealed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Фото дня {day} відкрились'**
+  String eventPhotosRevealed(int day);
 }
 
 class _AppLocalizationsDelegate

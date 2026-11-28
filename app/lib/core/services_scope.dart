@@ -7,6 +7,8 @@ import 'package:commandvibe/features/calendar/data/calendar_repository.dart';
 import 'package:commandvibe/features/groups/data/groups_repository.dart';
 import 'package:commandvibe/features/join/data/join_repository.dart';
 import 'package:commandvibe/features/photos/data/photos_repository.dart';
+import 'package:commandvibe/features/progress/data/progress_repository.dart';
+import 'package:commandvibe/features/standings/data/standings_repository.dart';
 import 'package:commandvibe/features/today/data/today_repository.dart';
 import 'package:commandvibe/features/organizer_auth/data/organizer_auth_repository.dart';
 import 'package:flutter/widgets.dart';
@@ -35,6 +37,8 @@ class AppServices {
   late final CalendarRepository calendar = ApiCalendarRepository(api);
   late final TodayRepository today = ApiTodayRepository(api);
   late final PhotosRepository photoSubmissions = ApiPhotosRepository(api);
+  late final ProgressRepository progress = ApiProgressRepository(api);
+  late final StandingsRepository standings = ApiStandingsRepository(api);
   late final OrganizerAuthRepository organizerAuth = ApiOrganizerAuthRepository(
     api,
     sessions,
