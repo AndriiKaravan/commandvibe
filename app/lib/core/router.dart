@@ -1,6 +1,7 @@
 import 'package:commandvibe/core/platform/observed_session_store.dart';
 import 'package:commandvibe/core/platform/session_store.dart';
 import 'package:commandvibe/features/calendar/ui/calendar_editor_view.dart';
+import 'package:commandvibe/features/calendar/ui/days_view.dart';
 import 'package:commandvibe/features/calendar/ui/game_setup_view.dart';
 import 'package:commandvibe/features/groups/ui/create_group_view.dart';
 import 'package:commandvibe/features/groups/ui/group_home_view.dart';
@@ -121,7 +122,7 @@ GoRouter createRouter({
           _tab(
             'days',
             requireSession,
-            (state) => const _TabPlaceholder(Icons.calendar_month),
+            (state) => DaysView(groupId: state.pathParameters['groupId']!),
           ),
           _tab(
             'feed',

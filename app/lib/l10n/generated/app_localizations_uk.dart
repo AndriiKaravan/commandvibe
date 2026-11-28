@@ -625,4 +625,30 @@ class AppLocalizationsUk extends AppLocalizations {
   String eventPhotosRevealed(int day) {
     return 'Фото дня $day відкрились';
   }
+
+  @override
+  String daySheetTitle(int day) {
+    return 'День $day';
+  }
+
+  @override
+  String get dayStateClosed => 'Ще зачинено';
+
+  @override
+  String get dayStateOpen => 'Відкрито';
+
+  @override
+  String get dayStateCanDo => 'Ще можна виконати';
+
+  @override
+  String get dayStateDone => 'Виконано';
+
+  @override
+  String get dayStateRevealed => 'Фото відкрито';
+
+  @override
+  String get daysNoGame => 'Гру ще не налаштовано';
+
+  @override
+  String get daysTaskLabel => 'Завдання дня';
 }

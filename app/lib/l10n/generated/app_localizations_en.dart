@@ -629,4 +629,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String eventPhotosRevealed(int day) {
     return 'Photos of day $day are revealed';
   }
+
+  @override
+  String daySheetTitle(int day) {
+    return 'Day $day';
+  }
+
+  @override
+  String get dayStateClosed => 'Still closed';
+
+  @override
+  String get dayStateOpen => 'Open';
+
+  @override
+  String get dayStateCanDo => 'You can still do it';
+
+  @override
+  String get dayStateDone => 'Done';
+
+  @override
+  String get dayStateRevealed => 'Photos revealed';
+
+  @override
+  String get daysNoGame => 'The game isn\'t set up yet';
+
+  @override
+  String get daysTaskLabel => 'Task of the day';
 }

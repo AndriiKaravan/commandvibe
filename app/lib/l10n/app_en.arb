@@ -327,5 +327,20 @@
         "type": "int"
       }
     }
-  }
+  },
+  "daySheetTitle": "Day {day}",
+  "@daySheetTitle": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "dayStateClosed": "Still closed",
+  "dayStateOpen": "Open",
+  "dayStateCanDo": "You can still do it",
+  "dayStateDone": "Done",
+  "dayStateRevealed": "Photos revealed",
+  "daysNoGame": "The game isn't set up yet",
+  "daysTaskLabel": "Task of the day"
 }

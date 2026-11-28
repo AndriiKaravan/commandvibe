@@ -1213,6 +1213,54 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Фото дня {day} відкрились'**
   String eventPhotosRevealed(int day);
+
+  /// No description provided for @daySheetTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'День {day}'**
+  String daySheetTitle(int day);
+
+  /// No description provided for @dayStateClosed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Ще зачинено'**
+  String get dayStateClosed;
+
+  /// No description provided for @dayStateOpen.
+  ///
+  /// In uk, this message translates to:
+  /// **'Відкрито'**
+  String get dayStateOpen;
+
+  /// No description provided for @dayStateCanDo.
+  ///
+  /// In uk, this message translates to:
+  /// **'Ще можна виконати'**
+  String get dayStateCanDo;
+
+  /// No description provided for @dayStateDone.
+  ///
+  /// In uk, this message translates to:
+  /// **'Виконано'**
+  String get dayStateDone;
+
+  /// No description provided for @dayStateRevealed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Фото відкрито'**
+  String get dayStateRevealed;
+
+  /// No description provided for @daysNoGame.
+  ///
+  /// In uk, this message translates to:
+  /// **'Гру ще не налаштовано'**
+  String get daysNoGame;
+
+  /// No description provided for @daysTaskLabel.
+  ///
+  /// In uk, this message translates to:
+  /// **'Завдання дня'**
+  String get daysTaskLabel;
 }
 
 class _AppLocalizationsDelegate

@@ -355,5 +355,20 @@
         "type": "int"
       }
     }
-  }
+  },
+  "daySheetTitle": "День {day}",
+  "@daySheetTitle": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "dayStateClosed": "Ще зачинено",
+  "dayStateOpen": "Відкрито",
+  "dayStateCanDo": "Ще можна виконати",
+  "dayStateDone": "Виконано",
+  "dayStateRevealed": "Фото відкрито",
+  "daysNoGame": "Гру ще не налаштовано",
+  "daysTaskLabel": "Завдання дня"
 }

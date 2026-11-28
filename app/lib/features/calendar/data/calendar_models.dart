@@ -75,6 +75,7 @@ class CalendarDay {
     required this.opensAt,
     required this.state,
     this.task,
+    this.revealAt,
   });
 
   factory CalendarDay.fromJson(Map<String, dynamic> json) => CalendarDay(
@@ -85,6 +86,9 @@ class CalendarDay {
     task: json['task'] == null
         ? null
         : TaskItem.fromJson(json['task'] as Map<String, dynamic>),
+    revealAt: json['revealAt'] == null
+        ? null
+        : DateTime.parse(json['revealAt'] as String),
   );
 
   final int dayIndex;
@@ -96,6 +100,9 @@ class CalendarDay {
 
   /// Absent when the server hides it from a player.
   final TaskItem? task;
+
+  /// When this open day's photos become visible to everyone.
+  final DateTime? revealAt;
 
   /// The organizer may change a day only until it opens.
   bool get isEditable => state == DayState.closed;
