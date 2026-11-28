@@ -284,5 +284,8 @@
   "tabFeed": "Стрічка",
   "tabRating": "Рейтинг",
   "tabMe": "Я",
-  "tabGroup": "Група"
+  "tabGroup": "Група",
+  "avatarPickerTitle": "Обери аватар",
+  "avatarUseInitials": "Лише ініціали",
+  "avatarSaveFailed": "Не вдалося зберегти — спробуй ще раз"
 }

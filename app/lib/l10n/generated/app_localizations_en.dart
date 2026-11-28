@@ -567,4 +567,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tabGroup => 'Group';
+
+  @override
+  String get avatarPickerTitle => 'Choose an avatar';
+
+  @override
+  String get avatarUseInitials => 'Initials only';
+
+  @override
+  String get avatarSaveFailed => 'Couldn\'t save — try again';
 }

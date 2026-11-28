@@ -56,6 +56,7 @@ class SubmissionItem {
     required this.width,
     required this.height,
     required this.mine,
+    this.avatar,
     this.photoUrl,
     this.version,
     this.status,
@@ -67,6 +68,7 @@ class SubmissionItem {
       SubmissionItem(
         memberId: json['memberId'] as String,
         displayName: json['displayName'] as String,
+        avatar: json['avatar'] as String?,
         submittedAt: DateTime.parse(json['submittedAt'] as String),
         access: json['access'] == 'full' ? PhotoAccess.full : PhotoAccess.blur,
         photoUrl: json['photoUrl'] == null
@@ -85,6 +87,7 @@ class SubmissionItem {
 
   final String memberId;
   final String displayName;
+  final String? avatar;
   final DateTime submittedAt;
   final PhotoAccess access;
 

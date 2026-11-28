@@ -23,6 +23,10 @@ class CountingGroupsRepository implements GroupsRepository {
   Future<String> rotateInvite(String groupId) => throw UnimplementedError();
 
   @override
+  Future<void> setAvatar(String groupId, String? avatar) =>
+      throw UnimplementedError();
+
+  @override
   Future<List<OwnedGroup>> owned() => throw UnimplementedError();
 
   @override

@@ -256,5 +256,8 @@
   "tabFeed": "Feed",
   "tabRating": "Rating",
   "tabMe": "Me",
-  "tabGroup": "Group"
+  "tabGroup": "Group",
+  "avatarPickerTitle": "Choose an avatar",
+  "avatarUseInitials": "Initials only",
+  "avatarSaveFailed": "Couldn't save — try again"
 }

@@ -94,9 +94,11 @@ class GroupMember {
     required this.displayName,
     required this.status,
     required this.isOrganizer,
+    this.avatar,
   });
 
   factory GroupMember.fromJson(Map<String, dynamic> json) => GroupMember(
+    avatar: json['avatar'] as String?,
     id: json['id'] as String,
     displayName: json['displayName'] as String,
     status: json['status'] as String,
@@ -107,6 +109,7 @@ class GroupMember {
   final String displayName;
   final String status;
   final bool isOrganizer;
+  final String? avatar;
 
   bool get isPending => status == 'pending';
 }
@@ -123,6 +126,9 @@ abstract interface class GroupsRepository {
   Future<GroupSummary> group(String groupId);
 
   Future<List<GroupMember>> members(String groupId);
+
+  /// Sets the caller's own avatar; null goes back to initials.
+  Future<void> setAvatar(String groupId, String? avatar);
 
   Future<void> approve(String groupId, String memberId);
 
@@ -179,6 +185,10 @@ class ApiGroupsRepository implements GroupsRepository {
     final list = await _api.get('/groups/$groupId/members') as List<dynamic>;
     return list.cast<Map<String, dynamic>>().map(GroupMember.fromJson).toList();
   }
+
+  @override
+  Future<void> setAvatar(String groupId, String? avatar) =>
+      _api.put('/groups/$groupId/me/avatar', body: {'avatar': avatar});
 
   @override
   Future<void> approve(String groupId, String memberId) =>

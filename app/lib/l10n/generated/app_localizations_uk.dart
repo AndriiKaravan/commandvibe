@@ -563,4 +563,13 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get tabGroup => 'Група';
+
+  @override
+  String get avatarPickerTitle => 'Обери аватар';
+
+  @override
+  String get avatarUseInitials => 'Лише ініціали';
+
+  @override
+  String get avatarSaveFailed => 'Не вдалося зберегти — спробуй ще раз';
 }

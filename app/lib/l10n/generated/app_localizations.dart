@@ -1117,6 +1117,24 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Група'**
   String get tabGroup;
+
+  /// No description provided for @avatarPickerTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Обери аватар'**
+  String get avatarPickerTitle;
+
+  /// No description provided for @avatarUseInitials.
+  ///
+  /// In uk, this message translates to:
+  /// **'Лише ініціали'**
+  String get avatarUseInitials;
+
+  /// No description provided for @avatarSaveFailed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Не вдалося зберегти — спробуй ще раз'**
+  String get avatarSaveFailed;
 }
 
 class _AppLocalizationsDelegate
