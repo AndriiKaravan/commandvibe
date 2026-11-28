@@ -3,7 +3,6 @@ import 'package:commandvibe/core/theme/glass_panel.dart';
 import 'package:commandvibe/features/groups/data/groups_repository.dart';
 import 'package:commandvibe/features/groups/ui/group_home_view_model.dart';
 import 'package:commandvibe/features/photos/ui/complaints_view.dart';
-import 'package:commandvibe/features/today/ui/today_card.dart';
 import 'package:commandvibe/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -101,10 +100,6 @@ class _GroupHomeViewState extends State<GroupHomeView> {
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: TodayCard(groupId: widget.groupId),
-                    ),
                     if (widget.isOwner)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16),

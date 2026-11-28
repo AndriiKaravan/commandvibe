@@ -1081,6 +1081,42 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Не вдалося створити посилання — спробуй ще раз'**
   String get inviteFailed;
+
+  /// No description provided for @tabToday.
+  ///
+  /// In uk, this message translates to:
+  /// **'Сьогодні'**
+  String get tabToday;
+
+  /// No description provided for @tabDays.
+  ///
+  /// In uk, this message translates to:
+  /// **'Календар'**
+  String get tabDays;
+
+  /// No description provided for @tabFeed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Стрічка'**
+  String get tabFeed;
+
+  /// No description provided for @tabRating.
+  ///
+  /// In uk, this message translates to:
+  /// **'Рейтинг'**
+  String get tabRating;
+
+  /// No description provided for @tabMe.
+  ///
+  /// In uk, this message translates to:
+  /// **'Я'**
+  String get tabMe;
+
+  /// No description provided for @tabGroup.
+  ///
+  /// In uk, this message translates to:
+  /// **'Група'**
+  String get tabGroup;
 }
 
 class _AppLocalizationsDelegate

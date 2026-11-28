@@ -549,4 +549,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inviteFailed => 'Couldn\'t create the link — try again';
+
+  @override
+  String get tabToday => 'Today';
+
+  @override
+  String get tabDays => 'Calendar';
+
+  @override
+  String get tabFeed => 'Feed';
+
+  @override
+  String get tabRating => 'Rating';
+
+  @override
+  String get tabMe => 'Me';
+
+  @override
+  String get tabGroup => 'Group';
 }

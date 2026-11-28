@@ -545,4 +545,22 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get inviteFailed => 'Не вдалося створити посилання — спробуй ще раз';
+
+  @override
+  String get tabToday => 'Сьогодні';
+
+  @override
+  String get tabDays => 'Календар';
+
+  @override
+  String get tabFeed => 'Стрічка';
+
+  @override
+  String get tabRating => 'Рейтинг';
+
+  @override
+  String get tabMe => 'Я';
+
+  @override
+  String get tabGroup => 'Група';
 }

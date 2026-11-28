@@ -55,7 +55,9 @@ async function tap(page, text) {
         const nodes = [...document.querySelectorAll('flt-semantics')];
         const label = (e) => e.getAttribute('aria-label') ?? e.textContent ?? '';
         // A container's label contains its children's; the exact label is the button itself.
-        return nodes.find((e) => label(e) === t) ?? nodes.find((e) => label(e).includes(t)) ?? false;
+        const visible = (e) => { const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0; };
+        // The frontmost (last) visible exact match: tabs keep other screens mounted behind it.
+        return nodes.filter((e) => label(e) === t && visible(e)).pop() ?? nodes.find((e) => label(e).includes(t)) ?? false;
       },
       { timeout: 20000 },
       text,
@@ -88,7 +90,7 @@ async function joinAs(page, token, name, groupName) {
   await new Promise((resolve) => setTimeout(resolve, 800));
   await page.keyboard.type('1357', { delay: 30 });
   await page.keyboard.press('Enter');
-  await waitText(page, name);
+  await waitText(page, 'Завдання дня');
 }
 
 const webRoot = fileURLToPath(new URL('../app/build/web/', import.meta.url));
@@ -109,13 +111,13 @@ try {
   const page = await browser.newPage();
   await page.setViewport({ width: 400, height: 860 });
   await joinAs(page, token, 'Webby', 'Web group');
-  console.log('joined and set a PIN');
-  await waitText(page, 'Завдання дня');
-  console.log('today card shows the task of the day');
+  console.log('joined, set a PIN and landed on the Today tab with the task of the day');
 
   await post('/join', { token, displayName: 'Other' });
+  await tap(page, 'Я');
   await waitText(page, 'Other');
-  console.log('new member arrived live');
+  console.log('new member arrived live on the Me tab');
+  await tap(page, 'Сьогодні');
 
   // Photos: Webby sends one; a second member sees it blurred until they send their own.
   await sendPhoto(page, 'Обрати з галереї');

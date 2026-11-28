@@ -13,6 +13,8 @@ import 'package:commandvibe/features/join/ui/returning_view.dart';
 import 'package:commandvibe/features/organizer_auth/ui/organizer_login_view.dart';
 import 'package:commandvibe/features/photos/ui/complaints_view.dart';
 import 'package:commandvibe/features/photos/ui/photo_viewer_view.dart';
+import 'package:commandvibe/features/shell/group_shell.dart';
+import 'package:commandvibe/features/today/ui/today_tab.dart';
 import 'package:commandvibe/features/welcome/welcome_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -104,13 +106,56 @@ GoRouter createRouter({
         },
         builder: (context, state) => const CreateGroupView(),
       ),
-      GoRoute(
-        path: '/g/:groupId',
-        redirect: (context, state) => requireSession(state),
-        builder: (context, state) => _GroupHome(
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, shell) => _GroupTabs(
           groupId: state.pathParameters['groupId']!,
           sessions: sessions,
+          shell: shell,
         ),
+        branches: [
+          _tab(
+            'today',
+            requireSession,
+            (state) => TodayTab(groupId: state.pathParameters['groupId']!),
+          ),
+          _tab(
+            'days',
+            requireSession,
+            (state) => const _TabPlaceholder(Icons.calendar_month),
+          ),
+          _tab(
+            'feed',
+            requireSession,
+            (state) => const _TabPlaceholder(Icons.photo_library),
+          ),
+          _tab(
+            'rating',
+            requireSession,
+            (state) => const _TabPlaceholder(Icons.emoji_events),
+          ),
+          _tab(
+            'me',
+            requireSession,
+            (state) => _GroupHome(
+              groupId: state.pathParameters['groupId']!,
+              sessions: sessions,
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/g/:groupId',
+        redirect: (context, state) async {
+          final gate = await requireSession(state);
+          if (gate != null) {
+            return gate;
+          }
+          // Only the bare group address lands on the first tab; sub-pages keep their own path.
+          return state.uri.path == '/g/${state.pathParameters['groupId']}'
+              ? '/g/${state.pathParameters['groupId']}/today'
+              : null;
+        },
+        builder: (context, state) => const SizedBox.shrink(),
         routes: [
           GoRoute(
             path: 'calendar',
@@ -148,6 +193,61 @@ GoRouter createRouter({
       ),
     ],
   );
+}
+
+StatefulShellBranch _tab(
+  String name,
+  Future<String?> Function(GoRouterState state) redirect,
+  Widget Function(GoRouterState state) build,
+) => StatefulShellBranch(
+  routes: [
+    GoRoute(
+      path: '/g/:groupId/$name',
+      redirect: (context, state) => redirect(state),
+      builder: (context, state) => build(state),
+    ),
+  ],
+);
+
+/// Reads the session once to know whether the viewer owns the group, then frames the tabs.
+class _GroupTabs extends StatelessWidget {
+  const _GroupTabs({
+    required this.groupId,
+    required this.sessions,
+    required this.shell,
+  });
+
+  final String groupId;
+  final SessionStore sessions;
+  final StatefulNavigationShell shell;
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<StoredSession?>(
+    future: sessions.read(),
+    builder: (context, snapshot) {
+      if (!snapshot.hasData) {
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      }
+      return GroupShell(
+        groupId: groupId,
+        isOwner: snapshot.data!.isOrganizer,
+        currentIndex: shell.currentIndex,
+        onSelected: (index) =>
+            shell.goBranch(index, initialLocation: index == shell.currentIndex),
+        child: shell,
+      );
+    },
+  );
+}
+
+/// Stands in for a tab until its screen lands.
+class _TabPlaceholder extends StatelessWidget {
+  const _TabPlaceholder(this.icon);
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) => Center(child: Icon(icon, size: 48));
 }
 
 /// Reads the session once to know whether the viewer owns the group.

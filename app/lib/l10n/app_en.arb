@@ -250,5 +250,11 @@
   "groupInviteButton": "Invite members",
   "inviteRotateWarning": "We'll create a new link and the old one will stop working. Members already in the group will need the new link to sign in again.",
   "inviteRotateButton": "Create a new link",
-  "inviteFailed": "Couldn't create the link — try again"
+  "inviteFailed": "Couldn't create the link — try again",
+  "tabToday": "Today",
+  "tabDays": "Calendar",
+  "tabFeed": "Feed",
+  "tabRating": "Rating",
+  "tabMe": "Me",
+  "tabGroup": "Group"
 }
