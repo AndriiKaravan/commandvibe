@@ -25,7 +25,7 @@ import {
 } from '../data/repositories';
 import { GameEngine } from '../game/game-engine';
 import { revealAt } from '../game/game-time';
-import { taskVisibleToPlayers } from '../game/views';
+import { taskView, taskVisibleToPlayers } from '../game/views';
 import { GroupsService } from '../groups/groups.service';
 import { takenAtOf } from './exif-time';
 import { processPhoto } from './image-pipeline';
@@ -36,7 +36,7 @@ import { PHOTO_STORE, PhotoStore, photoPaths } from './photo-store';
 import { PHOTO_URL_SIGNER } from './photo-url.token';
 import { PhotoUrlSigner } from './photo-url';
 import { Semaphore } from './upload-gate';
-import { DaySubmissionsView, SubmissionView } from './views';
+import { DaySubmissionsView, FeedEntry, SubmissionView } from './views';
 
 export interface SubmitOptions {
   mode: 'create' | 'replace';
@@ -131,6 +131,48 @@ export class PhotosService {
   }
 
   /** Accepts a photo: checks the day, reads and re-encodes the image, stores the derived files only. */
+  /**
+   * Every day's photos as this viewer may see them, for the feed. Hidden photos and those of
+   * members who are not active never appear here, whoever asks.
+   */
+  async feed(subject: SessionSubject, groupId: string): Promise<FeedEntry[]> {
+    const now = this.clock();
+    const group = await this.groupsService.getFor(subject, groupId);
+    const viewer = await this.viewerOf(subject.kind, subject.id, group);
+    const days = group.game?.days ?? 0;
+    const [stored, members, complaints, cells] = await Promise.all([
+      this.submissions.listByGroup(groupId, days),
+      this.members.list(groupId),
+      this.complaints.listOpen(groupId),
+      this.cells.list(groupId),
+    ]);
+    const names = new Map(members.map((member) => [member.id, member]));
+    const cellOf = new Map(cells.map((cell) => [cell.dayIndex, cell]));
+    const ownDays = new Set(
+      stored.filter((sub) => sub.memberId === viewer.memberId && sub.status === 'visible').map((sub) => sub.dayIndex),
+    );
+    const entries: FeedEntry[] = [];
+    for (const sub of stored) {
+      const author = names.get(sub.memberId);
+      const cell = cellOf.get(sub.dayIndex);
+      if (sub.status !== 'visible' || author?.status !== 'active' || !cell) {
+        continue;
+      }
+      const open = complaints.filter((c) => c.dayIndex === sub.dayIndex && c.authorMemberId === sub.memberId).length;
+      const revealed = now.getTime() >= revealAt(cell.opensAt, group.timezone).getTime();
+      const access = this.decide(viewer, ownDays.has(sub.dayIndex), sub, true, open, revealed);
+      if (!access.listed) {
+        continue;
+      }
+      entries.push({
+        view: this.toView(sub, author.displayName, access, subject, viewer, open, now),
+        dayIndex: sub.dayIndex,
+        taskTitle: taskView(cell.task).title,
+      });
+    }
+    return entries;
+  }
+
   async submit(
     subject: SessionSubject,
     groupId: string,

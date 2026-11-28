@@ -26,6 +26,13 @@ export interface SubmissionView {
   moderation?: SubmissionModeration;
 }
 
+/** One photo of the feed before paging: the day-list view plus where it belongs. */
+export interface FeedEntry {
+  view: SubmissionView;
+  dayIndex: number;
+  taskTitle: { uk: string; en?: string };
+}
+
 export interface DaySubmissionsView {
   dayIndex: number;
   revealAt: string;

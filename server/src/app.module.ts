@@ -2,6 +2,7 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { DataModule } from './data/data.module';
+import { FeedModule } from './feed/feed.module';
 import { GameModule } from './game/game.module';
 import { GroupsModule } from './groups/groups.module';
 import { MembersModule } from './members/members.module';
@@ -32,6 +33,7 @@ export class AppModule {
         GameModule,
         MembersModule,
         PhotosModule,
+        FeedModule,
         ProgressModule,
         ...(options.testSeed ? [TestSeedModule] : []),
       ],
