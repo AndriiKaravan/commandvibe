@@ -282,6 +282,19 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
         expect((await repos.submissions.listMember(group.id, 'm1', 5)).map((s) => s.dayIndex).sort()).toEqual([1, 3]);
       });
 
+      it('should list the photos of every day of one group only', async () => {
+        const group = aGroup();
+        const other = aGroup();
+        await repos.submissions.put(aSubmission(group.id, 0, 'm1'), null);
+        await repos.submissions.put(aSubmission(group.id, 2, 'm2'), null);
+        await repos.submissions.put(aSubmission(group.id, 2, 'm1'), null);
+        await repos.submissions.put(aSubmission(group.id, 9, 'm1'), null);
+        await repos.submissions.put(aSubmission(other.id, 0, 'm1'), null);
+        const found = await repos.submissions.listByGroup(group.id, 5);
+        expect(found.map((s) => `${s.dayIndex}:${s.memberId}`).sort()).toEqual(['0:m1', '2:m1', '2:m2']);
+        expect(await repos.submissions.listByGroup(group.id, 0)).toEqual([]);
+      });
+
       it('should refuse a replacement of a photo hidden in the meantime', async () => {
         const group = aGroup();
         const first = aSubmission(group.id, 1, 'm1');

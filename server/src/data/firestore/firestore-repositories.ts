@@ -379,6 +379,11 @@ class FirestoreSubmissions implements SubmissionRepository {
     return found.docs.map((doc) => fromStore<Submission>(doc.data()) as Submission);
   }
 
+  async listByGroup(groupId: string, days: number): Promise<Submission[]> {
+    const perDay = await Promise.all(Array.from({ length: Math.max(days, 0) }, (_, day) => this.listDay(groupId, day)));
+    return perDay.flat();
+  }
+
   async listMember(groupId: string, memberId: string, days: number): Promise<Submission[]> {
     if (days <= 0) {
       return [];

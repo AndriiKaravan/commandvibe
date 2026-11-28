@@ -289,6 +289,10 @@ class MemorySubmissions implements SubmissionRepository {
     return [...this.items.values()].filter((s) => s.groupId === groupId && s.dayIndex === dayIndex).map(copy);
   }
 
+  async listByGroup(groupId: string, days: number): Promise<Submission[]> {
+    return [...this.items.values()].filter((s) => s.groupId === groupId && s.dayIndex < days).map(copy);
+  }
+
   async listMember(groupId: string, memberId: string, days: number): Promise<Submission[]> {
     return [...this.items.values()]
       .filter((s) => s.groupId === groupId && s.memberId === memberId && s.dayIndex < days)

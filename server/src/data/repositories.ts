@@ -88,6 +88,8 @@ export interface CellRepository {
 export interface SubmissionRepository {
   get(groupId: string, dayIndex: number, memberId: string): Promise<Submission | undefined>;
   listDay(groupId: string, dayIndex: number): Promise<Submission[]>;
+  /** Submissions of every member over days `0..days-1`. */
+  listByGroup(groupId: string, days: number): Promise<Submission[]>;
   /** Submissions of the member over days `0..days-1`. */
   listMember(groupId: string, memberId: string, days: number): Promise<Submission[]>;
   /**
