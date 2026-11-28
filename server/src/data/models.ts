@@ -84,6 +84,8 @@ export interface Member {
   isOrganizer: boolean;
   /** Organizer uid when [isOrganizer]. */
   organizerUid?: string;
+  /** Which notification categories the member wants; missing means all. */
+  notify?: { tasks: boolean; social: boolean };
   createdAt: Date;
 }
 
