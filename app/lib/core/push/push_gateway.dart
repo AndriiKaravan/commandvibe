@@ -2,7 +2,7 @@
 /// means changing this export and the pubspec dependency.
 library;
 
-export 'package:ks_core/push.dart'
+export 'package:ks_push/ks_push.dart'
     show
         FirebasePushService,
         NotificationOpened,
