@@ -1387,6 +1387,84 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Не вдалося — спробуй ще раз'**
   String get commentFailed;
+
+  /// No description provided for @pointsJournalTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Мої бали'**
+  String get pointsJournalTitle;
+
+  /// No description provided for @pointsJournalEmpty.
+  ///
+  /// In uk, this message translates to:
+  /// **'Поки без балів'**
+  String get pointsJournalEmpty;
+
+  /// No description provided for @pointsKindDone.
+  ///
+  /// In uk, this message translates to:
+  /// **'Виконано'**
+  String get pointsKindDone;
+
+  /// No description provided for @pointsKindSpeed.
+  ///
+  /// In uk, this message translates to:
+  /// **'Швидкість · {place}-й'**
+  String pointsKindSpeed(int place);
+
+  /// No description provided for @pointsKindLate.
+  ///
+  /// In uk, this message translates to:
+  /// **'Пізно · {days} дн.'**
+  String pointsKindLate(int days);
+
+  /// No description provided for @pointsKindSympathy.
+  ///
+  /// In uk, this message translates to:
+  /// **'Симпатії · лайків: {count}'**
+  String pointsKindSympathy(int count);
+
+  /// No description provided for @pointsKindGoal.
+  ///
+  /// In uk, this message translates to:
+  /// **'Спільна ціль'**
+  String get pointsKindGoal;
+
+  /// No description provided for @pointsKindOther.
+  ///
+  /// In uk, this message translates to:
+  /// **'Інше'**
+  String get pointsKindOther;
+
+  /// No description provided for @pointsTotal.
+  ///
+  /// In uk, this message translates to:
+  /// **'Разом: {points} б.'**
+  String pointsTotal(int points);
+
+  /// No description provided for @profileFans.
+  ///
+  /// In uk, this message translates to:
+  /// **'Прихильників: {count}'**
+  String profileFans(int count);
+
+  /// No description provided for @profilePointsJournal.
+  ///
+  /// In uk, this message translates to:
+  /// **'Журнал балів'**
+  String get profilePointsJournal;
+
+  /// No description provided for @groupLikesCountOnly.
+  ///
+  /// In uk, this message translates to:
+  /// **'Лише кількість лайків'**
+  String get groupLikesCountOnly;
+
+  /// No description provided for @groupLikesCountOnlyHint.
+  ///
+  /// In uk, this message translates to:
+  /// **'Імен тих, хто лайкнув, не бачить ніхто'**
+  String get groupLikesCountOnlyHint;
 }
 
 class _AppLocalizationsDelegate

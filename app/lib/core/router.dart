@@ -14,6 +14,7 @@ import 'package:commandvibe/features/join/ui/returning_view.dart';
 import 'package:commandvibe/features/organizer_auth/ui/organizer_login_view.dart';
 import 'package:commandvibe/features/photos/ui/complaints_view.dart';
 import 'package:commandvibe/features/photos/ui/photo_viewer_view.dart';
+import 'package:commandvibe/features/points/ui/points_journal_view.dart';
 import 'package:commandvibe/features/profile/profile_view.dart';
 import 'package:commandvibe/features/shell/group_shell.dart';
 import 'package:commandvibe/features/standings/ui/standings_view.dart';
@@ -173,6 +174,12 @@ GoRouter createRouter({
               dayIndex: int.tryParse(state.pathParameters['day']!) ?? 0,
               memberId: state.pathParameters['memberId']!,
             ),
+          ),
+          GoRoute(
+            path: 'points',
+            redirect: (context, state) => requireSession(state),
+            builder: (context, state) =>
+                PointsJournalView(groupId: state.pathParameters['groupId']!),
           ),
           GoRoute(
             path: 'complaints',

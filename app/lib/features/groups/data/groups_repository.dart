@@ -57,11 +57,15 @@ class GroupSummary {
     required this.id,
     required this.name,
     required this.ownerUid,
+    this.likesCountOnly = false,
   });
 
   final String id;
   final String name;
   final String ownerUid;
+
+  /// Whether likes show only their count, with no names.
+  final bool likesCountOnly;
 }
 
 /// One row of the organizer's group list.
@@ -180,6 +184,10 @@ class ApiGroupsRepository implements GroupsRepository {
       id: json['id'] as String,
       name: json['name'] as String,
       ownerUid: json['ownerUid'] as String,
+      likesCountOnly:
+          (json['settings'] as Map<String, dynamic>?)?['likesCountOnly']
+              as bool? ??
+          false,
     );
   }
 

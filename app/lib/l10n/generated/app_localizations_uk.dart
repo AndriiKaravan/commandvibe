@@ -718,4 +718,54 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get commentFailed => 'Не вдалося — спробуй ще раз';
+
+  @override
+  String get pointsJournalTitle => 'Мої бали';
+
+  @override
+  String get pointsJournalEmpty => 'Поки без балів';
+
+  @override
+  String get pointsKindDone => 'Виконано';
+
+  @override
+  String pointsKindSpeed(int place) {
+    return 'Швидкість · $place-й';
+  }
+
+  @override
+  String pointsKindLate(int days) {
+    return 'Пізно · $days дн.';
+  }
+
+  @override
+  String pointsKindSympathy(int count) {
+    return 'Симпатії · лайків: $count';
+  }
+
+  @override
+  String get pointsKindGoal => 'Спільна ціль';
+
+  @override
+  String get pointsKindOther => 'Інше';
+
+  @override
+  String pointsTotal(int points) {
+    return 'Разом: $points б.';
+  }
+
+  @override
+  String profileFans(int count) {
+    return 'Прихильників: $count';
+  }
+
+  @override
+  String get profilePointsJournal => 'Журнал балів';
+
+  @override
+  String get groupLikesCountOnly => 'Лише кількість лайків';
+
+  @override
+  String get groupLikesCountOnlyHint =>
+      'Імен тих, хто лайкнув, не бачить ніхто';
 }

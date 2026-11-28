@@ -722,4 +722,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commentFailed => 'Couldn\'t — try again';
+
+  @override
+  String get pointsJournalTitle => 'My points';
+
+  @override
+  String get pointsJournalEmpty => 'No points yet';
+
+  @override
+  String get pointsKindDone => 'Done';
+
+  @override
+  String pointsKindSpeed(int place) {
+    return 'Speed · #$place';
+  }
+
+  @override
+  String pointsKindLate(int days) {
+    return 'Late · $days d';
+  }
+
+  @override
+  String pointsKindSympathy(int count) {
+    return 'Sympathy · likes: $count';
+  }
+
+  @override
+  String get pointsKindGoal => 'Shared goal';
+
+  @override
+  String get pointsKindOther => 'Other';
+
+  @override
+  String pointsTotal(int points) {
+    return 'Total: $points pts';
+  }
+
+  @override
+  String profileFans(int count) {
+    return 'Fans: $count';
+  }
+
+  @override
+  String get profilePointsJournal => 'Points journal';
+
+  @override
+  String get groupLikesCountOnly => 'Show only the number of likes';
+
+  @override
+  String get groupLikesCountOnlyHint => 'Nobody sees who liked';
 }

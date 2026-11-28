@@ -50,6 +50,7 @@ class ProfileCard extends StatelessWidget {
                   ],
                 ),
                 Text(l10n.profileDays(summary.daysDone, summary.daysSoFar)),
+                Text(l10n.profileFans(summary.fans)),
               ],
             ),
           ),

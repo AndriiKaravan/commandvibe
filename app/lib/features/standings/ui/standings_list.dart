@@ -91,6 +91,7 @@ class _Row extends StatelessWidget {
                   ),
                 ),
               ),
+              if (item.fans > 0) Text('❤ ${item.fans}'),
               if (moved != 0)
                 Text(
                   moved > 0 ? '↑$moved' : '↓${-moved}',

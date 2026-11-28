@@ -23,6 +23,7 @@ class GroupHomeViewModel extends ChangeNotifier {
   final List<StreamSubscription<void>> _listeners = [];
   List<GroupMember> _members = const [];
   String _groupName = '';
+  bool _likesCountOnly = false;
   bool _revoked = false;
   bool _loadFailed = false;
   bool _disposed = false;
@@ -31,6 +32,9 @@ class GroupHomeViewModel extends ChangeNotifier {
   List<GroupMember> get active => _members.where((m) => !m.isPending).toList();
   List<GroupMember> get pending => _members.where((m) => m.isPending).toList();
   String get groupName => _groupName;
+
+  /// Whether likes show only their count; the organizer can switch it.
+  bool get likesCountOnly => _likesCountOnly;
 
   /// True when the server took this member's access away; the view signs out.
   bool get revoked => _revoked;
@@ -75,6 +79,18 @@ class GroupHomeViewModel extends ChangeNotifier {
 
   Future<void> _reload() => _guard(_load);
 
+  /// Shows the switch at once and rolls it back when the server refuses.
+  Future<void> setLikesCountOnly(bool value) async {
+    final before = _likesCountOnly;
+    _likesCountOnly = value;
+    notifyListeners();
+    await _guard(() => _repository.setLikesCountOnly(groupId, value));
+    if (_loadFailed || _revoked) {
+      _likesCountOnly = before;
+      notifyListeners();
+    }
+  }
+
   /// Reads the group again, e.g. after the member's own avatar changed.
   Future<void> reload() => _reload();
 
@@ -108,6 +124,7 @@ class GroupHomeViewModel extends ChangeNotifier {
       return;
     }
     _groupName = (results[0] as GroupSummary).name;
+    _likesCountOnly = (results[0] as GroupSummary).likesCountOnly;
     _members = results[1] as List<GroupMember>;
   }
 

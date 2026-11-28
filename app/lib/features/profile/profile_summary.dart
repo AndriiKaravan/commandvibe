@@ -12,6 +12,7 @@ class ProfileSummary {
     required this.rank,
     required this.daysDone,
     required this.daysSoFar,
+    this.fans = 0,
   });
 
   /// Null for someone who does not play (an organizer watching) or before the standings arrive.
@@ -35,6 +36,7 @@ class ProfileSummary {
       rank: me.rank,
       daysDone: progress?.days.where((day) => day.mine == true).length ?? 0,
       daysSoFar: current == null ? 0 : current + 1,
+      fans: own.fans,
     );
   }
 
@@ -46,4 +48,7 @@ class ProfileSummary {
 
   /// Days opened so far, the number "done" is measured against.
   final int daysSoFar;
+
+  /// Different players who liked a photo of this member.
+  final int fans;
 }

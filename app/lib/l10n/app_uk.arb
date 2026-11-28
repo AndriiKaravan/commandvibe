@@ -411,5 +411,53 @@
   "commentDelete": "Видалити коментар",
   "commentTooLong": "Не більше 500 символів",
   "commentEmpty": "Напиши хоч слово",
-  "commentFailed": "Не вдалося — спробуй ще раз"
+  "commentFailed": "Не вдалося — спробуй ще раз",
+  "pointsJournalTitle": "Мої бали",
+  "pointsJournalEmpty": "Поки без балів",
+  "pointsKindDone": "Виконано",
+  "pointsKindSpeed": "Швидкість · {place}-й",
+  "@pointsKindSpeed": {
+    "placeholders": {
+      "place": {
+        "type": "int"
+      }
+    }
+  },
+  "pointsKindLate": "Пізно · {days} дн.",
+  "@pointsKindLate": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "pointsKindSympathy": "Симпатії · лайків: {count}",
+  "@pointsKindSympathy": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pointsKindGoal": "Спільна ціль",
+  "pointsKindOther": "Інше",
+  "pointsTotal": "Разом: {points} б.",
+  "@pointsTotal": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "profileFans": "Прихильників: {count}",
+  "@profileFans": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profilePointsJournal": "Журнал балів",
+  "groupLikesCountOnly": "Лише кількість лайків",
+  "groupLikesCountOnlyHint": "Імен тих, хто лайкнув, не бачить ніхто"
 }

@@ -85,6 +85,25 @@ void main() {
       expect(find.text('2'), findsOneWidget);
     });
 
+    testWidgets('should show the fans of a player and nothing for none', (
+      tester,
+    ) async {
+      await pump(tester, [
+        const StandingItem(
+          memberId: 'a',
+          displayName: 'Anna',
+          points: 30,
+          rank: 1,
+          mine: false,
+          fans: 5,
+        ),
+        _item('Boris', 20, 2),
+      ]);
+
+      expect(find.text('❤ 5'), findsOneWidget);
+      expect(find.textContaining('❤'), findsOneWidget);
+    });
+
     testWidgets('should mark the own row', (tester) async {
       await pump(tester, [
         _item('Anna', 30, 1),

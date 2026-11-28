@@ -383,5 +383,53 @@
   "commentDelete": "Delete comment",
   "commentTooLong": "At most 500 characters",
   "commentEmpty": "Write at least a word",
-  "commentFailed": "Couldn't — try again"
+  "commentFailed": "Couldn't — try again",
+  "pointsJournalTitle": "My points",
+  "pointsJournalEmpty": "No points yet",
+  "pointsKindDone": "Done",
+  "pointsKindSpeed": "Speed · #{place}",
+  "@pointsKindSpeed": {
+    "placeholders": {
+      "place": {
+        "type": "int"
+      }
+    }
+  },
+  "pointsKindLate": "Late · {days} d",
+  "@pointsKindLate": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "pointsKindSympathy": "Sympathy · likes: {count}",
+  "@pointsKindSympathy": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pointsKindGoal": "Shared goal",
+  "pointsKindOther": "Other",
+  "pointsTotal": "Total: {points} pts",
+  "@pointsTotal": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "profileFans": "Fans: {count}",
+  "@profileFans": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profilePointsJournal": "Points journal",
+  "groupLikesCountOnly": "Show only the number of likes",
+  "groupLikesCountOnlyHint": "Nobody sees who liked"
 }

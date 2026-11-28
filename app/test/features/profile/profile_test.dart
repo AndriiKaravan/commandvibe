@@ -53,6 +53,27 @@ void main() {
       expect(summary.daysSoFar, 3);
     });
 
+    test('should carry the number of fans', () {
+      final summary = ProfileSummary.from(
+        standings: Standings(
+          items: [
+            StandingItem(
+              memberId: 'o',
+              displayName: 'Olena',
+              points: 0,
+              rank: 1,
+              mine: true,
+              fans: 3,
+            ),
+          ],
+          me: const MyPlace(rank: 1, points: 0),
+        ),
+        progress: null,
+      );
+
+      expect(summary!.fans, 3);
+    });
+
     test('should be absent for someone who does not play', () {
       final summary = ProfileSummary.from(
         standings: Standings(items: [_item('Anna', 30, 1)], me: null),
@@ -118,6 +139,7 @@ void main() {
       rank: 2,
       daysDone: 2,
       daysSoFar: 3,
+      fans: 4,
     );
 
     testWidgets('should show the name, points, place and days done', (
@@ -129,6 +151,12 @@ void main() {
       expect(find.text('20 б.'), findsOneWidget);
       expect(find.textContaining('2-й'), findsOneWidget);
       expect(find.textContaining('2 з 3'), findsOneWidget);
+    });
+
+    testWidgets('should show how many fans the player has', (tester) async {
+      await pump(tester, summary, () {});
+
+      expect(find.text('Прихильників: 4'), findsOneWidget);
     });
 
     testWidgets('should let the player change the avatar', (tester) async {

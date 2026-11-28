@@ -109,6 +109,16 @@ class _ProfileViewState extends State<ProfileView> {
                   onChangeAvatar: () => _changeAvatar(summary),
                 ),
               ),
+            if (summary != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: OutlinedButton.icon(
+                  key: const Key('open-points'),
+                  onPressed: () => context.push('/g/${widget.groupId}/points'),
+                  icon: const Icon(Icons.receipt_long),
+                  label: Text(l10n.profilePointsJournal),
+                ),
+              ),
             if (!widget.isOwner)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
@@ -183,6 +193,16 @@ class _ProfileViewState extends State<ProfileView> {
         ),
       ),
       spaced(ComplaintsButton(groupId: widget.groupId)),
+      spaced(
+        SwitchListTile(
+          key: const Key('likes-count-only'),
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.groupLikesCountOnly),
+          subtitle: Text(l10n.groupLikesCountOnlyHint),
+          value: group.likesCountOnly,
+          onChanged: group.setLikesCountOnly,
+        ),
+      ),
       spaced(
         OutlinedButton.icon(
           key: const Key('open-my-groups'),
