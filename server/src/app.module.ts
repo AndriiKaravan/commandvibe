@@ -10,6 +10,7 @@ import { LikesModule } from './likes/likes.module';
 import { MembersModule } from './members/members.module';
 import { HealthController } from './health/health.controller';
 import { PhotosModule } from './photos/photos.module';
+import { PointsModule } from './points/points.module';
 import { ProgressModule } from './progress/progress.module';
 import { AppCheckGuard, AppCheckModule } from './shared/app_check';
 import { StandingsModule } from './standings/standings.module';
@@ -39,6 +40,7 @@ export class AppModule {
         LikesModule,
         CommentsModule,
         FeedModule,
+        PointsModule,
         ProgressModule,
         StandingsModule,
         ...(options.testSeed ? [TestSeedModule] : []),

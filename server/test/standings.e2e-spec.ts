@@ -34,10 +34,10 @@ describe('Standings', () => {
         i.rank,
       ]),
     ).toEqual([
-      ['Ira', 10, 1],
+      ['Ira', 15, 1],
       ['Taras', 0, 2],
     ]);
-    expect(response.body.me).toEqual({ rank: 2, points: 0, toNext: 10 });
+    expect(response.body.me).toEqual({ rank: 2, points: 0, toNext: 15 });
   });
 
   it('should take points away when the organizer hides a photo', async () => {

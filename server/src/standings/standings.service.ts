@@ -1,17 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CLOCK } from '../auth/session.service';
 import { SessionSubject } from '../data/models';
-import {
-  CELLS,
-  CellRepository,
-  MEMBERS,
-  MemberRepository,
-  SUBMISSIONS,
-  SubmissionRepository,
-} from '../data/repositories';
-import { openedDayCount } from '../game/opened-days';
 import { GroupsService } from '../groups/groups.service';
 import { PhotosService } from '../photos/photos.service';
+import { PointsService } from '../points/points.service';
 
 export interface StandingItem {
   memberId: string;
@@ -20,6 +12,8 @@ export interface StandingItem {
   points: number;
   rank: number;
   mine: boolean;
+  /** Different players who liked a photo of this member. */
+  fans: number;
 }
 
 export interface StandingsView {
@@ -29,37 +23,23 @@ export interface StandingsView {
   serverTime: string;
 }
 
-/** Base points only; speed, lateness and likes arrive with the points journal. */
-const pointsPerPhoto = 10;
-
 @Injectable()
 export class StandingsService {
   constructor(
     private readonly groups: GroupsService,
     private readonly photos: PhotosService,
-    @Inject(MEMBERS) private readonly members: MemberRepository,
-    @Inject(SUBMISSIONS) private readonly submissions: SubmissionRepository,
-    @Inject(CELLS) private readonly cells: CellRepository,
+    private readonly points: PointsService,
     @Inject(CLOCK) private readonly now: () => Date,
   ) {}
 
   async standings(subject: SessionSubject, groupId: string): Promise<StandingsView> {
     const group = await this.groups.getFor(subject, groupId);
-    const [members, viewer, cells] = await Promise.all([
-      this.members.list(groupId),
+    const [viewer, snapshot] = await Promise.all([
       this.photos.viewerOf(subject.kind, subject.id, group),
-      this.cells.list(groupId),
+      this.points.snapshot(groupId),
     ]);
-    const stored = await this.submissions.listByGroup(groupId, openedDayCount(cells));
-    const photoCount = new Map<string, number>();
-    for (const sub of stored) {
-      if (sub.status === 'visible') {
-        photoCount.set(sub.memberId, (photoCount.get(sub.memberId) ?? 0) + 1);
-      }
-    }
-    const scored = members
-      .filter((member) => member.status === 'active')
-      .map((member) => ({ member, points: (photoCount.get(member.id) ?? 0) * pointsPerPhoto }))
+    const scored = snapshot.players
+      .map((member) => ({ member, points: snapshot.totals.get(member.id) ?? 0 }))
       .sort((a, b) => b.points - a.points || a.member.displayName.localeCompare(b.member.displayName, 'uk'));
     const items: StandingItem[] = scored.map(({ member, points }) => ({
       memberId: member.id,
@@ -68,6 +48,7 @@ export class StandingsService {
       points,
       rank: 1 + scored.filter((other) => other.points > points).length,
       mine: member.id === viewer.memberId,
+      fans: snapshot.fans.get(member.id) ?? 0,
     }));
     const own = items.find((item) => item.mine);
     const above = own ? items.filter((item) => item.points > own.points).map((item) => item.points) : [];
