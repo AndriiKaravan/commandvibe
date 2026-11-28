@@ -1,5 +1,6 @@
 import 'package:commandvibe/core/api/api_client.dart';
 import 'package:commandvibe/core/platform/invite_link_source.dart';
+import 'package:commandvibe/core/push/app_push.dart';
 import 'package:commandvibe/core/platform/organizer_sign_in.dart';
 import 'package:commandvibe/core/platform/photo_source.dart';
 import 'package:commandvibe/core/platform/observed_session_store.dart';
@@ -27,6 +28,7 @@ class AppServices {
     required this.inviteLinks,
     required this.photos,
     required this.organizerSignIn,
+    required this.push,
   });
 
   final ObservedSessionStore sessions;
@@ -35,6 +37,7 @@ class AppServices {
   final InviteLinkSource inviteLinks;
   final PhotoSource photos;
   final OrganizerSignIn organizerSignIn;
+  final AppPush push;
 
   late final JoinRepository join = ApiJoinRepository(api, sessions);
   late final GroupsRepository groups = ApiGroupsRepository(api);

@@ -7,6 +7,7 @@ import 'package:commandvibe/core/platform/observed_session_store.dart';
 import 'package:commandvibe/core/platform/organizer_sign_in.dart';
 import 'package:commandvibe/core/platform/photo_source.dart';
 import 'package:commandvibe/core/platform/session_store.dart';
+import 'package:commandvibe/core/push/app_push.dart';
 import 'package:commandvibe/core/realtime/realtime_provider.dart';
 import 'package:commandvibe/core/router.dart';
 import 'package:commandvibe/core/services_scope.dart';
@@ -33,6 +34,7 @@ AppServices createPlatformServices() {
     inviteLinks: InviteLinkSource.platform(),
     photos: PhotoSource.platform(),
     organizerSignIn: OrganizerSignIn.platform(),
+    push: AppPush.platform(api: api, sessions: sessions),
   );
 }
 
@@ -50,6 +52,7 @@ class CommandVibeApp extends StatefulWidget {
       await services.inviteLinks.initialToken(),
     );
     services.realtime.start();
+    services.push.start();
     return CommandVibeApp(
       services: services,
       router: createRouter(sessions: services.sessions, initial: initial),
@@ -80,6 +83,7 @@ class _CommandVibeAppState extends State<CommandVibeApp> {
   @override
   void dispose() {
     _links?.cancel();
+    unawaited(widget.services.push.dispose());
     widget.services.realtime.dispose();
     super.dispose();
   }

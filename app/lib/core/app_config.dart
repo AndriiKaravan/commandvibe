@@ -9,6 +9,11 @@ abstract final class AppConfig {
 
   static Uri get apiUri => Uri.parse(apiBase);
 
+  /// Public Web Push key (Firebase → Cloud Messaging); empty keeps web push off.
+  static const _vapid = String.fromEnvironment('VAPID_KEY');
+
+  static String? get vapidKey => _vapid.isEmpty ? null : _vapid;
+
   /// Socket endpoint of the same server.
   static Uri get realtimeUri => apiUri.replace(
     scheme: apiUri.scheme == 'https' ? 'wss' : 'ws',

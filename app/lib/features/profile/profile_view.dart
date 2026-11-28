@@ -58,13 +58,18 @@ class _ProfileViewState extends State<ProfileView> {
   void _onGroupChanged() {
     if (_group?.revoked == true && mounted && !_leaving) {
       _leaving = true;
-      _signOut();
+      _signOut(revoked: true);
     }
   }
 
-  Future<void> _signOut() async {
+  /// A revoked member cannot authorize the token removal, so only a chosen sign-out sends it.
+  Future<void> _signOut({bool revoked = false}) async {
     final services = ServicesScope.of(context);
-    await services.sessions.clear();
+    if (revoked) {
+      await services.sessions.clear();
+    } else {
+      await services.push.signOut();
+    }
     services.realtime.authChanged();
     if (mounted) {
       context.go('/');

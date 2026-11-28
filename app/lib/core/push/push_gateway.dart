@@ -1,0 +1,15 @@
+/// The only file that names the push library; moving it to another package
+/// means changing this export and the pubspec dependency.
+library;
+
+export 'package:ks_core/push.dart'
+    show
+        FirebasePushService,
+        NotificationOpened,
+        PushMessage,
+        PushOptions,
+        PushPermission,
+        PushService,
+        PushSupport,
+        PushTokenRegistrar,
+        registerPushBackgroundHandler;
