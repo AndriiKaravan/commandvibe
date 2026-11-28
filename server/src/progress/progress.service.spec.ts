@@ -1,5 +1,5 @@
 import { createMemoryRepositories } from '../data/memory/memory-repositories';
-import { aGroup, aMember, aSubmission } from '../data/repositories.contract';
+import { aCell, aGroup, aMember, aSubmission } from '../data/repositories.contract';
 import { GroupsService } from '../groups/groups.service';
 import { PhotosService } from '../photos/photos.service';
 import { ProgressService } from './progress.service';
@@ -32,7 +32,14 @@ describe('ProgressService', () => {
         return { relation: 'member' as const, memberId: id };
       },
     };
-    service = new ProgressService(groups, photos as unknown as PhotosService, repos.members, repos.submissions, now);
+    service = new ProgressService(
+      groups,
+      photos as unknown as PhotosService,
+      repos.members,
+      repos.submissions,
+      repos.cells,
+      now,
+    );
   });
 
   async function setup() {
@@ -91,6 +98,24 @@ describe('ProgressService', () => {
     await repos.submissions.put(aSubmission(group.id, 0, olena.id), null);
     const progress = await service.progressFor(ownerSubject, group.id);
     expect(progress.days[0]).toMatchObject({ done: 1, mine: null });
+  });
+
+  it('should name the latest open day as the current one', async () => {
+    const { group, olena } = await setup();
+    await repos.cells.replaceAll(group.id, [
+      aCell(group.id, 0, { state: 'open' }),
+      aCell(group.id, 1, { state: 'open' }),
+      aCell(group.id, 2, { state: 'closed' }),
+    ]);
+    const progress = await service.progressFor({ kind: 'member', id: olena.id, groupId: group.id }, group.id);
+    expect(progress.currentDay).toBe(1);
+  });
+
+  it('should have no current day before any day opens', async () => {
+    const { group, olena } = await setup();
+    await repos.cells.replaceAll(group.id, [aCell(group.id, 0, { state: 'closed' })]);
+    const progress = await service.progressFor({ kind: 'member', id: olena.id, groupId: group.id }, group.id);
+    expect(progress.currentDay).toBeUndefined();
   });
 
   it('should return no days for a group without a game', async () => {

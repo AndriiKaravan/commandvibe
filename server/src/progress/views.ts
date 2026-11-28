@@ -10,5 +10,7 @@ export interface DayProgressView {
 
 export interface ProgressView {
   days: DayProgressView[];
+  /** Index of the latest open day; absent before the first one opens. */
+  currentDay?: number;
   serverTime: string;
 }

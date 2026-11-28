@@ -25,6 +25,7 @@ describe('Progress', () => {
     const response = await api().get(`/groups/${groupId}/progress`).set('authorization', taras.auth);
     expect(response.status).toBe(200);
     expect(response.body.days).toHaveLength(7);
+    expect(response.body.currentDay).toBe(0);
     expect(response.body.days[0]).toEqual({ dayIndex: 0, done: 1, total: 2, mine: false });
     const own = await api().get(`/groups/${groupId}/progress`).set('authorization', ira.auth);
     expect(own.body.days[0].mine).toBe(true);
