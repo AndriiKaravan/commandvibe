@@ -150,10 +150,16 @@ try {
   await waitText(second, 'Webby');
   await waitText(second, 'День 1');
   console.log('Feed lists the photos with their day');
+  // Bella's own photo comes first (newest), Webby's second; the last visible heart is Webby's.
+  await tap(second, 'Вподобати');
+  await waitText(second, 'Прибрати вподобання');
+  console.log('Bella liked Webby photo');
   await tap(second, 'Рейтинг');
-  await waitText(second, '10 б.');
+  // Webby: 10 done + 5 first + 2 sympathy (one like among two others); Bella: 10 + 3.
+  await waitText(second, '17 б.');
+  await waitText(second, '13 б.');
   await waitText(second, 'Bella');
-  console.log('Rating shows the points');
+  console.log('Rating shows the points with the like counted');
   await tap(second, 'Календар');
   await waitText(second, 'День 1, Виконано');
   console.log('Calendar marks day 1 as done');
@@ -170,6 +176,10 @@ try {
   await tap(second, 'Я');
   await waitText(second, 'Cara');
   console.log('a member with a chosen avatar is listed on the Me tab');
+  await tap(second, 'Журнал балів');
+  await waitText(second, 'Швидкість · 2-й');
+  await waitText(second, 'Разом: 13 б.');
+  console.log('the points journal says where Bella points come from');
 } finally {
   await browser.close();
   server.close();
