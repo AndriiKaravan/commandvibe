@@ -417,6 +417,13 @@ class MemoryNotifications implements NotificationRepository {
     return found && copy(found);
   }
 
+  async markPushed(groupId: string, id: string, at: Date): Promise<void> {
+    const found = this.items.get(this.key(groupId, id));
+    if (found) {
+      found.pushedAt = new Date(at);
+    }
+  }
+
   async list(groupId: string, memberId: string, limit: number): Promise<Notification[]> {
     return this.of(groupId, memberId).slice(0, limit).map(copy);
   }

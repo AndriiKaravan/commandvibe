@@ -11,10 +11,9 @@ firebase.initializeApp({
   storageBucket: 'commandvibe-ks.firebasestorage.app',
 });
 
-// Notification messages are shown by the SDK while no tab is in focus.
-firebase.messaging();
-
-// The server sends only an in-app route; open or focus the app there.
+// Registered before the SDK's own handler, which stops later listeners for FCM notifications.
+// The server sends only an in-app route; open the app there. This worker controls no app window,
+// so an existing tab cannot be navigated from here.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const payload = event.notification.data && event.notification.data.FCM_MSG;
@@ -22,16 +21,8 @@ self.addEventListener('notificationclick', (event) => {
   if (typeof route !== 'string' || !route.startsWith('/g/')) {
     return;
   }
-  const target = new URL(route, self.location.origin).href;
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
-      for (const client of windows) {
-        if ('focus' in client) {
-          client.navigate(target);
-          return client.focus();
-        }
-      }
-      return self.clients.openWindow(target);
-    }),
-  );
+  event.waitUntil(self.clients.openWindow(new URL(route, self.location.origin).href));
 });
+
+// Notification messages are shown by the SDK while no tab is in focus.
+firebase.messaging();

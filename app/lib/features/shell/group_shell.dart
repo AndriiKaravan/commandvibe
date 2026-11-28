@@ -69,6 +69,7 @@ class _GroupShellState extends State<GroupShell> {
       loadStandings: () => services.standings.standings(widget.groupId),
       loadNotifications: () => services.notifications.list(widget.groupId),
       onRevoked: _leave,
+      isOwner: widget.isOwner,
     )..start();
     unawaited(_startEffects(services.sessions));
   }

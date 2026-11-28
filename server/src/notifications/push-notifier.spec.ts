@@ -92,7 +92,7 @@ describe('PushNotifier', () => {
   it('should send organizer service pushes to the organizer account', async () => {
     await deliver(entry('org:u1', 'complaint'));
     expect(messaging.sentTokens).toEqual(['tok-org']);
-    expect(messaging.multicasts[0].data?.route).toBe('/g/g1/me');
+    expect(messaging.multicasts[0].data?.route).toBe('/g/g1/complaints');
   });
 
   it('should not push kinds that stay in the app only', async () => {
@@ -125,6 +125,16 @@ describe('PushNotifier', () => {
     expect(messaging.multicasts).toHaveLength(3);
     await deliver(entry('a', 'my_turn'));
     expect(messaging.multicasts).toHaveLength(4);
+  });
+
+  it('should not let personal pushes sent first use up the daily cap', async () => {
+    await deliver(entry('a', 'my_turn'));
+    await deliver(entry('a', 'my_turn'));
+    await deliver(entry('a', 'my_turn'));
+    for (let i = 0; i < 3; i++) {
+      await deliver(entry('a', 'comment'));
+    }
+    expect(messaging.multicasts).toHaveLength(6);
   });
 
   it('should count the cap per local day', async () => {

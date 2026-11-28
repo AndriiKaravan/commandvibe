@@ -47,5 +47,13 @@ void main() {
       expect(worker, contains('889388170734'));
       expect(worker, contains('commandvibe-ks'));
     });
+
+    test('the worker should handle clicks before the SDK takes the event', () {
+      final worker = _read('web/firebase-messaging-sw.js');
+      expect(
+        worker.indexOf("addEventListener('notificationclick'"),
+        lessThan(worker.indexOf('firebase.messaging()')),
+      );
+    });
   });
 }

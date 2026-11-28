@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:commandvibe/core/api/api_exception.dart';
 import 'package:commandvibe/core/realtime/live_loader.dart';
 import 'package:commandvibe/core/services_scope.dart';
+import 'package:commandvibe/features/notifications/ui/owner_notification_watcher.dart';
 import 'package:commandvibe/core/theme/glass_panel.dart';
 import 'package:commandvibe/features/notifications/data/notifications_models.dart';
 import 'package:commandvibe/features/notifications/ui/notification_text.dart';
@@ -22,6 +25,8 @@ class NotificationsView extends StatefulWidget {
 
 class _NotificationsViewState extends State<NotificationsView> {
   LiveLoader<NotificationsPage>? _loader;
+  OwnerNotificationWatcher? _ownerWatcher;
+  bool _disposed = false;
 
   @override
   void didChangeDependencies() {
@@ -34,11 +39,27 @@ class _NotificationsViewState extends State<NotificationsView> {
         reloadOn: notificationEvents,
         load: () => services.notifications.list(widget.groupId),
       )..start();
+      unawaited(_watchOwnerEntries(services));
     }
+  }
+
+  /// An organizer's service entries come over the owner topic.
+  Future<void> _watchOwnerEntries(AppServices services) async {
+    final session = await services.sessions.read();
+    if (_disposed || session?.isOrganizer != true) {
+      return;
+    }
+    _ownerWatcher = OwnerNotificationWatcher(
+      services.realtime,
+      groupId: widget.groupId,
+      onChange: _loader!.reload,
+    );
   }
 
   @override
   void dispose() {
+    _disposed = true;
+    _ownerWatcher?.dispose();
     _loader?.dispose();
     super.dispose();
   }

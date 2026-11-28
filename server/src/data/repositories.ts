@@ -129,6 +129,8 @@ export interface NotificationRepository {
   /** Creates or replaces the entry. */
   put(notification: Notification): Promise<void>;
   get(groupId: string, id: string): Promise<Notification | undefined>;
+  /** Stamps a push on the entry without touching its other fields (a read may have happened meanwhile). */
+  markPushed(groupId: string, id: string, at: Date): Promise<void>;
   /** Newest first. */
   list(groupId: string, memberId: string, limit: number): Promise<Notification[]>;
   /** Marks the given entries (all when [ids] is omitted) as read; returns how many changed. */

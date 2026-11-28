@@ -529,6 +529,19 @@ class FirestoreNotifications implements NotificationRepository {
     return fromStore<Notification>((await this.collection(groupId).doc(id).get()).data());
   }
 
+  async markPushed(groupId: string, id: string, at: Date): Promise<void> {
+    try {
+      await this.collection(groupId)
+        .doc(id)
+        .update({ pushedAt: Timestamp.fromDate(at) });
+    } catch (error) {
+      // The entry was trimmed or removed meanwhile.
+      if ((error as { code?: number }).code !== 5) {
+        throw error;
+      }
+    }
+  }
+
   async list(groupId: string, memberId: string, limit: number): Promise<Notification[]> {
     return (await this.all(groupId, memberId)).slice(0, limit);
   }

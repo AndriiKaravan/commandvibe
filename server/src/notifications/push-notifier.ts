@@ -21,13 +21,13 @@ export const dailyPushCap = 3;
 
 const personalKinds: readonly NotificationKind[] = ['my_turn', 'complaint', 'pending_member'];
 
-const texts: Partial<Record<NotificationKind, { body: string; page: 'today' | 'feed' | 'me' }>> = {
+const texts: Partial<Record<NotificationKind, { body: string; page: 'today' | 'feed' | 'me' | 'complaints' }>> = {
   day_opened: { body: 'Відкрито нове завдання дня', page: 'today' },
   my_turn: { body: 'Твоя черга обирати завдання', page: 'today' },
   reminder: { body: 'Сьогодні ще чекає завдання', page: 'today' },
   comment: { body: 'Новий коментар до твого фото', page: 'feed' },
   pending_member: { body: 'Новий учасник чекає підтвердження', page: 'me' },
-  complaint: { body: 'Є скарга на фото', page: 'me' },
+  complaint: { body: 'Є скарга на фото', page: 'complaints' },
 };
 
 /** Decides whether a recorded entry also becomes a push, and sends it. Never throws. */
@@ -67,7 +67,7 @@ export class PushNotifier implements NotificationDelivery {
       data: { route: `/g/${groupId}/${text.page}`, kind: entry.kind },
     });
     if (report.sent > 0) {
-      await this.notifications.put({ ...entry, pushedAt: now });
+      await this.notifications.markPushed(entry.groupId, entry.id, now);
     }
   }
 

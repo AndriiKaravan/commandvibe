@@ -151,5 +151,58 @@ void main() {
 
       expect(live.notifications.value?.unread, 0);
     });
+
+    test(
+      'should reload notifications on an owner-topic entry only for an owner',
+      () async {
+        GroupLive build({required bool owner}) => GroupLive(
+          realtime,
+          groupId: 'g1',
+          loadProgress: () async => GameProgress(
+            days: const [],
+            currentDay: null,
+            serverTime: DateTime.utc(2026, 12),
+          ),
+          loadStandings: () async => const Standings(items: [], me: null),
+          loadNotifications: () async {
+            notificationLoads++;
+            return const NotificationsPage(items: [], unread: 0);
+          },
+          onRevoked: () {},
+          isOwner: owner,
+        );
+        final owner = build(owner: true)..start();
+        await pumpEventQueue();
+        final before = notificationLoads;
+        realtime.emit(
+          RealtimeEvent(
+            topic: 'org:g1',
+            type: 'notification.created',
+            data: const {},
+            id: 'o1',
+            serverTime: DateTime.utc(2026, 12),
+          ),
+        );
+        await pumpEventQueue();
+        expect(notificationLoads, greaterThan(before));
+        owner.dispose();
+
+        final member = build(owner: false)..start();
+        await pumpEventQueue();
+        final beforeMember = notificationLoads;
+        realtime.emit(
+          RealtimeEvent(
+            topic: 'org:g1',
+            type: 'notification.created',
+            data: const {},
+            id: 'o2',
+            serverTime: DateTime.utc(2026, 12),
+          ),
+        );
+        await pumpEventQueue();
+        expect(notificationLoads, beforeMember);
+        member.dispose();
+      },
+    );
   });
 }

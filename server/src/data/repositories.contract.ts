@@ -470,6 +470,18 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
         expect((await repos.notifications.get(group.id, 'a_k1'))?.kind).toBe('day_opened');
       });
 
+      it('should stamp a push without losing a read that happened meanwhile', async () => {
+        const group = aGroup();
+        await repos.notifications.put(aNotification(group.id, 'a', 'k1'));
+        await repos.notifications.markRead(group.id, 'a', undefined, new Date('2026-12-03T00:00:00Z'));
+        const at = new Date('2026-12-03T01:00:00Z');
+        await repos.notifications.markPushed(group.id, 'a_k1', at);
+        const entry = await repos.notifications.get(group.id, 'a_k1');
+        expect(entry?.pushedAt).toEqual(at);
+        expect(entry?.readAt).toEqual(new Date('2026-12-03T00:00:00Z'));
+        await expect(repos.notifications.markPushed(group.id, 'a_gone', at)).resolves.toBeUndefined();
+      });
+
       it('should replace an entry with put', async () => {
         const group = aGroup();
         await repos.notifications.put(aNotification(group.id, 'a', 'k1', { kind: 'likes', count: 1 }));

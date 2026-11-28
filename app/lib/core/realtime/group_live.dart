@@ -1,5 +1,6 @@
 import 'package:commandvibe/core/realtime/live_loader.dart';
 import 'package:commandvibe/features/notifications/data/notifications_models.dart';
+import 'package:commandvibe/features/notifications/ui/owner_notification_watcher.dart';
 import 'package:commandvibe/features/progress/data/progress_models.dart';
 import 'package:commandvibe/features/standings/data/standings_models.dart';
 import 'package:flutter/widgets.dart';
@@ -16,7 +17,9 @@ class GroupLive {
     required Future<Standings> Function() loadStandings,
     required Future<NotificationsPage> Function() loadNotifications,
     required this.onRevoked,
-  }) : progress = LiveLoader<GameProgress>(
+    this.isOwner = false,
+  }) : _realtime = realtime,
+       progress = LiveLoader<GameProgress>(
          realtime,
          topic: 'group:$groupId',
          reloadOn: _progressEvents,
@@ -54,6 +57,9 @@ class GroupLive {
   final LiveLoader<Standings> standings;
   final LiveLoader<NotificationsPage> notifications;
   final String groupId;
+  final bool isOwner;
+  final RealtimeClient _realtime;
+  OwnerNotificationWatcher? _ownerWatcher;
 
   /// Called once, when the server starts refusing this member's reads.
   final VoidCallback onRevoked;
@@ -64,6 +70,13 @@ class GroupLive {
     progress.start();
     standings.start();
     notifications.start();
+    if (isOwner) {
+      _ownerWatcher = OwnerNotificationWatcher(
+        _realtime,
+        groupId: groupId,
+        onChange: notifications.reload,
+      );
+    }
   }
 
   void _checkRevoked() {
@@ -78,6 +91,7 @@ class GroupLive {
     progress.dispose();
     standings.dispose();
     notifications.dispose();
+    _ownerWatcher?.dispose();
   }
 
   /// The loaders of the group whose tabs [context] belongs to.
