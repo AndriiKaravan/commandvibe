@@ -2,6 +2,7 @@ import {
   Cell,
   CellState,
   Complaint,
+  Like,
   Group,
   GroupStatus,
   Member,
@@ -107,6 +108,17 @@ export interface SubmissionRepository {
   delete(groupId: string, dayIndex: number, memberId: string): Promise<void>;
 }
 
+export interface LikeRepository {
+  /** False when this person already likes the photo. */
+  add(like: Like): Promise<boolean>;
+  /** False when there was no such like. */
+  remove(groupId: string, dayIndex: number, authorMemberId: string, likerMemberId: string): Promise<boolean>;
+  listByGroup(groupId: string): Promise<Like[]>;
+  deleteForPhoto(groupId: string, dayIndex: number, authorMemberId: string): Promise<void>;
+  /** Removes likes given by and received by the member. */
+  deleteInvolving(groupId: string, memberId: string): Promise<void>;
+}
+
 export interface ComplaintRepository {
   /** False when this complainer has already complained about this photo. */
   add(complaint: Complaint): Promise<boolean>;
@@ -147,3 +159,4 @@ export const GROUPS = Symbol('GroupRepository');
 export const MEMBERS = Symbol('MemberRepository');
 export const SUBMISSIONS = Symbol('SubmissionRepository');
 export const COMPLAINTS = Symbol('ComplaintRepository');
+export const LIKES = Symbol('LikeRepository');

@@ -25,6 +25,6 @@ import { PhotosService } from './photos.service';
       useFactory: (key: string) => new PhotoUrlSigner(derivePhotoUrlKey(Buffer.from(key, 'utf8'))),
     },
   ],
-  exports: [PhotosService],
+  exports: [PhotosService, PHOTO_EVENTS],
 })
 export class PhotosModule {}

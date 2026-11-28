@@ -5,6 +5,7 @@ import { DataModule } from './data/data.module';
 import { FeedModule } from './feed/feed.module';
 import { GameModule } from './game/game.module';
 import { GroupsModule } from './groups/groups.module';
+import { LikesModule } from './likes/likes.module';
 import { MembersModule } from './members/members.module';
 import { HealthController } from './health/health.controller';
 import { PhotosModule } from './photos/photos.module';
@@ -34,6 +35,7 @@ export class AppModule {
         GameModule,
         MembersModule,
         PhotosModule,
+        LikesModule,
         FeedModule,
         ProgressModule,
         StandingsModule,

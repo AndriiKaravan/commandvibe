@@ -7,12 +7,21 @@ export interface SubmissionModeration {
   openComplaints: number;
 }
 
+export interface LikeInfo {
+  count: number;
+  /** Whether the viewer likes the photo. */
+  mine: boolean;
+  /** Who liked it; absent when the group shows only the count. */
+  by?: { memberId: string; displayName: string; avatar?: string }[];
+}
+
 export interface SubmissionView {
   memberId: string;
   displayName: string;
   avatar?: string;
   submittedAt: string;
   access: 'full' | 'blur';
+  likes: LikeInfo;
   /** Only for `full`; a short-lived link to the server. */
   photoUrl?: string;
   blurUrl: string;

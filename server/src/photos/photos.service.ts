@@ -10,12 +10,14 @@ import {
 } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { CLOCK } from '../auth/session.service';
-import { Cell, Group, Member, SessionSubject, SubjectKind, Submission, UploadSource } from '../data/models';
+import { Cell, Group, Like, Member, SessionSubject, SubjectKind, Submission, UploadSource } from '../data/models';
 import {
   CELLS,
   CellRepository,
   COMPLAINTS,
   ComplaintRepository,
+  LIKES,
+  LikeRepository,
   GROUPS,
   GroupRepository,
   MEMBERS,
@@ -37,7 +39,7 @@ import { PHOTO_STORE, PhotoStore, photoPaths } from './photo-store';
 import { PHOTO_URL_SIGNER } from './photo-url.token';
 import { PhotoUrlSigner } from './photo-url';
 import { Semaphore } from './upload-gate';
-import { DaySubmissionsView, FeedEntry, SubmissionView } from './views';
+import { DaySubmissionsView, FeedEntry, LikeInfo, SubmissionView } from './views';
 
 export interface SubmitOptions {
   mode: 'create' | 'replace';
@@ -69,6 +71,7 @@ export class PhotosService {
     @Inject(MEMBERS) private readonly members: MemberRepository,
     @Inject(SUBMISSIONS) private readonly submissions: SubmissionRepository,
     @Inject(COMPLAINTS) private readonly complaints: ComplaintRepository,
+    @Inject(LIKES) private readonly likes: LikeRepository,
     @Inject(PHOTO_STORE) private readonly store: PhotoStore,
     @Inject(PHOTO_EVENTS) private readonly events: PhotoEvents,
     @Inject(PHOTO_URL_SIGNER) private readonly signer: PhotoUrlSigner,
@@ -83,10 +86,11 @@ export class PhotosService {
     const viewer = await this.viewerOf(subject.kind, subject.id, group);
     const reveal = revealAt(cell.opensAt, group.timezone);
     const revealed = now.getTime() >= reveal.getTime();
-    const [stored, members, complaints] = await Promise.all([
+    const [stored, members, complaints, allLikes] = await Promise.all([
       this.submissions.listDay(groupId, day),
       this.members.list(groupId),
       this.complaints.listOpen(groupId),
+      this.likes.listByGroup(groupId),
     ]);
     const names = new Map(members.map((member) => [member.id, member]));
     const open = (authorId: string): number =>
@@ -106,7 +110,15 @@ export class PhotosService {
       if (!access.listed) {
         continue;
       }
-      const view = this.toView(sub, author, access, subject, viewer, open(sub.memberId), now);
+      const likes = this.likeInfo(
+        allLikes,
+        sub,
+        access.image === 'full',
+        viewer.memberId,
+        names,
+        group.settings.likesCountOnly,
+      );
+      const view = this.toView(sub, author, access, likes, subject, viewer, open(sub.memberId), now);
       if (sub.memberId === viewer.memberId) {
         mine = view;
       } else {
@@ -140,10 +152,11 @@ export class PhotosService {
     const now = this.clock();
     const group = await this.groupsService.getFor(subject, groupId);
     const viewer = await this.viewerOf(subject.kind, subject.id, group);
-    const [members, complaints, cells] = await Promise.all([
+    const [members, complaints, cells, allLikes] = await Promise.all([
       this.members.list(groupId),
       this.complaints.listOpen(groupId),
       this.cells.list(groupId),
+      this.likes.listByGroup(groupId),
     ]);
     const stored = await this.submissions.listByGroup(groupId, openedDayCount(cells));
     const names = new Map(members.map((member) => [member.id, member]));
@@ -165,7 +178,16 @@ export class PhotosService {
         continue;
       }
       entries.push({
-        view: this.toView(sub, author, access, subject, viewer, open, now),
+        view: this.toView(
+          sub,
+          author,
+          access,
+          this.likeInfo(allLikes, sub, access.image === 'full', viewer.memberId, names, group.settings.likesCountOnly),
+          subject,
+          viewer,
+          open,
+          now,
+        ),
         dayIndex: sub.dayIndex,
         taskTitle: taskView(cell.task).title,
         revealAt: revealAt(cell.opensAt, group.timezone).toISOString(),
@@ -240,8 +262,9 @@ export class PhotosService {
       throw new ForbiddenException('not_playing');
     }
     if (result === 'replaced') {
-      // Complaints were about the earlier photo.
+      // Complaints and likes were about the earlier photo.
       await this.complaints.resolve(groupId, day, memberId, now);
+      await this.likes.deleteForPhoto(groupId, day, memberId);
     }
     if (result === 'replaced' && existing) {
       await this.store.delete([existing.photoPath, existing.blurPath]).catch((error: unknown) => {
@@ -254,7 +277,7 @@ export class PhotosService {
     });
     const author = await this.members.get(groupId, memberId);
     const access = this.decide(viewer, true, submission, true, 0, false);
-    return this.toView(submission, author, access, subject, viewer, 0, now);
+    return this.toView(submission, author, access, { count: 0, mine: false }, subject, viewer, 0, now);
   }
 
   /** The bytes behind a link, or undefined when the link must not work: the caller answers 404 either way. */
@@ -313,6 +336,7 @@ export class PhotosService {
       await this.submissions.delete(groupId, sub.dayIndex, memberId);
     }
     await this.complaints.deleteInvolving(groupId, memberId);
+    await this.likes.deleteInvolving(groupId, memberId);
   }
 
   private async process(bytes: Buffer) {
@@ -398,10 +422,41 @@ export class PhotosService {
     );
   }
 
+  /** Likes of one photo as the viewer may see them; a blurred photo shows none. */
+  private likeInfo(
+    all: Like[],
+    sub: Submission,
+    visibleInFull: boolean,
+    viewerMemberId: string | undefined,
+    members: ReadonlyMap<string, Member>,
+    countOnly: boolean,
+  ): LikeInfo {
+    if (!visibleInFull) {
+      return { count: 0, mine: false };
+    }
+    const likers = all
+      .filter((l) => l.dayIndex === sub.dayIndex && l.authorMemberId === sub.memberId)
+      .filter((l) => members.get(l.likerMemberId)?.status === 'active')
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    const info: LikeInfo = { count: likers.length, mine: likers.some((l) => l.likerMemberId === viewerMemberId) };
+    if (!countOnly) {
+      info.by = likers.map((l) => {
+        const member = members.get(l.likerMemberId)!;
+        return {
+          memberId: member.id,
+          displayName: member.displayName,
+          ...(member.avatar ? { avatar: member.avatar } : {}),
+        };
+      });
+    }
+    return info;
+  }
+
   private toView(
     sub: Submission,
     author: Pick<Member, 'displayName' | 'avatar'> | undefined,
     access: PhotoAccess,
+    likes: LikeInfo,
     subject: SessionSubject,
     viewer: Viewer,
     openComplaints: number,
@@ -419,6 +474,7 @@ export class PhotosService {
       ...(author?.avatar ? { avatar: author.avatar } : {}),
       submittedAt: sub.submittedAt.toISOString(),
       access: access.image === 'full' ? 'full' : 'blur',
+      likes,
       blurUrl: link('blur'),
       width: sub.width,
       height: sub.height,

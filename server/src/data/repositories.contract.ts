@@ -1,8 +1,9 @@
-import { Cell, Complaint, Group, Member, Session, Submission, defaultGroupSettings, nameKeyOf } from './models';
+import { Cell, Complaint, Group, Like, Member, Session, Submission, defaultGroupSettings, nameKeyOf } from './models';
 import {
   CellRepository,
   ComplaintRepository,
   GroupRepository,
+  LikeRepository,
   MemberRepository,
   NameTakenError,
   SessionRepository,
@@ -16,6 +17,7 @@ export interface RepositorySet {
   sessions: SessionRepository;
   submissions: SubmissionRepository;
   complaints: ComplaintRepository;
+  likes: LikeRepository;
 }
 
 let counter = 0;
@@ -94,6 +96,16 @@ export function aComplaint(groupId: string, dayIndex: number, author: string, co
     reason: 'other',
     status: 'open',
     createdAt: new Date('2026-12-02T08:00:00Z'),
+  };
+}
+
+export function aLike(groupId: string, dayIndex: number, author: string, liker: string): Like {
+  return {
+    groupId,
+    dayIndex,
+    authorMemberId: author,
+    likerMemberId: liker,
+    createdAt: new Date('2026-12-02T09:00:00Z'),
   };
 }
 
@@ -330,6 +342,57 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
         await repos.submissions.delete(group.id, 1, 'm1');
         expect(await repos.submissions.get(group.id, 1, 'm1')).toBeUndefined();
         await repos.submissions.delete(group.id, 1, 'm1');
+      });
+    });
+
+    describe('likes', () => {
+      it('should keep one like per liker and photo', async () => {
+        const group = aGroup();
+        expect(await repos.likes.add(aLike(group.id, 1, 'a', 'b'))).toBe(true);
+        expect(await repos.likes.add(aLike(group.id, 1, 'a', 'b'))).toBe(false);
+        expect(await repos.likes.add(aLike(group.id, 1, 'a', 'c'))).toBe(true);
+        expect(await repos.likes.add(aLike(group.id, 2, 'a', 'b'))).toBe(true);
+        expect(await repos.likes.listByGroup(group.id)).toHaveLength(3);
+      });
+
+      it('should remove a like and say whether there was one', async () => {
+        const group = aGroup();
+        await repos.likes.add(aLike(group.id, 1, 'a', 'b'));
+        expect(await repos.likes.remove(group.id, 1, 'a', 'b')).toBe(true);
+        expect(await repos.likes.remove(group.id, 1, 'a', 'b')).toBe(false);
+        expect(await repos.likes.listByGroup(group.id)).toEqual([]);
+      });
+
+      it('should list only the likes of the asked group', async () => {
+        const group = aGroup();
+        const other = aGroup();
+        await repos.likes.add(aLike(group.id, 1, 'a', 'b'));
+        await repos.likes.add(aLike(other.id, 1, 'a', 'b'));
+        expect((await repos.likes.listByGroup(group.id)).map((l) => l.groupId)).toEqual([group.id]);
+      });
+
+      it('should delete the likes under one photo only', async () => {
+        const group = aGroup();
+        await repos.likes.add(aLike(group.id, 1, 'a', 'b'));
+        await repos.likes.add(aLike(group.id, 1, 'a', 'c'));
+        await repos.likes.add(aLike(group.id, 1, 'x', 'b'));
+        await repos.likes.add(aLike(group.id, 2, 'a', 'b'));
+        await repos.likes.deleteForPhoto(group.id, 1, 'a');
+        const left = await repos.likes.listByGroup(group.id);
+        expect(left.map((l) => `${l.dayIndex}:${l.authorMemberId}:${l.likerMemberId}`).sort()).toEqual([
+          '1:x:b',
+          '2:a:b',
+        ]);
+      });
+
+      it('should delete the likes a member gave and received', async () => {
+        const group = aGroup();
+        await repos.likes.add(aLike(group.id, 1, 'a', 'b'));
+        await repos.likes.add(aLike(group.id, 1, 'b', 'c'));
+        await repos.likes.add(aLike(group.id, 1, 'c', 'd'));
+        await repos.likes.deleteInvolving(group.id, 'b');
+        const left = await repos.likes.listByGroup(group.id);
+        expect(left.map((l) => `${l.authorMemberId}:${l.likerMemberId}`)).toEqual(['c:d']);
       });
     });
 

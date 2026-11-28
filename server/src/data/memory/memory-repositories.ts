@@ -2,6 +2,7 @@ import {
   Cell,
   CellState,
   Complaint,
+  Like,
   Group,
   GroupStatus,
   Member,
@@ -14,6 +15,7 @@ import { nextPinAttempt } from '../pin-attempts';
 import {
   CellRepository,
   ComplaintRepository,
+  LikeRepository,
   GroupRepository,
   SubmissionRepository,
   MemberRepository,
@@ -335,6 +337,46 @@ class MemorySubmissions implements SubmissionRepository {
   }
 }
 
+class MemoryLikes implements LikeRepository {
+  private readonly items = new Map<string, Like>();
+
+  private key = (groupId: string, dayIndex: number, author: string, liker: string): string =>
+    `${groupId}/${dayIndex}/${author}/${liker}`;
+
+  async add(like: Like): Promise<boolean> {
+    const key = this.key(like.groupId, like.dayIndex, like.authorMemberId, like.likerMemberId);
+    if (this.items.has(key)) {
+      return false;
+    }
+    this.items.set(key, copy(like));
+    return true;
+  }
+
+  async remove(groupId: string, dayIndex: number, authorMemberId: string, likerMemberId: string): Promise<boolean> {
+    return this.items.delete(this.key(groupId, dayIndex, authorMemberId, likerMemberId));
+  }
+
+  async listByGroup(groupId: string): Promise<Like[]> {
+    return [...this.items.values()].filter((l) => l.groupId === groupId).map(copy);
+  }
+
+  async deleteForPhoto(groupId: string, dayIndex: number, authorMemberId: string): Promise<void> {
+    for (const [key, l] of this.items) {
+      if (l.groupId === groupId && l.dayIndex === dayIndex && l.authorMemberId === authorMemberId) {
+        this.items.delete(key);
+      }
+    }
+  }
+
+  async deleteInvolving(groupId: string, memberId: string): Promise<void> {
+    for (const [key, l] of this.items) {
+      if (l.groupId === groupId && (l.authorMemberId === memberId || l.likerMemberId === memberId)) {
+        this.items.delete(key);
+      }
+    }
+  }
+}
+
 class MemoryComplaints implements ComplaintRepository {
   private readonly items = new Map<string, Complaint>();
 
@@ -394,8 +436,10 @@ export function createMemoryRepositories(): {
   members: MemberRepository;
   submissions: SubmissionRepository;
   complaints: ComplaintRepository;
+  likes: LikeRepository;
 } {
   return {
+    likes: new MemoryLikes(),
     submissions: new MemorySubmissions(),
     complaints: new MemoryComplaints(),
     cells: new MemoryCells(),

@@ -153,6 +153,16 @@ export interface Submission {
   hiddenAt?: Date;
 }
 
+/** One person's like under one photo; likes are the votes of the game (design 6a, 9). */
+export interface Like {
+  groupId: string;
+  dayIndex: number;
+  /** Author of the photo. */
+  authorMemberId: string;
+  likerMemberId: string;
+  createdAt: Date;
+}
+
 export type ComplaintReason = 'inappropriate' | 'not_task' | 'other';
 
 export interface Complaint {
