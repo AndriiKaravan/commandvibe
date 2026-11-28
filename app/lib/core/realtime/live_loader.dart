@@ -11,6 +11,9 @@ const submissionEvents = {
   'submission.hidden',
   'submission.restored',
   'photos.revealed',
+  'like.changed',
+  'comment.created',
+  'comment.deleted',
 };
 
 /// Event types that change who is in the game.

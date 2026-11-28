@@ -127,6 +127,9 @@ abstract interface class GroupsRepository {
 
   Future<List<GroupMember>> members(String groupId);
 
+  /// Organizer only: whether likes show only their count, with no names.
+  Future<void> setLikesCountOnly(String groupId, bool value);
+
   /// Sets the caller's own avatar; null goes back to initials.
   Future<void> setAvatar(String groupId, String? avatar);
 
@@ -185,6 +188,10 @@ class ApiGroupsRepository implements GroupsRepository {
     final list = await _api.get('/groups/$groupId/members') as List<dynamic>;
     return list.cast<Map<String, dynamic>>().map(GroupMember.fromJson).toList();
   }
+
+  @override
+  Future<void> setLikesCountOnly(String groupId, bool value) =>
+      _api.patch('/groups/$groupId/settings', body: {'likesCountOnly': value});
 
   @override
   Future<void> setAvatar(String groupId, String? avatar) =>

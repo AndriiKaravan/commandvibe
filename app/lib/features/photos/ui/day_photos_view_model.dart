@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:commandvibe/core/api/api_exception.dart';
+import 'package:commandvibe/core/realtime/live_loader.dart';
 import 'package:commandvibe/features/photos/data/photos_models.dart';
 import 'package:commandvibe/features/photos/data/photos_repository.dart';
 import 'package:flutter/foundation.dart';
@@ -17,13 +18,7 @@ class DayPhotosViewModel extends ChangeNotifier {
     this.linkRefreshGap = const Duration(seconds: 30),
   }) : _clock = clock ?? DateTime.now;
 
-  static const _photoEvents = {
-    'submission.created',
-    'submission.replaced',
-    'submission.hidden',
-    'submission.restored',
-    'photos.revealed',
-  };
+  static const _photoEvents = submissionEvents;
 
   final PhotosRepository _repository;
   final RealtimeClient _realtime;

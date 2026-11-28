@@ -22,6 +22,10 @@ class FakeGroupsRepository implements GroupsRepository {
   Future<String> rotateInvite(String groupId) => throw UnimplementedError();
 
   @override
+  Future<void> setLikesCountOnly(String groupId, bool value) =>
+      throw UnimplementedError();
+
+  @override
   Future<void> setAvatar(String groupId, String? avatar) =>
       throw UnimplementedError();
 

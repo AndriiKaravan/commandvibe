@@ -90,6 +90,32 @@ void main() {
       expect(standings.nextRank, isNull);
     });
 
+    test('should read the fans of a player and default to none', () {
+      final standings = Standings.fromJson({
+        'serverTime': '2026-12-02T10:00:00.000Z',
+        'items': [
+          {
+            'memberId': 'a',
+            'displayName': 'Anna',
+            'points': 30,
+            'rank': 1,
+            'mine': false,
+            'fans': 4,
+          },
+          {
+            'memberId': 'b',
+            'displayName': 'Boris',
+            'points': 20,
+            'rank': 2,
+            'mine': false,
+          },
+        ],
+      });
+
+      expect(standings.items.first.fans, 4);
+      expect(standings.items.last.fans, 0);
+    });
+
     test('should have no own place for an organizer who does not play', () {
       final standings = Standings.fromJson({
         'serverTime': '2026-12-02T10:00:00.000Z',

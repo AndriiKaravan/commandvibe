@@ -46,6 +46,53 @@ class Moderation {
 }
 
 @immutable
+class Liker {
+  const Liker({required this.memberId, required this.displayName, this.avatar});
+
+  factory Liker.fromJson(Map<String, dynamic> json) => Liker(
+    memberId: json['memberId'] as String,
+    displayName: json['displayName'] as String,
+    avatar: json['avatar'] as String?,
+  );
+
+  final String memberId;
+  final String displayName;
+  final String? avatar;
+}
+
+/// Likes of one photo as the server shows them to this viewer.
+@immutable
+class LikeInfo {
+  const LikeInfo({required this.count, required this.mine, this.by});
+
+  const LikeInfo.none() : count = 0, mine = false, by = null;
+
+  factory LikeInfo.fromJson(Object? json) {
+    if (json is! Map<String, dynamic>) {
+      return const LikeInfo.none();
+    }
+    return LikeInfo(
+      count: json['count'] as int,
+      mine: json['mine'] as bool,
+      by: json['by'] == null
+          ? null
+          : [
+              for (final liker in json['by'] as List<dynamic>)
+                Liker.fromJson(liker as Map<String, dynamic>),
+            ],
+    );
+  }
+
+  final int count;
+  final bool mine;
+
+  /// Who liked it; null when the group shows only the count.
+  final List<Liker>? by;
+
+  bool get namesHidden => by == null;
+}
+
+@immutable
 class SubmissionItem {
   const SubmissionItem({
     required this.memberId,
@@ -57,6 +104,8 @@ class SubmissionItem {
     required this.height,
     required this.mine,
     this.avatar,
+    this.likes = const LikeInfo.none(),
+    this.commentCount = 0,
     this.photoUrl,
     this.version,
     this.status,
@@ -69,6 +118,8 @@ class SubmissionItem {
         memberId: json['memberId'] as String,
         displayName: json['displayName'] as String,
         avatar: json['avatar'] as String?,
+        likes: LikeInfo.fromJson(json['likes']),
+        commentCount: json['commentCount'] as int? ?? 0,
         submittedAt: DateTime.parse(json['submittedAt'] as String),
         access: json['access'] == 'full' ? PhotoAccess.full : PhotoAccess.blur,
         photoUrl: json['photoUrl'] == null
@@ -88,6 +139,8 @@ class SubmissionItem {
   final String memberId;
   final String displayName;
   final String? avatar;
+  final LikeInfo likes;
+  final int commentCount;
   final DateTime submittedAt;
   final PhotoAccess access;
 

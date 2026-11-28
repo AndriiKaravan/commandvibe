@@ -9,6 +9,7 @@ class StandingItem {
     required this.rank,
     required this.mine,
     this.avatar,
+    this.fans = 0,
   });
 
   factory StandingItem.fromJson(Map<String, dynamic> json) => StandingItem(
@@ -18,6 +19,7 @@ class StandingItem {
     points: json['points'] as int,
     rank: json['rank'] as int,
     mine: json['mine'] as bool,
+    fans: json['fans'] as int? ?? 0,
   );
 
   final String memberId;
@@ -26,6 +28,9 @@ class StandingItem {
   final int points;
   final int rank;
   final bool mine;
+
+  /// Different players who liked a photo of this member.
+  final int fans;
 }
 
 @immutable

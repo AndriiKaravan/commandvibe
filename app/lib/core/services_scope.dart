@@ -4,10 +4,13 @@ import 'package:commandvibe/core/platform/organizer_sign_in.dart';
 import 'package:commandvibe/core/platform/photo_source.dart';
 import 'package:commandvibe/core/platform/observed_session_store.dart';
 import 'package:commandvibe/features/calendar/data/calendar_repository.dart';
+import 'package:commandvibe/features/comments/data/comments_repository.dart';
 import 'package:commandvibe/features/feed/data/feed_repository.dart';
 import 'package:commandvibe/features/groups/data/groups_repository.dart';
 import 'package:commandvibe/features/join/data/join_repository.dart';
+import 'package:commandvibe/features/likes/data/likes_repository.dart';
 import 'package:commandvibe/features/photos/data/photos_repository.dart';
+import 'package:commandvibe/features/points/data/points_repository.dart';
 import 'package:commandvibe/features/progress/data/progress_repository.dart';
 import 'package:commandvibe/features/standings/data/standings_repository.dart';
 import 'package:commandvibe/features/today/data/today_repository.dart';
@@ -39,6 +42,9 @@ class AppServices {
   late final TodayRepository today = ApiTodayRepository(api);
   late final PhotosRepository photoSubmissions = ApiPhotosRepository(api);
   late final FeedRepository feed = ApiFeedRepository(api);
+  late final LikesRepository likes = ApiLikesRepository(api);
+  late final CommentsRepository comments = ApiCommentsRepository(api);
+  late final PointsRepository points = ApiPointsRepository(api);
   late final ProgressRepository progress = ApiProgressRepository(api);
   late final StandingsRepository standings = ApiStandingsRepository(api);
   late final OrganizerAuthRepository organizerAuth = ApiOrganizerAuthRepository(
