@@ -15,6 +15,7 @@ export interface FeedQuery {
 export interface FeedItem extends SubmissionView {
   dayIndex: number;
   taskTitle: { uk: string; en?: string };
+  revealAt: string;
 }
 
 export interface FeedPage {
@@ -70,7 +71,12 @@ export class FeedService {
     const slice = all.slice(0, limit);
     const last = slice[slice.length - 1];
     return {
-      items: slice.map((entry) => ({ ...entry.view, dayIndex: entry.dayIndex, taskTitle: entry.taskTitle })),
+      items: slice.map((entry) => ({
+        ...entry.view,
+        dayIndex: entry.dayIndex,
+        taskTitle: entry.taskTitle,
+        revealAt: entry.revealAt,
+      })),
       ...(all.length > limit && last
         ? {
             next: encodeCursor({

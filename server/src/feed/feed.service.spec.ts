@@ -9,6 +9,7 @@ function entry(at: string, dayIndex: number, memberId: string, extra: Partial<Su
   return {
     dayIndex,
     taskTitle: { uk: `День ${dayIndex}` },
+    revealAt: `2026-12-0${dayIndex + 3}T07:00:00.000Z`,
     view: {
       memberId,
       displayName: memberId,
@@ -46,7 +47,11 @@ describe('FeedService', () => {
   it('should list newest first with the day and its task title', async () => {
     const page = await service.page(subject, 'g1', { limit: 20 });
     expect(ids(page)).toEqual(['2b', '1c', '1a', '0b', '0a']);
-    expect(page.items[0]).toMatchObject({ dayIndex: 2, taskTitle: { uk: 'День 2' } });
+    expect(page.items[0]).toMatchObject({
+      dayIndex: 2,
+      taskTitle: { uk: 'День 2' },
+      revealAt: '2026-12-05T07:00:00.000Z',
+    });
     expect(page.next).toBeUndefined();
   });
 

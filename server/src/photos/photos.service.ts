@@ -168,6 +168,7 @@ export class PhotosService {
         view: this.toView(sub, author, access, subject, viewer, open, now),
         dayIndex: sub.dayIndex,
         taskTitle: taskView(cell.task).title,
+        revealAt: revealAt(cell.opensAt, group.timezone).toISOString(),
       });
     }
     return entries;

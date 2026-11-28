@@ -32,6 +32,8 @@ export interface FeedEntry {
   view: SubmissionView;
   dayIndex: number;
   taskTitle: { uk: string; en?: string };
+  /** When this day's photos become visible to everyone. */
+  revealAt: string;
 }
 
 export interface DaySubmissionsView {

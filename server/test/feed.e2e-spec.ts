@@ -31,6 +31,8 @@ describe('Feed', () => {
     expect(before.body.items[0]).toMatchObject({ memberId: ira.memberId, access: 'blur', dayIndex: 0 });
     expect(before.body.items[0].photoUrl).toBeUndefined();
     expect(before.body.items[0].taskTitle.uk).toEqual(expect.any(String));
+    expect(new Date(before.body.items[0].revealAt).getUTCHours()).toBeLessThan(24);
+    expect(before.body.items[0].revealAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     await submit(groupId, taras);
     const after = await feedOf(groupId, taras.auth);
     const iras = after.body.items.find((item: { memberId: string }) => item.memberId === ira.memberId);
