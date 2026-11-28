@@ -685,4 +685,13 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get profileChangePin => 'Змінити PIN';
+
+  @override
+  String get likeTooltip => 'Вподобати';
+
+  @override
+  String get unlikeTooltip => 'Прибрати вподобання';
+
+  @override
+  String get likersTitle => 'Вподобали';
 }

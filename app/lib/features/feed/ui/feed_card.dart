@@ -1,6 +1,8 @@
 import 'package:commandvibe/core/theme/glass_panel.dart';
 import 'package:commandvibe/features/avatars/member_avatar.dart';
 import 'package:commandvibe/features/feed/data/feed_models.dart';
+import 'package:commandvibe/features/likes/ui/like_button.dart';
+import 'package:commandvibe/features/likes/ui/likers_sheet.dart';
 import 'package:commandvibe/features/photos/ui/blurred_photo_tile.dart';
 import 'package:commandvibe/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -12,11 +14,15 @@ class FeedCard extends StatelessWidget {
     required this.item,
     required this.onOpen,
     required this.onImageFailed,
+    this.onLike,
   });
 
   final FeedItem item;
   final VoidCallback onOpen;
   final VoidCallback onImageFailed;
+
+  /// Gives or takes back my like; null where likes are not offered at all.
+  final Future<void> Function(bool liked)? onLike;
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +88,19 @@ class FeedCard extends StatelessWidget {
               onImageFailed: onImageFailed,
               width: double.infinity,
               height: 260,
+            ),
+          if (photo.photoUrl != null && onLike != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: LikeButton(
+                key: ValueKey('like-${item.key}'),
+                likes: photo.likes,
+                enabled: !photo.mine,
+                onToggle: onLike!,
+                onShowLikers: photo.likes.by == null
+                    ? null
+                    : () => LikersSheet.show(context, photo.likes.by!),
+              ),
             ),
         ],
       ),

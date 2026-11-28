@@ -1321,6 +1321,24 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Змінити PIN'**
   String get profileChangePin;
+
+  /// No description provided for @likeTooltip.
+  ///
+  /// In uk, this message translates to:
+  /// **'Вподобати'**
+  String get likeTooltip;
+
+  /// No description provided for @unlikeTooltip.
+  ///
+  /// In uk, this message translates to:
+  /// **'Прибрати вподобання'**
+  String get unlikeTooltip;
+
+  /// No description provided for @likersTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Вподобали'**
+  String get likersTitle;
 }
 
 class _AppLocalizationsDelegate

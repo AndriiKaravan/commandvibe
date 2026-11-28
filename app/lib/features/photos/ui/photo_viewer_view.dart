@@ -1,6 +1,9 @@
 import 'package:commandvibe/core/api/api_exception.dart';
 import 'package:commandvibe/core/services_scope.dart';
 import 'package:commandvibe/core/ui/glass_page.dart';
+import 'package:commandvibe/features/likes/data/likes_repository.dart';
+import 'package:commandvibe/features/likes/ui/like_button.dart';
+import 'package:commandvibe/features/likes/ui/likers_sheet.dart';
 import 'package:commandvibe/features/photos/data/photos_models.dart';
 import 'package:commandvibe/features/photos/data/photos_repository.dart';
 import 'package:commandvibe/features/photos/ui/photo_pager.dart';
@@ -26,6 +29,7 @@ class PhotoViewerView extends StatefulWidget {
 
 class _PhotoViewerViewState extends State<PhotoViewerView> {
   PhotosRepository? _repository;
+  LikesRepository? _repositoryLikes;
   List<SubmissionItem> _items = const [];
   bool _failed = false;
 
@@ -34,6 +38,7 @@ class _PhotoViewerViewState extends State<PhotoViewerView> {
     super.didChangeDependencies();
     if (_repository == null) {
       _repository = ServicesScope.of(context).photoSubmissions;
+      _repositoryLikes = ServicesScope.of(context).likes;
       _load();
     }
   }
@@ -89,6 +94,12 @@ class _PhotoViewerViewState extends State<PhotoViewerView> {
                 pageBuilder: (context, item) => PhotoViewerBody(
                   item: item,
                   onImageFailed: _load,
+                  onLike: (liked) => _repositoryLikes!.setLiked(
+                    widget.groupId,
+                    widget.dayIndex,
+                    item.memberId,
+                    liked,
+                  ),
                   onReport: (reason) async {
                     await _run(
                       () => _repository!.complain(
@@ -135,7 +146,11 @@ class PhotoViewerBody extends StatelessWidget {
     required this.onHide,
     required this.onDismiss,
     required this.onImageFailed,
+    this.onLike,
   });
+
+  /// Gives or takes back my like; null where likes are not offered.
+  final Future<void> Function(bool liked)? onLike;
 
   final SubmissionItem item;
   final Future<void> Function(ComplaintReason reason) onReport;
@@ -172,6 +187,19 @@ class PhotoViewerBody extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(item.displayName, style: text.titleMedium),
+        if (item.photoUrl != null && onLike != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: LikeButton(
+              key: ValueKey('like-${item.memberId}'),
+              likes: item.likes,
+              enabled: !item.mine && !item.isHidden,
+              onToggle: onLike!,
+              onShowLikers: item.likes.by == null
+                  ? null
+                  : () => LikersSheet.show(context, item.likes.by!),
+            ),
+          ),
         if (item.isHidden) FormMessage(l10n.photoHiddenBadge),
         if (moderation != null) ..._moderation(context, l10n, moderation),
         if (moderation == null && !item.mine)

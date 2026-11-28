@@ -140,6 +140,12 @@ class _FeedViewState extends State<FeedView> {
           key: ValueKey(item.key),
           item: item,
           onImageFailed: viewModel.imageFailed,
+          onLike: (liked) => ServicesScope.of(context).likes.setLiked(
+            widget.groupId,
+            item.dayIndex,
+            item.photo.memberId,
+            liked,
+          ),
           onOpen: () => context.push(
             '/g/${widget.groupId}/photo/${item.dayIndex}/${item.photo.memberId}',
           ),

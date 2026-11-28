@@ -93,6 +93,88 @@ void main() {
         expect(find.byKey(const Key('feed-photo')), findsNothing);
       },
     );
+
+    testWidgets('should offer a like on a revealed photo of someone else', (
+      tester,
+    ) async {
+      final asked = <bool>[];
+      await tester.pumpWidget(
+        _app(
+          FeedCard(
+            item: _item('Олена', full: true),
+            onOpen: () {},
+            onImageFailed: () {},
+            onLike: (liked) async => asked.add(liked),
+          ),
+        ),
+      );
+
+      await tester.ensureVisible(find.byKey(const Key('like-button')));
+      await tester.tap(find.byKey(const Key('like-button')));
+      await tester.pump();
+
+      expect(asked, [true]);
+    });
+
+    testWidgets('should not offer a like on a photo that is still blurred', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          FeedCard(
+            item: _item('Олена', full: false),
+            onOpen: () {},
+            onImageFailed: () {},
+            onLike: (liked) async {},
+          ),
+        ),
+      );
+
+      expect(find.byKey(const Key('like-button')), findsNothing);
+    });
+
+    testWidgets('should show only the count under my own photo', (
+      tester,
+    ) async {
+      var asked = 0;
+      final own = FeedItem(
+        photo: SubmissionItem(
+          memberId: 'me',
+          displayName: 'Я',
+          submittedAt: DateTime.utc(2026, 12, 2),
+          access: PhotoAccess.full,
+          photoUrl: Uri.parse('https://api.test/p/me'),
+          blurUrl: Uri.parse('https://api.test/p/me-blur'),
+          width: 800,
+          height: 600,
+          mine: true,
+          likes: const LikeInfo(count: 2, mine: false, by: []),
+        ),
+        dayIndex: 1,
+        taskTitle: const TaskText(uk: 'Ялинка'),
+        revealAt: DateTime.utc(2026, 12, 4, 7),
+      );
+      await tester.pumpWidget(
+        _app(
+          FeedCard(
+            item: own,
+            onOpen: () {},
+            onImageFailed: () {},
+            onLike: (liked) async => asked++,
+          ),
+        ),
+      );
+
+      await tester.ensureVisible(find.byKey(const Key('like-button')));
+      await tester.tap(
+        find.byKey(const Key('like-button')),
+        warnIfMissed: false,
+      );
+      await tester.pump();
+
+      expect(asked, 0);
+      expect(find.text('2'), findsOneWidget);
+    });
   });
 
   group('PhotoPager', () {

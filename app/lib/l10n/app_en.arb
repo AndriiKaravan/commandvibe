@@ -372,5 +372,8 @@
     }
   },
   "profileChangeAvatar": "Change avatar",
-  "profileChangePin": "Change PIN"
+  "profileChangePin": "Change PIN",
+  "likeTooltip": "Like",
+  "unlikeTooltip": "Remove your like",
+  "likersTitle": "Liked by"
 }

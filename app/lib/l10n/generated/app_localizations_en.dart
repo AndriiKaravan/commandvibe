@@ -689,4 +689,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileChangePin => 'Change PIN';
+
+  @override
+  String get likeTooltip => 'Like';
+
+  @override
+  String get unlikeTooltip => 'Remove your like';
+
+  @override
+  String get likersTitle => 'Liked by';
 }

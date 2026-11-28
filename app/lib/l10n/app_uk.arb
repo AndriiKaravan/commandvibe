@@ -400,5 +400,8 @@
     }
   },
   "profileChangeAvatar": "Змінити аватар",
-  "profileChangePin": "Змінити PIN"
+  "profileChangePin": "Змінити PIN",
+  "likeTooltip": "Вподобати",
+  "unlikeTooltip": "Прибрати вподобання",
+  "likersTitle": "Вподобали"
 }
