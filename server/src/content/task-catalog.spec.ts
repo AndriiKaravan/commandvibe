@@ -11,7 +11,7 @@ import { readFileSync } from 'node:fs';
 import { catalogDocPath, renderCatalog } from './render-catalog';
 
 const v1Ids = [
-  'desk-view', 'mug-story', 'lunch-plate', 'team-hands', 'green-colleague', 'sticky-note-art', 'commute', 'meeting-doodle',
+  'desk-view', 'mug-story', 'lunch-plate', 'green-colleague', 'sticky-note-art', 'commute', 'meeting-doodle',
   'team-shadows', 'snack-stash', 'museum-piece', 'tidy-desk', 'coffee-art', 'window-weather', 'study-spot', 'best-notes',
   'campus-corner', 'book-tower', 'study-fuel', 'pen-army', 'now-playing', 'jump-shot', 'reflection', 'then-and-now',
   'human-letter', 'color-hunt', 'tiny-world', 'sky-today', 'house-boss', 'breakfast-together', 'drawing-together',
@@ -33,15 +33,48 @@ describe('task catalog', () => {
     expect([...categories]).toEqual(['home', 'street', 'office', 'cheap', 'kids', 'winter', 'summer', 'team', 'pair']);
   });
 
-  it('should hold at least 30 tasks in every category', () => {
-    const short = categories.filter((category) => tagged(category).length < 30);
+  // The design asks for 30; after the owner's 28.11 removals 'team' has 29, and the picker falls back to other free tasks.
+  it('should hold at least 29 tasks in every category', () => {
+    const short = categories.filter((category) => tagged(category).length < 29);
     expect(short.map((category) => `${category}: ${tagged(category).length}`)).toEqual([]);
   });
 
   it('should keep every task from v1', () => {
-    expect(v1Ids).toHaveLength(76);
+    expect(v1Ids).toHaveLength(75);
     const ids = new Set(catalog.map((task) => task.id));
     expect(v1Ids.filter((id) => !ids.has(id))).toEqual([]);
+  });
+
+  it('should hold the 164 tasks the owner approved on 28.11 and none of the 7 he removed', () => {
+    const removed = ['mittens', 'team-hands', 'team-mugs', 'team-game', 'scarf-chain', 'mirror-pose', 'letter-for-two'];
+    expect(catalog).toHaveLength(164);
+    expect(catalog.filter((task) => removed.includes(task.id)).map((task) => task.id)).toEqual([]);
+  });
+
+  it("should carry the owner's wording of the tasks he reworded", () => {
+    const approved: Record<string, string> = {
+      'study-spot': 'Покажи де тобі вчиться найкраще.',
+      'breakfast-together': 'Стіл під час сімейного сніданку: їжа, родина, без облич крупним планом.',
+      'reflection': 'Кадр із відображенням: вітрина, людина, дзеркало чи екран.',
+      'puddle-world': 'Місто, сонце чи небо, відображені в калюжі.',
+      'little-chefs': 'Страва, яку ви приготували разом, або сам процес.',
+      'snow-close-up': 'Сніжинка на рукавичці чи сніг крупним планом. Снігу немає допоможе іній чи холодне скло.',
+      'holiday-lights': 'Святкові вогники з розмитими кульками світла.',
+      'holiday-sweater': 'Найсвятковіший або найкумедніший светр, рукавички чи шапка.',
+      'two-ice-creams': 'Ви з іншою людиною і два різні морозива — у кадрі лише руки й ріжки.',
+      'cooking-for-two': 'Страва, яку ви приготували вдвох',
+    };
+    for (const [id, description] of Object.entries(approved)) {
+      expect(catalog.find((task) => task.id === id)?.description.uk).toBe(description);
+    }
+  });
+
+  it('should offer the re-targeted tasks to the audiences the owner chose', () => {
+    const audienceOf = (id: string) => catalog.find((task) => task.id === id)?.audiences.slice().sort();
+    expect(audienceOf('blanket-fort')).toEqual(['family', 'friends']);
+    expect(audienceOf('food-face')).toEqual(['family']);
+    expect(audienceOf('find-me')).toEqual(['family', 'friends']);
+    expect(audienceOf('snow-angel')).toEqual(['family', 'friends']);
   });
 
   it('should keep the owner review table in sync with the data', () => {
