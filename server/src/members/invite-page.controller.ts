@@ -20,9 +20,15 @@ export class InvitePageController {
     res.setHeader('Cache-Control', 'no-store');
     try {
       const preview = await this.members.preview(token);
-      res.status(200).send(
-        invitePageHtml({ appUrl: this.appUrl, token, group: { name: preview.groupName, memberCount: preview.memberCount } }),
-      );
+      res
+        .status(200)
+        .send(
+          invitePageHtml({
+            appUrl: this.appUrl,
+            token,
+            group: { name: preview.groupName, memberCount: preview.memberCount },
+          }),
+        );
     } catch (error) {
       if (!(error instanceof GoneException)) {
         throw error;

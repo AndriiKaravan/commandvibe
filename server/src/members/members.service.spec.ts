@@ -54,7 +54,12 @@ describe('MembersService', () => {
   });
 
   async function newGroup(approveNew = false) {
-    const created = await groups.create('org', { name: 'Office', timezone: 'Europe/Kyiv', playsToo: false, approveNew });
+    const created = await groups.create('org', {
+      name: 'Office',
+      timezone: 'Europe/Kyiv',
+      playsToo: false,
+      approveNew,
+    });
     return { group: created.group, token: created.inviteUrl.split('/j/')[1] };
   }
 
@@ -101,7 +106,9 @@ describe('MembersService', () => {
     const { group, token } = await newGroup();
     await repos.groups.update(group.id, { settings: { ...group.settings, departments: ['Sales'] } });
     await expect(service.join(token, 'Olena', 'Hackers', 'ua')).rejects.toBeInstanceOf(UnprocessableEntityException);
-    await expect(service.join(token, 'Olena', 'Sales', 'ua')).resolves.toMatchObject({ member: { department: 'Sales' } });
+    await expect(service.join(token, 'Olena', 'Sales', 'ua')).resolves.toMatchObject({
+      member: { department: 'Sales' },
+    });
   });
 
   it('should reject an empty or too long name', async () => {

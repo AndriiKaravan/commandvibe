@@ -10,6 +10,7 @@ export interface SubmissionModeration {
 export interface SubmissionView {
   memberId: string;
   displayName: string;
+  avatar?: string;
   submittedAt: string;
   access: 'full' | 'blur';
   /** Only for `full`; a short-lived link to the server. */

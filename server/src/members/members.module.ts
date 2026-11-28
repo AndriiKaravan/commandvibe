@@ -13,7 +13,10 @@ import { PinService } from './pin.service';
 @Module({
   imports: [GroupsModule, GroupRealtimeModule, PhotosModule],
   controllers: [JoinController, MembersController, InvitePageController],
-  providers: [MembersService, PinService, { provide: MEMBER_EVENTS, useExisting: RealtimeMemberEvents },
+  providers: [
+    MembersService,
+    PinService,
+    { provide: MEMBER_EVENTS, useExisting: RealtimeMemberEvents },
     { provide: MEMBER_DATA_CLEANUP, useExisting: PhotosService },
   ],
   exports: [MembersService],

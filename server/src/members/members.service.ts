@@ -1,5 +1,7 @@
 import {
+  BadRequestException,
   ConflictException,
+  ForbiddenException,
   GoneException,
   HttpException,
   HttpStatus,
@@ -12,9 +14,10 @@ import {
 import { randomBytes } from 'node:crypto';
 import { CLOCK, IssuedTokens, SessionService } from '../auth/session.service';
 import { hashToken } from '../common/tokens';
-import { Group, Member, nameKeyOf } from '../data/models';
+import { Group, Member, SessionSubject, nameKeyOf } from '../data/models';
 import { GROUPS, GroupRepository, MEMBERS, MemberRepository, NameTakenError } from '../data/repositories';
 import { GroupsService } from '../groups/groups.service';
+import { isAvatarId } from './avatars';
 import { PinService } from './pin.service';
 
 /** Side effects of membership changes; realtime implements it. */
@@ -39,7 +42,10 @@ export interface InvitePreview {
   approveNew: boolean;
 }
 
-export type MemberView = Pick<Member, 'id' | 'groupId' | 'displayName' | 'status' | 'department' | 'avatar' | 'isOrganizer'>;
+export type MemberView = Pick<
+  Member,
+  'id' | 'groupId' | 'displayName' | 'status' | 'department' | 'avatar' | 'isOrganizer'
+>;
 
 export function memberView(member: Member): MemberView {
   const { id, groupId, displayName, status, department, avatar, isOrganizer } = member;
@@ -113,6 +119,22 @@ export class MembersService {
     });
   }
 
+  /** The caller's own avatar; an organizer who does not play has no member to give one to. */
+  async setAvatar(subject: SessionSubject, groupId: string, avatar: unknown): Promise<void> {
+    if (avatar !== null && !isAvatarId(avatar)) {
+      throw new BadRequestException('invalid_avatar');
+    }
+    const group = await this.groupsService.getFor(subject, groupId);
+    const member =
+      subject.kind === 'member'
+        ? await this.members.get(group.id, subject.id)
+        : (await this.members.list(group.id)).find((m) => m.organizerUid === subject.id);
+    if (!member || member.status !== 'active') {
+      throw new ForbiddenException('not_playing');
+    }
+    await this.members.update(group.id, member.id, { avatar: avatar ?? undefined });
+  }
+
   /** "I am already in the game": name + PIN on another device. */
   async returning(
     token: string,
@@ -122,13 +144,20 @@ export class MembersService {
   ): Promise<IssuedTokens & { member: MemberView }> {
     const group = await this.openGroup(token);
     const member = await this.members.findByName(group.id, nameKeyOf(String(rawName ?? '')));
-    const known = member && member.status !== 'removed' ? (await this.members.secrets(group.id, member.id)).pinHash : undefined;
+    const known =
+      member && member.status !== 'removed' ? (await this.members.secrets(group.id, member.id)).pinHash : undefined;
     if (!member || !known) {
       throw new UnauthorizedException({ code: 'no_such_login' });
     }
     const now = this.now();
     // The attempt is counted before the slow hash check, so parallel guesses cannot share one counter value.
-    const reserved = await this.members.reservePinAttempt(group.id, member.id, now, maxPinFailures, pinLockSeconds * 1000);
+    const reserved = await this.members.reservePinAttempt(
+      group.id,
+      member.id,
+      now,
+      maxPinFailures,
+      pinLockSeconds * 1000,
+    );
     if (reserved.kind === 'locked') {
       throw this.locked(reserved.lockedUntil.getTime() - now.getTime());
     }
@@ -198,7 +227,9 @@ export class MembersService {
   }
 
   private validName(rawName: string): string {
-    const displayName = String(rawName ?? '').trim().replace(/\s+/g, ' ');
+    const displayName = String(rawName ?? '')
+      .trim()
+      .replace(/\s+/g, ' ');
     if (!displayName || displayName.length > maxName) {
       throw new UnprocessableEntityException('invalid_name');
     }

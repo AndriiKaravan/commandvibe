@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { CLOCK } from '../auth/session.service';
-import { Cell, Group, SessionSubject, SubjectKind, Submission, UploadSource } from '../data/models';
+import { Cell, Group, Member, SessionSubject, SubjectKind, Submission, UploadSource } from '../data/models';
 import {
   CELLS,
   CellRepository,
@@ -105,7 +105,7 @@ export class PhotosService {
       if (!access.listed) {
         continue;
       }
-      const view = this.toView(sub, author?.displayName ?? '', access, subject, viewer, open(sub.memberId), now);
+      const view = this.toView(sub, author, access, subject, viewer, open(sub.memberId), now);
       if (sub.memberId === viewer.memberId) {
         mine = view;
       } else {
@@ -165,7 +165,7 @@ export class PhotosService {
         continue;
       }
       entries.push({
-        view: this.toView(sub, author.displayName, access, subject, viewer, open, now),
+        view: this.toView(sub, author, access, subject, viewer, open, now),
         dayIndex: sub.dayIndex,
         taskTitle: taskView(cell.task).title,
       });
@@ -251,7 +251,7 @@ export class PhotosService {
       dayIndex: day,
       memberId,
     });
-    const author = (await this.members.get(groupId, memberId))?.displayName ?? '';
+    const author = await this.members.get(groupId, memberId);
     const access = this.decide(viewer, true, submission, true, 0, false);
     return this.toView(submission, author, access, subject, viewer, 0, now);
   }
@@ -399,7 +399,7 @@ export class PhotosService {
 
   private toView(
     sub: Submission,
-    displayName: string,
+    author: Pick<Member, 'displayName' | 'avatar'> | undefined,
     access: PhotoAccess,
     subject: SessionSubject,
     viewer: Viewer,
@@ -414,7 +414,8 @@ export class PhotosService {
     const mine = sub.memberId === viewer.memberId;
     const view: SubmissionView = {
       memberId: sub.memberId,
-      displayName,
+      displayName: author?.displayName ?? '',
+      ...(author?.avatar ? { avatar: author.avatar } : {}),
       submittedAt: sub.submittedAt.toISOString(),
       access: access.image === 'full' ? 'full' : 'blur',
       blurUrl: link('blur'),

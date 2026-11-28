@@ -140,6 +140,17 @@ export function describeRepositories(name: string, factory: () => Promise<Reposi
       expect((await repos.members.findByName(group.id, '..'))?.displayName).toBe('..');
     });
 
+    it('should set and clear a member avatar', async () => {
+      const group = aGroup();
+      await repos.groups.create(group);
+      const member = aMember(group.id, 'Olena');
+      await repos.members.createUnique(member);
+      await repos.members.update(group.id, member.id, { avatar: 'av03' });
+      expect((await repos.members.get(group.id, member.id))?.avatar).toBe('av03');
+      await repos.members.update(group.id, member.id, { avatar: undefined });
+      expect((await repos.members.get(group.id, member.id))?.avatar).toBeUndefined();
+    });
+
     it('should allow the same name in another group', async () => {
       const first = aGroup();
       const second = aGroup();

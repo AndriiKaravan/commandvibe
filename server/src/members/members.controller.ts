@@ -47,21 +47,43 @@ export class MembersController {
     return all.filter((m) => m.status === 'active' || (isOwner && m.status === 'pending')).map(memberView);
   }
 
+  @Put('groups/:id/me/avatar')
+  @HttpCode(204)
+  async setAvatar(
+    @CurrentAuth() auth: VerifiedAccess,
+    @Param('id', IdPipe) id: string,
+    @Body() body: { avatar?: unknown },
+  ): Promise<void> {
+    await this.members.setAvatar(auth.subject, id, body?.avatar ?? null);
+  }
+
   @Post('groups/:id/members/:memberId/approve')
   @HttpCode(204)
-  approve(@CurrentAuth() auth: VerifiedAccess, @Param('id', IdPipe) id: string, @Param('memberId', IdPipe) memberId: string) {
+  approve(
+    @CurrentAuth() auth: VerifiedAccess,
+    @Param('id', IdPipe) id: string,
+    @Param('memberId', IdPipe) memberId: string,
+  ) {
     return this.members.approve(organizerUid(auth), id, memberId);
   }
 
   @Post('groups/:id/members/:memberId/remove')
   @HttpCode(204)
-  remove(@CurrentAuth() auth: VerifiedAccess, @Param('id', IdPipe) id: string, @Param('memberId', IdPipe) memberId: string) {
+  remove(
+    @CurrentAuth() auth: VerifiedAccess,
+    @Param('id', IdPipe) id: string,
+    @Param('memberId', IdPipe) memberId: string,
+  ) {
     return this.members.remove(organizerUid(auth), id, memberId);
   }
 
   @Post('groups/:id/members/:memberId/reset-pin')
   @HttpCode(204)
-  resetPin(@CurrentAuth() auth: VerifiedAccess, @Param('id', IdPipe) id: string, @Param('memberId', IdPipe) memberId: string) {
+  resetPin(
+    @CurrentAuth() auth: VerifiedAccess,
+    @Param('id', IdPipe) id: string,
+    @Param('memberId', IdPipe) memberId: string,
+  ) {
     return this.members.resetPin(organizerUid(auth), id, memberId);
   }
 
