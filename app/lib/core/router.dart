@@ -5,7 +5,6 @@ import 'package:commandvibe/features/calendar/ui/days_view.dart';
 import 'package:commandvibe/features/calendar/ui/game_setup_view.dart';
 import 'package:commandvibe/features/feed/ui/feed_view.dart';
 import 'package:commandvibe/features/groups/ui/create_group_view.dart';
-import 'package:commandvibe/features/groups/ui/group_home_view.dart';
 import 'package:commandvibe/features/groups/ui/invite_view.dart';
 import 'package:commandvibe/features/groups/ui/my_groups_view.dart';
 import 'package:commandvibe/features/join/ui/join_view.dart';
@@ -15,6 +14,7 @@ import 'package:commandvibe/features/join/ui/returning_view.dart';
 import 'package:commandvibe/features/organizer_auth/ui/organizer_login_view.dart';
 import 'package:commandvibe/features/photos/ui/complaints_view.dart';
 import 'package:commandvibe/features/photos/ui/photo_viewer_view.dart';
+import 'package:commandvibe/features/profile/profile_view.dart';
 import 'package:commandvibe/features/shell/group_shell.dart';
 import 'package:commandvibe/features/standings/ui/standings_view.dart';
 import 'package:commandvibe/features/today/ui/today_tab.dart';
@@ -139,7 +139,7 @@ GoRouter createRouter({
           _tab(
             'me',
             requireSession,
-            (state) => _GroupHome(
+            (state) => _ProfileTab(
               groupId: state.pathParameters['groupId']!,
               sessions: sessions,
             ),
@@ -244,8 +244,8 @@ class _GroupTabs extends StatelessWidget {
 }
 
 /// Reads the session once to know whether the viewer owns the group.
-class _GroupHome extends StatelessWidget {
-  const _GroupHome({required this.groupId, required this.sessions});
+class _ProfileTab extends StatelessWidget {
+  const _ProfileTab({required this.groupId, required this.sessions});
 
   final String groupId;
   final SessionStore sessions;
@@ -257,10 +257,7 @@ class _GroupHome extends StatelessWidget {
       if (!snapshot.hasData) {
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       }
-      return GroupHomeView(
-        groupId: groupId,
-        isOwner: snapshot.data!.isOrganizer,
-      );
+      return ProfileView(groupId: groupId, isOwner: snapshot.data!.isOrganizer);
     },
   );
 }

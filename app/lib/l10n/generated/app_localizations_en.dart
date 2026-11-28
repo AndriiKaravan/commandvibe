@@ -678,4 +678,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ratingEmpty => 'No points yet';
+
+  @override
+  String profileDays(int done, int total) {
+    return 'Days done: $done of $total';
+  }
+
+  @override
+  String get profileChangeAvatar => 'Change avatar';
+
+  @override
+  String get profileChangePin => 'Change PIN';
 }

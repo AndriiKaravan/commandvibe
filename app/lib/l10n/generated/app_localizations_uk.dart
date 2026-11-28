@@ -674,4 +674,15 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get ratingEmpty => 'Поки немає балів';
+
+  @override
+  String profileDays(int done, int total) {
+    return 'Виконано днів: $done з $total';
+  }
+
+  @override
+  String get profileChangeAvatar => 'Змінити аватар';
+
+  @override
+  String get profileChangePin => 'Змінити PIN';
 }

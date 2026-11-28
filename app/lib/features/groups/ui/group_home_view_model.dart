@@ -75,6 +75,9 @@ class GroupHomeViewModel extends ChangeNotifier {
 
   Future<void> _reload() => _guard(_load);
 
+  /// Reads the group again, e.g. after the member's own avatar changed.
+  Future<void> reload() => _reload();
+
   /// Runs [action]; a refused session or group becomes [revoked], other failures [loadFailed].
   Future<void> _guard(Future<void> Function() action) async {
     try {

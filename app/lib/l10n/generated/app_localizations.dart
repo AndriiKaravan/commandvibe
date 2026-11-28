@@ -1303,6 +1303,24 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Поки немає балів'**
   String get ratingEmpty;
+
+  /// No description provided for @profileDays.
+  ///
+  /// In uk, this message translates to:
+  /// **'Виконано днів: {done} з {total}'**
+  String profileDays(int done, int total);
+
+  /// No description provided for @profileChangeAvatar.
+  ///
+  /// In uk, this message translates to:
+  /// **'Змінити аватар'**
+  String get profileChangeAvatar;
+
+  /// No description provided for @profileChangePin.
+  ///
+  /// In uk, this message translates to:
+  /// **'Змінити PIN'**
+  String get profileChangePin;
 }
 
 class _AppLocalizationsDelegate

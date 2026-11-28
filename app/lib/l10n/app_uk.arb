@@ -387,5 +387,18 @@
       }
     }
   },
-  "ratingEmpty": "Поки немає балів"
+  "ratingEmpty": "Поки немає балів",
+  "profileDays": "Виконано днів: {done} з {total}",
+  "@profileDays": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "profileChangeAvatar": "Змінити аватар",
+  "profileChangePin": "Змінити PIN"
 }

@@ -359,5 +359,18 @@
       }
     }
   },
-  "ratingEmpty": "No points yet"
+  "ratingEmpty": "No points yet",
+  "profileDays": "Days done: {done} of {total}",
+  "@profileDays": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "profileChangeAvatar": "Change avatar",
+  "profileChangePin": "Change PIN"
 }
