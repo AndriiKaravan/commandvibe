@@ -10,6 +10,7 @@ import { HealthController } from './health/health.controller';
 import { PhotosModule } from './photos/photos.module';
 import { ProgressModule } from './progress/progress.module';
 import { AppCheckGuard, AppCheckModule } from './shared/app_check';
+import { StandingsModule } from './standings/standings.module';
 import { TestSeedModule } from './testing/test-seed.module';
 
 export interface AppOptions {
@@ -35,6 +36,7 @@ export class AppModule {
         PhotosModule,
         FeedModule,
         ProgressModule,
+        StandingsModule,
         ...(options.testSeed ? [TestSeedModule] : []),
       ],
       controllers: [HealthController],
