@@ -4,22 +4,32 @@ import 'dart:convert';
 import 'package:commandvibe/core/platform/observed_session_store.dart';
 import 'package:commandvibe/core/platform/session_store.dart';
 
-/// Who is signed in, read from the access token's claims (not verified here;
-/// the server verifies every request). Null when signed out or unreadable.
-String? accountOf(StoredSession? session) {
+Map<String, dynamic>? _claimsOf(StoredSession? session) {
   if (session == null) {
     return null;
   }
   try {
     final parts = session.accessToken.split('.');
-    final claims =
-        jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))))
-            as Map<String, dynamic>;
-    final subject = claims['sub'];
-    return subject is String ? '${session.kind}:$subject' : null;
+    return jsonDecode(
+          utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+        )
+        as Map<String, dynamic>;
   } on Object {
     return null;
   }
+}
+
+/// Who is signed in, read from the access token's claims (not verified here;
+/// the server verifies every request). Null when signed out or unreadable.
+String? accountOf(StoredSession? session) {
+  final subject = _claimsOf(session)?['sub'];
+  return subject is String ? '${session!.kind}:$subject' : null;
+}
+
+/// The member a member session plays as; null for an organizer, who may not play.
+String? memberIdOf(StoredSession? session) {
+  final subject = _claimsOf(session)?['sub'];
+  return session?.kind == 'member' && subject is String ? subject : null;
 }
 
 /// The signed-in account over time; a refresh of the same account is not a change.

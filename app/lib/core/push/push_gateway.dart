@@ -6,6 +6,7 @@ export 'package:ks_core/push.dart'
     show
         FirebasePushService,
         NotificationOpened,
+        NotificationSource,
         PushMessage,
         PushOptions,
         PushPermission,

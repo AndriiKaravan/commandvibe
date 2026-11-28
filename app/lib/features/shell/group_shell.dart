@@ -1,6 +1,12 @@
+import 'dart:async';
+
+import 'package:commandvibe/core/push/session_identity.dart';
 import 'package:commandvibe/core/realtime/group_live.dart';
+import 'package:commandvibe/core/platform/observed_session_store.dart';
 import 'package:commandvibe/core/services_scope.dart';
 import 'package:commandvibe/core/ui/adaptive_shell.dart';
+import 'package:commandvibe/features/notifications/ui/group_effects.dart';
+import 'package:commandvibe/features/notifications/ui/live_effects.dart';
 import 'package:commandvibe/features/shell/access_watcher.dart';
 import 'package:commandvibe/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +48,7 @@ class GroupShell extends StatefulWidget {
 class _GroupShellState extends State<GroupShell> {
   AccessWatcher? _watcher;
   GroupLive? _live;
+  GroupEffects? _effects;
 
   @override
   void didChangeDependencies() {
@@ -63,6 +70,43 @@ class _GroupShellState extends State<GroupShell> {
       loadNotifications: () => services.notifications.list(widget.groupId),
       onRevoked: _leave,
     )..start();
+    unawaited(_startEffects(services.sessions));
+  }
+
+  Future<void> _startEffects(ObservedSessionStore sessions) async {
+    final selfMemberId = memberIdOf(await sessions.read());
+    if (!mounted) {
+      return;
+    }
+    _effects = GroupEffects(
+      ServicesScope.of(context).realtime,
+      groupId: widget.groupId,
+      selfMemberId: selfMemberId,
+      currentTab: () => widget.currentIndex,
+      onToast: _showToast,
+    )..start();
+    _effects!.addListener(() => setState(() {}));
+    _effects!.select(widget.currentIndex);
+  }
+
+  void _showToast(LiveToast toast) {
+    final l10n = AppLocalizations.of(context);
+    final text = switch (toast) {
+      LiveToast.dayOpened => l10n.liveToastDayOpened,
+      LiveToast.myTurn => l10n.liveToastMyTurn,
+      LiveToast.comment => l10n.liveToastComment,
+    };
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  @override
+  void didUpdateWidget(GroupShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentIndex != widget.currentIndex) {
+      _effects?.select(widget.currentIndex);
+    }
   }
 
   Future<void> _leave() async {
@@ -78,6 +122,7 @@ class _GroupShellState extends State<GroupShell> {
   void dispose() {
     _watcher?.dispose();
     _live?.dispose();
+    _effects?.dispose();
     super.dispose();
   }
 
@@ -90,6 +135,7 @@ class _GroupShellState extends State<GroupShell> {
         currentIndex: widget.currentIndex,
         onSelected: widget.onSelected,
         tabs: groupTabs(l10n, isOwner: widget.isOwner),
+        badges: _effects?.dots ?? const {},
         child: widget.child,
       ),
     );

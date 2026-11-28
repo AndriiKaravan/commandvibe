@@ -18,12 +18,22 @@ class AdaptiveShell extends StatelessWidget {
     required this.onSelected,
     required this.tabs,
     required this.child,
+    this.badges = const {},
   });
 
   final int currentIndex;
   final ValueChanged<int> onSelected;
   final List<ShellTab> tabs;
   final Widget child;
+
+  /// Indexes of tabs that show a dot because something new is waiting there.
+  final Set<int> badges;
+
+  Widget _icon(int index) => Badge(
+    isLabelVisible: badges.contains(index),
+    smallSize: 8,
+    child: Icon(tabs[index].icon),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -37,10 +47,10 @@ class AdaptiveShell extends StatelessWidget {
               onDestinationSelected: onSelected,
               labelType: NavigationRailLabelType.all,
               destinations: [
-                for (final tab in tabs)
+                for (var i = 0; i < tabs.length; i++)
                   NavigationRailDestination(
-                    icon: Icon(tab.icon),
-                    label: Text(tab.label),
+                    icon: _icon(i),
+                    label: Text(tabs[i].label),
                   ),
               ],
             ),
@@ -55,8 +65,8 @@ class AdaptiveShell extends StatelessWidget {
         selectedIndex: currentIndex,
         onDestinationSelected: onSelected,
         destinations: [
-          for (final tab in tabs)
-            NavigationDestination(icon: Icon(tab.icon), label: tab.label),
+          for (var i = 0; i < tabs.length; i++)
+            NavigationDestination(icon: _icon(i), label: tabs[i].label),
         ],
       ),
     );

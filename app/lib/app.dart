@@ -8,6 +8,7 @@ import 'package:commandvibe/core/platform/organizer_sign_in.dart';
 import 'package:commandvibe/core/platform/photo_source.dart';
 import 'package:commandvibe/core/platform/session_store.dart';
 import 'package:commandvibe/core/push/app_push.dart';
+import 'package:commandvibe/core/push/push_navigation.dart';
 import 'package:commandvibe/core/realtime/realtime_provider.dart';
 import 'package:commandvibe/core/router.dart';
 import 'package:commandvibe/core/services_scope.dart';
@@ -68,10 +69,21 @@ class CommandVibeApp extends StatefulWidget {
 
 class _CommandVibeAppState extends State<CommandVibeApp> {
   StreamSubscription<String>? _links;
+  PushNavigation? _pushNavigation;
 
   @override
   void initState() {
     super.initState();
+    _pushNavigation = PushNavigation(
+      widget.services.push.service.opened,
+      go: widget.router.go,
+      session: () async {
+        final session = await widget.services.sessions.read();
+        return session == null
+            ? null
+            : (memberGroupId: session.isOrganizer ? null : session.groupId);
+      },
+    );
     // A link tapped while the app is open (App Links / Universal Links).
     _links = widget.services.inviteLinks.tokens.listen(
       (token) => widget.router.go(
@@ -83,6 +95,7 @@ class _CommandVibeAppState extends State<CommandVibeApp> {
   @override
   void dispose() {
     _links?.cancel();
+    unawaited(_pushNavigation?.dispose());
     unawaited(widget.services.push.dispose());
     widget.services.realtime.dispose();
     super.dispose();

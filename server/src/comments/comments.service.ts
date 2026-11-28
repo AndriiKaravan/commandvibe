@@ -88,7 +88,7 @@ export class CommentsService {
       createdAt: this.clock(),
     };
     await this.comments.add(comment);
-    this.events.toGroup(groupId, 'comment.created', { dayIndex, memberId: authorId });
+    this.events.toGroup(groupId, 'comment.created', { dayIndex, memberId: authorId, by: viewer.memberId });
     await this.notifications?.comment(groupId, dayIndex, authorId, viewer.memberId, comment.id);
     return (await this.items(group, viewer, [comment]))[0];
   }

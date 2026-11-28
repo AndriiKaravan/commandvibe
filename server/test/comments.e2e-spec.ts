@@ -136,7 +136,7 @@ describe('Comments', () => {
       await socket.next((frame) => frame.t === 'ack' && frame.id === id && Array.isArray(frame.ok));
       await write(groupId, ira.auth, ira.memberId, 'secret words');
       const event = await socket.next((frame) => frame.t === 'event' && frame.type === 'comment.created');
-      expect(event.data).toEqual({ dayIndex: 0, memberId: ira.memberId });
+      expect(event.data).toEqual({ dayIndex: 0, memberId: ira.memberId, by: ira.memberId });
       expect(JSON.stringify(event)).not.toContain('secret');
     } finally {
       socket.close();

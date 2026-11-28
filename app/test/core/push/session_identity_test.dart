@@ -52,6 +52,17 @@ void main() {
     });
   });
 
+  group('memberIdOf', () {
+    test(
+      'should be the member of a member session and nothing for an organizer',
+      () {
+        expect(memberIdOf(_session('member', 'm1', groupId: 'g')), 'm1');
+        expect(memberIdOf(_session('organizer', 'u1')), isNull);
+        expect(memberIdOf(null), isNull);
+      },
+    );
+  });
+
   group('signedInAccounts', () {
     late _MemoryStore inner;
     late ObservedSessionStore store;

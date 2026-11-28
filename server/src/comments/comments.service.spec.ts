@@ -57,7 +57,7 @@ describe('CommentsService', () => {
     const item = await add('  Nice shot!  ');
 
     expect(item).toMatchObject({ text: 'Nice shot!', displayName: 'Writer', mine: true, canDelete: true });
-    expect(events).toEqual([{ event: 'comment.created', payload: { dayIndex: 0, memberId: 'author' } }]);
+    expect(events).toEqual([{ event: 'comment.created', payload: { dayIndex: 0, memberId: 'author', by: 'writer' } }]);
     expect(JSON.stringify(events)).not.toContain('Nice shot');
   });
 
