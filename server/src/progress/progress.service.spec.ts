@@ -45,6 +45,10 @@ describe('ProgressService', () => {
   async function setup() {
     const group = aGroup({ game });
     await repos.groups.create(group);
+    await repos.cells.replaceAll(
+      group.id,
+      [0, 1, 2].map((day) => aCell(group.id, day, { state: 'open' })),
+    );
     const olena = aMember(group.id, 'Olena');
     const taras = aMember(group.id, 'Taras');
     await repos.members.createUnique(olena);
@@ -109,6 +113,18 @@ describe('ProgressService', () => {
     ]);
     const progress = await service.progressFor({ kind: 'member', id: olena.id, groupId: group.id }, group.id);
     expect(progress.currentDay).toBe(1);
+  });
+
+  it('should read photos only for the days that have opened', async () => {
+    const { group, olena } = await setup();
+    await repos.cells.replaceAll(group.id, [
+      aCell(group.id, 0, { state: 'open' }),
+      aCell(group.id, 1, { state: 'open' }),
+      aCell(group.id, 2, { state: 'closed' }),
+    ]);
+    const spy = jest.spyOn(repos.submissions, 'listByGroup');
+    await service.progressFor({ kind: 'member', id: olena.id, groupId: group.id }, group.id);
+    expect(spy).toHaveBeenCalledWith(group.id, 2);
   });
 
   it('should have no current day before any day opens', async () => {

@@ -1,5 +1,5 @@
 import { createMemoryRepositories } from '../data/memory/memory-repositories';
-import { aGroup, aMember, aSubmission } from '../data/repositories.contract';
+import { aCell, aGroup, aMember, aSubmission } from '../data/repositories.contract';
 import { GroupsService } from '../groups/groups.service';
 import { PhotosService } from '../photos/photos.service';
 import { StandingsService } from './standings.service';
@@ -32,7 +32,14 @@ describe('StandingsService', () => {
         return { relation: 'member' as const, memberId: id };
       },
     };
-    service = new StandingsService(groups, photos as unknown as PhotosService, repos.members, repos.submissions, now);
+    service = new StandingsService(
+      groups,
+      photos as unknown as PhotosService,
+      repos.members,
+      repos.submissions,
+      repos.cells,
+      now,
+    );
   });
 
   async function player(groupId: string, name: string, days: number[], extra: Parameters<typeof aMember>[2] = {}) {
@@ -47,6 +54,10 @@ describe('StandingsService', () => {
   async function started() {
     const group = aGroup({ game });
     await repos.groups.create(group);
+    await repos.cells.replaceAll(
+      group.id,
+      [0, 1, 2, 3, 4, 5, 6].map((day) => aCell(group.id, day, { state: 'open' })),
+    );
     return group;
   }
 
@@ -85,6 +96,18 @@ describe('StandingsService', () => {
     expect(second.me).toEqual({ rank: 2, points: 20, toNext: 10 });
     expect(anna.id).toBeDefined();
     expect(boris.id).toBeDefined();
+  });
+
+  it('should read photos only for the days that have opened', async () => {
+    const group = await started();
+    const olena = await player(group.id, 'Olena', [0]);
+    await repos.cells.replaceAll(group.id, [
+      aCell(group.id, 0, { state: 'open' }),
+      aCell(group.id, 1, { state: 'closed' }),
+    ]);
+    const spy = jest.spyOn(repos.submissions, 'listByGroup');
+    await service.standings(asMember(olena.id, group.id), group.id);
+    expect(spy).toHaveBeenCalledWith(group.id, 1);
   });
 
   it('should not score a hidden photo', async () => {

@@ -25,6 +25,7 @@ import {
 } from '../data/repositories';
 import { GameEngine } from '../game/game-engine';
 import { revealAt } from '../game/game-time';
+import { openedDayCount } from '../game/opened-days';
 import { taskView, taskVisibleToPlayers } from '../game/views';
 import { GroupsService } from '../groups/groups.service';
 import { takenAtOf } from './exif-time';
@@ -139,13 +140,12 @@ export class PhotosService {
     const now = this.clock();
     const group = await this.groupsService.getFor(subject, groupId);
     const viewer = await this.viewerOf(subject.kind, subject.id, group);
-    const days = group.game?.days ?? 0;
-    const [stored, members, complaints, cells] = await Promise.all([
-      this.submissions.listByGroup(groupId, days),
+    const [members, complaints, cells] = await Promise.all([
       this.members.list(groupId),
       this.complaints.listOpen(groupId),
       this.cells.list(groupId),
     ]);
+    const stored = await this.submissions.listByGroup(groupId, openedDayCount(cells));
     const names = new Map(members.map((member) => [member.id, member]));
     const cellOf = new Map(cells.map((cell) => [cell.dayIndex, cell]));
     const ownDays = new Set(

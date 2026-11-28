@@ -1,7 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CLOCK } from '../auth/session.service';
 import { SessionSubject } from '../data/models';
-import { MEMBERS, MemberRepository, SUBMISSIONS, SubmissionRepository } from '../data/repositories';
+import {
+  CELLS,
+  CellRepository,
+  MEMBERS,
+  MemberRepository,
+  SUBMISSIONS,
+  SubmissionRepository,
+} from '../data/repositories';
+import { openedDayCount } from '../game/opened-days';
 import { GroupsService } from '../groups/groups.service';
 import { PhotosService } from '../photos/photos.service';
 
@@ -31,16 +39,18 @@ export class StandingsService {
     private readonly photos: PhotosService,
     @Inject(MEMBERS) private readonly members: MemberRepository,
     @Inject(SUBMISSIONS) private readonly submissions: SubmissionRepository,
+    @Inject(CELLS) private readonly cells: CellRepository,
     @Inject(CLOCK) private readonly now: () => Date,
   ) {}
 
   async standings(subject: SessionSubject, groupId: string): Promise<StandingsView> {
     const group = await this.groups.getFor(subject, groupId);
-    const [stored, members, viewer] = await Promise.all([
-      this.submissions.listByGroup(groupId, group.game?.days ?? 0),
+    const [members, viewer, cells] = await Promise.all([
       this.members.list(groupId),
       this.photos.viewerOf(subject.kind, subject.id, group),
+      this.cells.list(groupId),
     ]);
+    const stored = await this.submissions.listByGroup(groupId, openedDayCount(cells));
     const photoCount = new Map<string, number>();
     for (const sub of stored) {
       if (sub.status === 'visible') {

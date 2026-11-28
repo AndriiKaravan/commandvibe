@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { SUBMISSIONS } from '../src/data/repositories';
 import { gameFixture } from './game-fixture';
 import { FakeFirebase, createTestApp } from './test-app';
 
@@ -86,6 +87,14 @@ describe('Feed', () => {
     expect(second.body.items).toHaveLength(1);
     expect(second.body.next).toBeUndefined();
     expect(second.body.items[0].memberId).not.toBe(first.body.items[0].memberId);
+  });
+
+  it('should read photos only for the days that have opened', async () => {
+    const { startedGame } = fixture;
+    const { owner, groupId } = await startedGame();
+    const spy = jest.spyOn(app.get(SUBMISSIONS, { strict: false }), 'listByGroup');
+    await feedOf(groupId, owner);
+    expect(spy).toHaveBeenCalledWith(groupId, 1);
   });
 
   it('should refuse a bad cursor, a stranger and a missing session', async () => {
