@@ -1,4 +1,4 @@
-import { catalog } from '../content/task-catalog';
+import { catalog, retiredCatalog } from '../content/task-catalog';
 import { Category, TaskCatalogEntry, categories } from '../content/task-catalog.model';
 import { Cell, CellState, GameSettings, RouletteSpin, TaskRef } from '../data/models';
 import { addDays, revealAt } from './game-time';
@@ -53,13 +53,19 @@ export interface CatalogTaskView extends TaskView {
   place: TaskCatalogEntry['place'];
 }
 
+/** Tasks that can be offered or picked today. */
 export const catalogById: ReadonlyMap<string, TaskCatalogEntry> = new Map(catalog.map((task) => [task.id, task]));
+
+/** Everything that can be shown: calendars made before a task was retired still hold it. */
+const displayById: ReadonlyMap<string, TaskCatalogEntry> = new Map(
+  [...catalog, ...retiredCatalog].map((task) => [task.id, task]),
+);
 
 export function taskView(ref: TaskRef): TaskView {
   if (ref.kind === 'custom') {
     return { title: ref.title, description: ref.description, custom: true };
   }
-  const entry = catalogById.get(ref.taskId);
+  const entry = displayById.get(ref.taskId);
   if (!entry) {
     return { id: ref.taskId, title: { uk: ref.taskId }, description: { uk: '' }, custom: false };
   }

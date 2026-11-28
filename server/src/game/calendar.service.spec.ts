@@ -191,6 +191,13 @@ describe('CalendarService', () => {
       expect(day.task).toMatchObject({ id: 'snowman', custom: false, title: { en: 'Snowman' } });
     });
 
+    it('should not let the organizer pick a task the owner retired', async () => {
+      await service.configure('org-1', groupId, input({ days: 7 }));
+      await expect(service.setTask('org-1', groupId, 1, { taskId: 'mittens' })).rejects.toThrow(
+        new UnprocessableEntityException('unknown_task'),
+      );
+    });
+
     it('should refuse an unknown task and a task already in the game', async () => {
       await service.configure('org-1', groupId, input({ days: 7 }));
       await expect(service.setTask('org-1', groupId, 1, { taskId: 'no-such-task' })).rejects.toThrow(

@@ -183,3 +183,15 @@ export const catalogData: TaskCatalogEntry[] = [
   task('winter-still-life', ['Зимовий натюрморт', 'Зимовий натюрморт із того, що вже є вдома: шишки, фрукти, гілочка, улюблена чашка.'], ['Winter still life', 'A winter still life from what is already at home: pine cones, fruit, a twig, your favourite mug.'], ['winter', 'home', 'cheap'], all, 'medium', 'home'),
   task('warm-socks', ['Теплі шкарпетки', 'Найтепліші шкарпетки всієї родини чи компанії в одному кадрі.'], ['Warm socks', 'The warmest socks of the whole family or group in one shot.'], ['winter', 'team', 'kids', 'home'], all, 'easy', 'home'),
 ];
+
+// Removed from the catalog by the owner on 28.11. Calendars made earlier may still hold them, so they stay
+// readable for display but are never offered to a new calendar.
+export const retiredCatalogData: TaskCatalogEntry[] = [
+  task('mittens', ['Рукавиці', 'Найтепліші чи найяскравіші рукавиці в домі.'], ['Mittens', 'The warmest or brightest mittens in the house.'], ['winter', 'home', 'cheap'], all, 'easy', 'home'),
+  task('team-hands', ['Руки команди', 'Руки всіх, хто поруч, в одному кадрі: у колі, на столі чи над чашками.'], ['Team hands', 'The hands of everyone around you in one shot: in a circle, on a table or over mugs.'], ['team', 'office'], ['office', 'students', 'friends', 'family'], 'medium', 'any'),
+  task('team-mugs', ['Чашки команди', 'Чашки всіх учасників в одному кадрі — вгадайте, чия яка.'], ['Team mugs', 'Everyone’s mugs in one shot: guess whose is whose.'], ['team', 'office', 'cheap'], ['office', 'students', 'friends'], 'easy', 'any'),
+  task('team-game', ['Командна гра', 'Партія в гру, де грають усі разом: карти, фішки й руки.'], ['Team game', 'A game everyone plays together: cards, pieces and hands.'], ['team', 'home', 'kids'], all, 'easy', 'home'),
+  task('scarf-chain', ['Ланцюжок шарфів', 'Шарфи чи шапки всіх учасників, зв’язані в один ланцюжок.'], ['Scarf chain', 'Everyone’s scarves or hats tied into one chain.'], ['team', 'winter', 'cheap'], all, 'medium', 'any'),
+  task('mirror-pose', ['Дзеркальна поза', 'Станьте з напарником одне навпроти одного, як у дзеркалі.'], ['Mirror pose', 'Stand mirroring each other with your buddy.'], ['pair', 'cheap'], all, 'easy', 'any'),
+  task('letter-for-two', ['Літера на двох', 'Утворіть удвох літеру — а група складе слово з літер усіх пар.'], ['Letter for two', 'Form a letter with the two of you; the group spells a word from all the pairs.'], ['pair', 'team'], all, 'medium', 'any'),
+];

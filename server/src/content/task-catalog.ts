@@ -7,4 +7,4 @@
  * require buying anything.
  */
 export * from './task-catalog.model';
-export { catalogData as catalog } from './task-catalog.data';
+export { catalogData as catalog, retiredCatalogData as retiredCatalog } from './task-catalog.data';
