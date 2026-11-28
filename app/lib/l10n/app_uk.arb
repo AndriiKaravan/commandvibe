@@ -370,5 +370,21 @@
   "dayStateDone": "Виконано",
   "dayStateRevealed": "Фото відкрито",
   "daysNoGame": "Гру ще не налаштовано",
-  "daysTaskLabel": "Завдання дня"
+  "daysTaskLabel": "Завдання дня",
+  "feedEmpty": "Поки немає фото",
+  "feedFilterAll": "Усі",
+  "feedFilterMine": "Мої",
+  "feedFilterDay": "День",
+  "feedFilterMember": "Учасник",
+  "feedDayTask": "День {day} · {task}",
+  "@feedDayTask": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "task": {
+        "type": "String"
+      }
+    }
+  }
 }

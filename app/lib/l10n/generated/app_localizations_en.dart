@@ -655,4 +655,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get daysTaskLabel => 'Task of the day';
+
+  @override
+  String get feedEmpty => 'No photos yet';
+
+  @override
+  String get feedFilterAll => 'All';
+
+  @override
+  String get feedFilterMine => 'Mine';
+
+  @override
+  String get feedFilterDay => 'Day';
+
+  @override
+  String get feedFilterMember => 'Member';
+
+  @override
+  String feedDayTask(int day, String task) {
+    return 'Day $day · $task';
+  }
 }

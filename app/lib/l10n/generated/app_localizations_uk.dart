@@ -651,4 +651,24 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get daysTaskLabel => 'Завдання дня';
+
+  @override
+  String get feedEmpty => 'Поки немає фото';
+
+  @override
+  String get feedFilterAll => 'Усі';
+
+  @override
+  String get feedFilterMine => 'Мої';
+
+  @override
+  String get feedFilterDay => 'День';
+
+  @override
+  String get feedFilterMember => 'Учасник';
+
+  @override
+  String feedDayTask(int day, String task) {
+    return 'День $day · $task';
+  }
 }

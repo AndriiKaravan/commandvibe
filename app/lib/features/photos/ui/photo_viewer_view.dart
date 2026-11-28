@@ -3,6 +3,7 @@ import 'package:commandvibe/core/services_scope.dart';
 import 'package:commandvibe/core/ui/glass_page.dart';
 import 'package:commandvibe/features/photos/data/photos_models.dart';
 import 'package:commandvibe/features/photos/data/photos_repository.dart';
+import 'package:commandvibe/features/photos/ui/photo_pager.dart';
 import 'package:commandvibe/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -25,7 +26,7 @@ class PhotoViewerView extends StatefulWidget {
 
 class _PhotoViewerViewState extends State<PhotoViewerView> {
   PhotosRepository? _repository;
-  SubmissionItem? _item;
+  List<SubmissionItem> _items = const [];
   bool _failed = false;
 
   @override
@@ -41,11 +42,11 @@ class _PhotoViewerViewState extends State<PhotoViewerView> {
     try {
       final day = await _repository!.day(widget.groupId, widget.dayIndex);
       final all = [if (day.mine != null) day.mine!, ...day.items];
-      final found = all.where((item) => item.memberId == widget.memberId);
+      final found = all.any((item) => item.memberId == widget.memberId);
       if (mounted) {
         setState(() {
-          _item = found.isEmpty ? null : found.first;
-          _failed = found.isEmpty;
+          _items = all;
+          _failed = !found;
         });
       }
     } on ApiException {
@@ -73,47 +74,50 @@ class _PhotoViewerViewState extends State<PhotoViewerView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final item = _item;
     return Scaffold(
       appBar: AppBar(backgroundColor: Colors.transparent),
       body: SafeArea(
-        child: item == null
+        child: _items.isEmpty || _failed
             ? Center(
                 child: _failed
                     ? Text(l10n.photoViewerFailed)
                     : const CircularProgressIndicator(),
               )
-            : PhotoViewerBody(
-                item: item,
-                onImageFailed: _load,
-                onReport: (reason) async {
-                  await _run(
-                    () => _repository!.complain(
+            : PhotoPager(
+                items: _items,
+                initialMemberId: widget.memberId,
+                pageBuilder: (context, item) => PhotoViewerBody(
+                  item: item,
+                  onImageFailed: _load,
+                  onReport: (reason) async {
+                    await _run(
+                      () => _repository!.complain(
+                        widget.groupId,
+                        widget.dayIndex,
+                        item.memberId,
+                        reason,
+                      ),
+                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l10n.photoReported)),
+                      );
+                    }
+                  },
+                  onHide: (hidden) => _run(
+                    () => _repository!.setHidden(
                       widget.groupId,
                       widget.dayIndex,
                       item.memberId,
-                      reason,
+                      hidden,
                     ),
-                  );
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(l10n.photoReported)));
-                  }
-                },
-                onHide: (hidden) => _run(
-                  () => _repository!.setHidden(
-                    widget.groupId,
-                    widget.dayIndex,
-                    item.memberId,
-                    hidden,
                   ),
-                ),
-                onDismiss: () => _run(
-                  () => _repository!.dismiss(
-                    widget.groupId,
-                    widget.dayIndex,
-                    item.memberId,
+                  onDismiss: () => _run(
+                    () => _repository!.dismiss(
+                      widget.groupId,
+                      widget.dayIndex,
+                      item.memberId,
+                    ),
                   ),
                 ),
               ),

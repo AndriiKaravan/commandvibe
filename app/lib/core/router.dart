@@ -3,6 +3,7 @@ import 'package:commandvibe/core/platform/session_store.dart';
 import 'package:commandvibe/features/calendar/ui/calendar_editor_view.dart';
 import 'package:commandvibe/features/calendar/ui/days_view.dart';
 import 'package:commandvibe/features/calendar/ui/game_setup_view.dart';
+import 'package:commandvibe/features/feed/ui/feed_view.dart';
 import 'package:commandvibe/features/groups/ui/create_group_view.dart';
 import 'package:commandvibe/features/groups/ui/group_home_view.dart';
 import 'package:commandvibe/features/groups/ui/invite_view.dart';
@@ -127,7 +128,7 @@ GoRouter createRouter({
           _tab(
             'feed',
             requireSession,
-            (state) => const _TabPlaceholder(Icons.photo_library),
+            (state) => FeedView(groupId: state.pathParameters['groupId']!),
           ),
           _tab(
             'rating',

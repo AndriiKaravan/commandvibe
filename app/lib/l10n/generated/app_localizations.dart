@@ -1261,6 +1261,42 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Завдання дня'**
   String get daysTaskLabel;
+
+  /// No description provided for @feedEmpty.
+  ///
+  /// In uk, this message translates to:
+  /// **'Поки немає фото'**
+  String get feedEmpty;
+
+  /// No description provided for @feedFilterAll.
+  ///
+  /// In uk, this message translates to:
+  /// **'Усі'**
+  String get feedFilterAll;
+
+  /// No description provided for @feedFilterMine.
+  ///
+  /// In uk, this message translates to:
+  /// **'Мої'**
+  String get feedFilterMine;
+
+  /// No description provided for @feedFilterDay.
+  ///
+  /// In uk, this message translates to:
+  /// **'День'**
+  String get feedFilterDay;
+
+  /// No description provided for @feedFilterMember.
+  ///
+  /// In uk, this message translates to:
+  /// **'Учасник'**
+  String get feedFilterMember;
+
+  /// No description provided for @feedDayTask.
+  ///
+  /// In uk, this message translates to:
+  /// **'День {day} · {task}'**
+  String feedDayTask(int day, String task);
 }
 
 class _AppLocalizationsDelegate

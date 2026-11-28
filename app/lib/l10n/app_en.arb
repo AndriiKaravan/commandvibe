@@ -342,5 +342,21 @@
   "dayStateDone": "Done",
   "dayStateRevealed": "Photos revealed",
   "daysNoGame": "The game isn't set up yet",
-  "daysTaskLabel": "Task of the day"
+  "daysTaskLabel": "Task of the day",
+  "feedEmpty": "No photos yet",
+  "feedFilterAll": "All",
+  "feedFilterMine": "Mine",
+  "feedFilterDay": "Day",
+  "feedFilterMember": "Member",
+  "feedDayTask": "Day {day} · {task}",
+  "@feedDayTask": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "task": {
+        "type": "String"
+      }
+    }
+  }
 }
