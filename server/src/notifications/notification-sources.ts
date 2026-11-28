@@ -107,6 +107,14 @@ export class NotificationSources implements NotificationSink {
     });
   }
 
+  async reminder(groupId: string, dayIndex: number, memberId: string): Promise<boolean> {
+    let made = false;
+    await this.safely(async () => {
+      made = await this.record({ groupId, memberId, kind: 'reminder', key: `reminder_${dayIndex}`, dayIndex });
+    });
+    return made;
+  }
+
   pendingMember(groupId: string, memberId: string): Promise<void> {
     return this.toOrganizer(groupId, { kind: 'pending_member', key: `pending_${memberId}`, actorMemberId: memberId });
   }
@@ -138,11 +146,12 @@ export class NotificationSources implements NotificationSink {
     });
   }
 
-  private async record(input: NewNotification): Promise<void> {
+  private async record(input: NewNotification): Promise<boolean> {
     const entry = await this.notifications.record(input);
     if (entry && this.delivery) {
       await this.delivery.deliver(input.groupId, entry);
     }
+    return entry !== undefined;
   }
 
   private async isActive(groupId: string, memberId: string): Promise<boolean> {

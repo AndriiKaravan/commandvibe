@@ -1,7 +1,8 @@
-import { Controller, Inject, Logger, Post, UseGuards } from '@nestjs/common';
+import { Controller, Inject, Logger, Optional, Post, UseGuards } from '@nestjs/common';
 import { CLOCK } from '../auth/session.service';
 import { Public } from '../common/public.decorator';
 import { GROUPS, GroupRepository } from '../data/repositories';
+import { REMINDER_RUNNER, ReminderRunner } from '../notifications/notification-sink';
 import { GameEngine } from './game-engine';
 import { TickGuard } from './tick.guard';
 
@@ -14,6 +15,7 @@ export class TickController {
     private readonly engine: GameEngine,
     @Inject(GROUPS) private readonly groups: GroupRepository,
     @Inject(CLOCK) private readonly now: () => Date,
+    @Optional() @Inject(REMINDER_RUNNER) private readonly reminders?: ReminderRunner,
   ) {}
 
   // Public for the session and App Check guards: the tick authenticates with its own OIDC guard.
@@ -33,6 +35,10 @@ export class TickController {
         this.logger.error(`advance failed for group ${group.id}`, error instanceof Error ? error.stack : String(error));
       }
     }
+    // Reminders are a nicety: a failure must not turn the tick into an error.
+    await this.reminders?.run(now).catch((error: unknown) => {
+      this.logger.warn(`reminders failed: ${error instanceof Error ? error.name : 'unknown'}`);
+    });
     return { advanced: groups.length - failed, failed };
   }
 }

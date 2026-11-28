@@ -13,6 +13,15 @@ export interface NotificationSink {
   likes(groupId: string, dayIndex: number, photoAuthorId: string): Promise<void>;
   pendingMember(groupId: string, memberId: string): Promise<void>;
   complaint(groupId: string, dayIndex: number, photoAuthorId: string): Promise<void>;
+  /** True when a new reminder entry was made. */
+  reminder(groupId: string, dayIndex: number, memberId: string): Promise<boolean>;
 }
+
+/** Runs the evening reminders; called from the Scheduler tick. */
+export interface ReminderRunner {
+  run(now: Date): Promise<number>;
+}
+
+export const REMINDER_RUNNER = Symbol('ReminderRunner');
 
 export const NOTIFICATION_SINK = Symbol('NotificationSink');
