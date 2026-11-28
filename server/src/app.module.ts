@@ -9,9 +9,13 @@ import { GroupsModule } from './groups/groups.module';
 import { LikesModule } from './likes/likes.module';
 import { MembersModule } from './members/members.module';
 import { HealthController } from './health/health.controller';
+import { AuthenticatedRequest } from './auth/auth.guard';
+import { accountIdOf } from './notifications/push-account';
+import { PUSH_MESSAGING, PUSH_TOKEN_STORE, PushProvidersModule } from './notifications/push-messaging';
 import { PhotosModule } from './photos/photos.module';
 import { PointsModule } from './points/points.module';
 import { ProgressModule } from './progress/progress.module';
+import { PushModule } from './shared/push';
 import { AppCheckGuard, AppCheckModule } from './shared/app_check';
 import { StandingsModule } from './standings/standings.module';
 import { TestSeedModule } from './testing/test-seed.module';
@@ -43,6 +47,18 @@ export class AppModule {
         PointsModule,
         ProgressModule,
         StandingsModule,
+        PushModule.forRootAsync({
+          imports: [PushProvidersModule.forRoot(options.storage)],
+          inject: [PUSH_TOKEN_STORE, PUSH_MESSAGING],
+          useFactory: (store, messaging) => ({
+            store,
+            messaging,
+            userIdOf: (request) => {
+              const subject = (request as AuthenticatedRequest).auth?.subject;
+              return subject ? accountIdOf(subject) : null;
+            },
+          }),
+        }),
         ...(options.testSeed ? [TestSeedModule] : []),
       ],
       controllers: [HealthController],

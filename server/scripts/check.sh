@@ -27,6 +27,7 @@ run lint npx eslint "{src,test}/**/*.ts"
 run typecheck npx tsc --noEmit -p tsconfig.json
 run build npx tsc -p tsconfig.build.json
 run sync-realtime npm run -s sync:realtime:check
+run sync-push npm run -s sync:push:check
 run sync-app-check npm run -s sync:app-check:check
 grep -E "^Tests:" "$log"
 exit $status

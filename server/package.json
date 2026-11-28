@@ -12,6 +12,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "sync:realtime": "node ${KS_SERVER_DIR:?set KS_SERVER_DIR to a clean clone of a ks_server tag}/scripts/sync.mjs realtime src/shared/realtime",
     "sync:realtime:check": "node ${KS_SERVER_DIR:?set KS_SERVER_DIR to a clean clone of a ks_server tag}/scripts/sync.mjs realtime src/shared/realtime --check",
+    "sync:push": "node ${KS_SERVER_DIR:?set KS_SERVER_DIR to a clean clone of a ks_server tag}/scripts/sync.mjs push src/shared/push",
+    "sync:push:check": "node ${KS_SERVER_DIR:?set KS_SERVER_DIR to a clean clone of a ks_server tag}/scripts/sync.mjs push src/shared/push --check",
     "sync:app-check": "node ${KS_CORE_DIR:?set KS_CORE_DIR to a clean clone of a ks_core tag}/server/app_check/sync/sync-app-check.mjs src/shared/app_check",
     "sync:app-check:check": "node ${KS_CORE_DIR:?set KS_CORE_DIR to a clean clone of a ks_core tag}/server/app_check/sync/sync-app-check.mjs src/shared/app_check --check",
     "start:test": "STORAGE=memory NODE_ENV=test ALLOWED_ORIGINS=http://localhost:8080 node dist/main.js"
