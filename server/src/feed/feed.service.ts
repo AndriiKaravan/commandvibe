@@ -41,6 +41,7 @@ function isBefore(entry: FeedEntry, position: FeedPosition): boolean {
     newerFirst(entry, {
       dayIndex: position.dayIndex,
       taskTitle: entry.taskTitle,
+      revealAt: entry.revealAt,
       view: { ...entry.view, submittedAt: position.submittedAt.toISOString(), memberId: position.memberId },
     }) > 0
   );
